@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "inlineSourceMap": true
+  },
+  "include"  : [
+    "qnut.root/wp-content/plugins/peanut/pnut/packages/**/*",
+    "qnut.root/wp-content/plugins/peanut/pnut/core/**/*",
+    "qnut.root/application/**/*"
+  ]
+}
