@@ -30,5 +30,4 @@
 /web.root/wp-settings.php
 /web.root/wp-mail.php
 /web.root/wp-config.php
-/web.root/wp-content/
-!/web.root/wp-content/plugins/peanut/pnut/packages/
+/doc/examples/
