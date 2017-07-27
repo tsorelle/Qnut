@@ -52,3 +52,4 @@
 /web.root/wp-content/uploads/
 .idea/workspace.xml
 web.root/
+!/web.root/wp-content/plugins/peanut/pnut/packages/qnut/
