@@ -1,0 +1,15 @@
+{
+  "name": "twoquakers/peanut-qnut",
+  "description": "Peanut package of Quaker Meeting Features",
+  "minimum-stability": "dev",
+  "license": "GPL-3.0+",
+  "authors": [
+    {
+      "name": "Terry SoRelle",
+      "email": "tls@2quakers.net"
+    }
+  ],
+  "require": {
+    "phpunit/phpunit": "6.1.3"
+  }
+}
