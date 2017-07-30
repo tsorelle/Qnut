@@ -48,4 +48,5 @@
 /web.root/wp-content/plugins/peanut/pnut/dist/
 /web.root/wp-content/plugins/peanut/pnut/examples/
 /web.root/wp-content/plugins/peanut/pnut/images/
-
+/doc/
+.idea/workspace.xml
