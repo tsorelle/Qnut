@@ -2,8 +2,8 @@
 /backup/
 /tools/
 /deploy/
-/dist/
 /sql/
+/temp/
 /web.root/application/
 !/web.root/application/config/settings.ini
 !/web.root/application/config/viewmodels.ini
