@@ -1,1 +1,0 @@
-view models for qnut
