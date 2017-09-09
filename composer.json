@@ -9,6 +9,14 @@
       "email": "tls@2quakers.net"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "Tops\\": "web.root/wp-content/plugins/peanut/src/tops",
+      "Tops\\wordpress\\": "web.root/wp-content/plugins/peanut/src/wordpress",
+      "Peanut\\" : "web.root/wp-content/plugins/peanut/src/peanut",
+      "Qnut\\" : "web.root/wp-content/plugins/peanut/pnut/packages/qnut/src"
+    }
+  },
   "require": {
     "phpunit/phpunit": "6.1.3"
   }
