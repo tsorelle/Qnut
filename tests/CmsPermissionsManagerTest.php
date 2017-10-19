@@ -17,6 +17,11 @@ class CmsPermissionsManagerTest extends \Qnut\test\RepositoryTestFixture
         $this->runSqlScript('roles-test-setup');
     }
 
+    public function tearDown()
+    {
+        $this->runSqlScript('roles-test-cleanup');
+    }
+
     public function testGetRoles()
     {
         $manager = new CmsPermissionsManager();

@@ -14,6 +14,7 @@ namespace Peanut\qnut\cms;
 use Peanut\Bootstrap;
 use Peanut\sys\PeanutSettings;
 use Peanut\sys\ViewModelPageBuilder;
+use PeanutTest\WebTester;
 use Tops\sys\Autoloader;
 use Tops\sys\TStrings;
 use Peanut\sys\ViewModelManager;
@@ -65,6 +66,12 @@ class CmsController
 
         if (strtolower($uri) == '/index.php') {
             $routePath = 'home';
+        }
+        else if(strpos($uri,'/peanut/test/') === 0) {
+            $parts = explode('/', $uri);
+            $testname = array_pop($parts);
+            WebTester::run($testname);
+            exit;
         }
         else {
             $routePath = ViewModelManager::ExtractVmName($uri);
