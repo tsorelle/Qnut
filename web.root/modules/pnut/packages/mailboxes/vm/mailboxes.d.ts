@@ -5,6 +5,6 @@ declare namespace Mailboxes {
         description:string;
         mailboxcode:string ;
         address:string;
-        state:number;
+        'public': any;
     }
 }

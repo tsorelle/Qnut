@@ -23,7 +23,7 @@ namespace Mailboxes {
         mailboxName = ko.observable('');
         mailboxDescription = ko.observable('');
         mailboxEmail = ko.observable('');
-        mailboxState = ko.observable(0);
+        mailboxPublic = ko.observable(true);
 
         formHeading = ko.observable('');
         editMode  = ko.observable('');
@@ -56,10 +56,7 @@ namespace Mailboxes {
                 function(serviceResponse: Peanut.IServiceResponse) {
                     me.application.hideWaiter();
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        let list = <IMailBox[]>serviceResponse.Value;
-                        me.mailboxList(_.sortBy(list,function(box) {
-                            return box.displaytext.toLowerCase()
-                        }));
+                        me.showList(<IMailBox[]>serviceResponse.Value);
                     }
                 }
             ).fail(function () {
@@ -80,9 +77,7 @@ namespace Mailboxes {
             me.services.executeService('peanut.Mailboxes::UpdateMailbox',box,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        me.hideForm();
-                        let list = <IMailBox[]>serviceResponse.Value;
-                        me.mailboxList(_.sortBy(list,function(box) {return box.displaytext.toLowerCase()}));
+                        me.showList(<IMailBox[]>serviceResponse.Value);
                     }
                 }
             ).fail(function () {
@@ -92,6 +87,31 @@ namespace Mailboxes {
             })
         };
 
+        dropMailbox = (box: IMailBox) => {
+            let me = this;
+            me.hideForm();
+            me.application.hideServiceMessages();
+            me.application.showWaiter('Deleting mailbox. Please wait...');
+            me.services.executeService('peanut.Mailboxes::DeleteMailbox',box.mailboxcode,
+                function(serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        me.showList(<IMailBox[]>serviceResponse.Value);
+                    }
+                }
+            ).fail(function () {
+                let trace = me.services.getErrorInformation();
+            }).always(function() {
+                me.application.hideWaiter();
+            })
+        };
+
+        showList = (list: IMailBox[]) => {
+            let me = this;
+            let test = me.mailboxList();
+            me.hideForm();
+            list = _.sortBy(list,function(box) {return box.displaytext.toLowerCase()});
+            me.mailboxList(list);
+        };
 
 
         hideForm() {
@@ -121,9 +141,9 @@ namespace Mailboxes {
             me.mailboxCode(box.mailboxcode);
             me.mailboxName(box.displaytext);
             me.mailboxEmail(box.address);
+            me.mailboxPublic(box.public == '1');
             me.mailboxDescription(box.description);
             me.formHeading("Edit mailbox: " + box.mailboxcode);
-            me.mailboxState(2);
             me.showForm();
         };
 
@@ -140,8 +160,8 @@ namespace Mailboxes {
             me.mailboxName('');
             me.mailboxEmail('');
             me.mailboxDescription('');
+            me.mailboxPublic(true);
             me.formHeading('New mailbox');
-            me.mailboxState(1);
             me.showForm();
         };
 
@@ -162,8 +182,8 @@ namespace Mailboxes {
                 'mailboxcode' : me.mailboxCode(),
                 'displaytext' : me.mailboxName(),
                 'address' : me.mailboxEmail(),
-                'state' : me.mailboxState(),
-                'description' : me.mailboxDescription()
+                'description' : me.mailboxDescription(),
+                'public' : me.mailboxPublic()
             };
 
             if (box.mailboxcode == '') {
@@ -199,7 +219,6 @@ namespace Mailboxes {
 
         confirmRemoveMailbox = (box : IMailBox)=> {
             let me = this;
-            box.state = 3;
             me.tempMailbox = box;
             me.mailboxCode(box.mailboxcode);
             me.showConfirmForm();
@@ -208,7 +227,7 @@ namespace Mailboxes {
         removeMailbox() {
             let me = this;
             me.hideConfirmForm();
-            me.submitChanges(me.tempMailbox);
+            me.dropMailbox(me.tempMailbox);
         }
     }
 }

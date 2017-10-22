@@ -3,19 +3,19 @@
  * Created by PhpStorm.
  * User: Terry
  * Date: 10/20/2017
- * Time: 7:03 AM
+ * Time: 5:32 PM
  */
 
 namespace Peanut\Mailboxes\services;
 
 
-use Tops\mail\TMailbox;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
 use Tops\sys\TPermissionsManager;
 
-class GetMailboxListCommand extends TServiceCommand
+class DeleteMailboxCommand extends TServiceCommand
 {
+
     public function __construct()
     {
         $this->addAuthorization(TPermissionsManager::mailAdminPermissionName);
@@ -23,8 +23,13 @@ class GetMailboxListCommand extends TServiceCommand
 
     protected function run()
     {
+        $code = $this->getRequest();
         $manager = TPostOffice::GetMailboxManager();
-        $result = $manager->getMailboxes(true);
-        $this->setReturnValue($result);
+        $mailbox = $manager->findByCode($code);
+        if (!empty($mailbox)) {
+            $manager->drop($mailbox->getMailboxId());
+        }
+        $list = $manager->getMailboxes(true);
+        $this->setReturnValue($list);
     }
 }

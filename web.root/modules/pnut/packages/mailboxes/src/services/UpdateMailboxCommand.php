@@ -12,6 +12,7 @@ namespace Peanut\Mailboxes\services;
 use Tops\mail\TMailbox;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
+use Tops\sys\TPermissionsManager;
 
 /**
  * Class UpdateMailboxCommand
@@ -29,6 +30,10 @@ use Tops\services\TServiceCommand;
  */
 class UpdateMailboxCommand extends TServiceCommand
 {
+    public function __construct()
+    {
+        $this->addAuthorization(TPermissionsManager::mailAdminPermissionName);
+    }
 
     protected function run()
     {
@@ -52,6 +57,7 @@ class UpdateMailboxCommand extends TServiceCommand
             $current->setMailboxCode($mailBox->mailboxcode);
             $current->setName($mailBox->displaytext);
             $current->setEmail($mailBox->address);
+            $current->setPublic($mailBox->public);
             $current->setUpdateTime($this->getUser()->getUserName());
 
             $manager->updateMailbox($current);
