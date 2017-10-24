@@ -16,15 +16,15 @@ use Tops\sys\TPermissionsManager;
 
 class GetMailboxListCommand extends TServiceCommand
 {
-    public function __construct()
-    {
-        $this->addAuthorization(TPermissionsManager::mailAdminPermissionName);
-    }
-
     protected function run()
     {
+        $request = $this->getRequest();
+        $allBoxes = empty($request) ? true : $request->filter == 'all';
+        if ($allBoxes) {
+            $allBoxes = $this->getUser()->isAuthorized(TPermissionsManager::managePermissionsPermissionName);
+        }
         $manager = TPostOffice::GetMailboxManager();
-        $result = $manager->getMailboxes(true);
+        $result = $manager->getMailboxes($allBoxes);
         $this->setReturnValue($result);
     }
 }

@@ -37,7 +37,7 @@ namespace Mailboxes {
             let me = this;
             console.log('Mailboxes Init');
             me.application.loadResources([
-                'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js',
+                '@lib:lodash',
                 '@pnut/ViewModelHelpers.js'
             ], () => {
                 me.getMailboxList(() => {
