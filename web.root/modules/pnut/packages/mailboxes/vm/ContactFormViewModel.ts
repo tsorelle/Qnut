@@ -33,12 +33,14 @@ namespace Mailboxes {
             console.log('ContactForm Init');
             me.mailboxCode = me.getRequestVar('box', 'all');
             me.application.loadResources([
-                // '@lib:lodash',
+                '@lib:fontawesome',
                 '@pnut/ViewModelHelpers.js'
             ], () => {
                 me.getMailbox(() => {
-                    me.bindDefaultSection();
-                    successFunction();
+                    me.application.registerComponents(['@pkg/peanut-riddler/riddler-captcha'], () => {
+                        me.bindDefaultSection();
+                        successFunction();
+                    });
                 });
             });
         }
