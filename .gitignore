@@ -13,5 +13,6 @@
 /web.root/readme.html
 /web.root/index.php
 /web.root/web.root/modules/pnut/packages/peanut-riddler/
+/web.root/web.root/modules/pnut/packages/peanut-permissions/
 /doc/
 .idea/workspace.xml

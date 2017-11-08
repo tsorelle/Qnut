@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/web.root/qnutcms/src" isTestSource="false" packagePrefix="Peanut\qnut\cms" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-directory/src" isTestSource="false" packagePrefix="Peanut\QnutDirectory" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/mailboxes/src" isTestSource="false" packagePrefix="Peanut\Mailboxes" />
+      <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/peanut-tasks/src" isTestSource="false" packagePrefix="Peanut\PeanutTasks" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/instantiator" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/myclabs/deep-copy" />

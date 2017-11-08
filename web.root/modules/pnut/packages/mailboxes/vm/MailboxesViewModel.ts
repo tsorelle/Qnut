@@ -4,8 +4,6 @@
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
 /// <reference path='mailboxes.d.ts' />
 /// <reference path='../../../../typings/lodash/sortBy/index.d.ts' />
-
-
 namespace Mailboxes {
 
     export class MailboxesViewModel extends Peanut.ViewModelBase {
@@ -51,12 +49,15 @@ namespace Mailboxes {
             let me = this;
             let request = null;
             me.application.hideServiceMessages();
-            me.application.showWaiter('Loading mailbox list...');
+            me.showActionWaiterBanner('load','mailbox-entity-plural');
+            me.application.showWaiter(me.translate('mailbox-wait-load') + '...');
             me.services.executeService('peanut.Mailboxes::GetMailboxList',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     me.application.hideWaiter();
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        me.showList(<IMailBox[]>serviceResponse.Value);
+                        let response = <IGetMailboxesResponse>serviceResponse.Value;
+                        me.showList(response.list);
+                        me.addTranslations(response.translations);
                     }
                 }
             ).fail(function () {
@@ -73,7 +74,7 @@ namespace Mailboxes {
             let me = this;
             me.hideForm();
             me.application.hideServiceMessages();
-            me.application.showWaiter('Updating mailboxes. Please wait...');
+            me.showActionWaiter(me.editMode(),'mailbox-entity');
             me.services.executeService('peanut.Mailboxes::UpdateMailbox',box,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -91,7 +92,7 @@ namespace Mailboxes {
             let me = this;
             me.hideForm();
             me.application.hideServiceMessages();
-            me.application.showWaiter('Deleting mailbox. Please wait...');
+            me.showActionWaiter('delete','mailbox-entity');
             me.services.executeService('peanut.Mailboxes::DeleteMailbox',box.mailboxcode,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -229,5 +230,10 @@ namespace Mailboxes {
             me.hideConfirmForm();
             me.dropMailbox(me.tempMailbox);
         }
+    }
+
+    export interface IGetMailboxesResponse {
+        list: IMailBox[];
+        translations: string[];
     }
 }

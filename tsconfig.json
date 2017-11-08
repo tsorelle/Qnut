@@ -5,8 +5,13 @@
     "sourceMap": true
   },
   "include"  : [
-    "web.root/modules/pnut/packages/**/*",
+    "web.root/jstest/**/*",
+    "web.root/tests/js/**/*",
     "web.root/modules/pnut/core/**/*",
+    "web.root/modules/pnut/components/**/*",
+    "web.root/modules/pnut/packages/**/*",
+    "web.root/modules/pnut/admin/**/*",
+    "web.root/modules/pnut/extensions/**/*",
     "web.root/application/**/*"
   ]
 }

@@ -23,6 +23,7 @@ declare namespace Mailboxes {
         mailboxName: string;
         fromName: string;
         fromAddress: string;
+        translations: string[];
     }
 
 }

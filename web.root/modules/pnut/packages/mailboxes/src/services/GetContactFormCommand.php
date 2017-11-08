@@ -11,6 +11,7 @@ namespace Peanut\Mailboxes\services;
 
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
+use Tops\sys\TLanguage;
 
 /**
  * Class GetMailboxCommand
@@ -62,6 +63,26 @@ class GetContactFormCommand extends TServiceCommand
             $response->fromName = '';
             $response->fromAddress = '';
         }
+
+        $response->translations = TLanguage::getTranslations(array(
+            'mail-select-recipient',
+            'mail-select-recipient-caption',
+            'mail-header-send',
+            'mail-header-select',
+            'mail-error-recipient',
+            'mail-thanks-message',
+            'label-your-name',
+            'label-your-email',
+            'label-subject',
+            'label-message',
+            'form-error-your-name-blank',
+            'form-error-your-email-blank',
+            'form-error-email-blank',
+            'form-error-email-subject-blank',
+            'form-error-email-message-blank',
+            'form-error-email-invalid',
+            'wait-sending-message'
+        ));
 
         $this->setReturnValue($response);
     }

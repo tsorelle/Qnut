@@ -22,6 +22,8 @@ namespace Mailboxes {
         fromNameError = ko.observable('');
         fromAddressError = ko.observable('');
         mailboxSelectError = ko.observable('');
+        selectRecipientCaption = ko.observable('');
+
 
         userIsAnonymous = ko.observable(false);
 
@@ -32,12 +34,13 @@ namespace Mailboxes {
             let me = this;
             console.log('ContactForm Init');
             me.mailboxCode = me.getRequestVar('box', 'all');
+            me.showLoadWaiter();
             me.application.loadResources([
-                '@lib:fontawesome',
                 '@pnut/ViewModelHelpers.js'
             ], () => {
                 me.getMailbox(() => {
                     me.application.registerComponents(['@pkg/peanut-riddler/riddler-captcha'], () => {
+                        me.application.hideWaiter();
                         me.bindDefaultSection();
                         successFunction();
                     });
@@ -49,13 +52,14 @@ namespace Mailboxes {
             let me = this;
 
             me.application.hideServiceMessages();
-            me.application.showWaiter('Loading mailbox. Please wait...');
 
             me.services.executeService('peanut.Mailboxes::GetContactForm', me.mailboxCode,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetContactFormResponse>serviceResponse.Value;
+                            me.addTranslations(response.translations);
+                            me.selectRecipientCaption(response.translations['mail-select-recipient']);
                             me.fromAddress(response.fromAddress);
                             me.fromName(response.fromName);
                             me.userIsAnonymous(response.fromAddress.trim() == '');
@@ -63,25 +67,22 @@ namespace Mailboxes {
                                 me.selectedMailbox(null);
                                 me.selectedMailbox.subscribe(me.onMailBoxSelected);
                                 me.mailboxList(response.mailboxList);
-                                me.headerMessage('Send a message: (please select recipient)');
+                                me.headerMessage(response.translations['mail-header-select']);
                             }
                             else {
-                                me.headerMessage("Send a message to: " + response.mailboxName);
+                                me.headerMessage(response.translations['mail-header-send'] + ': ' + response.mailboxName);
                             }
                             me.formVisible(true);
                         }
                         else {
                             me.formVisible(false);
-                            // me.headerMessage('No mailbox found for ' + me.mailboxCode);
                         }
                     }
                 }).fail(() => {
                     let trace = me.services.getErrorInformation();
                 }).always(() => {
-                    me.application.hideWaiter();
                     if (doneFunction) {
                         doneFunction();
-                        // jQuery("#main-form").show();
                     }
                 });
         };
@@ -100,7 +101,7 @@ namespace Mailboxes {
             if (code == 'all') {
                 let box = me.selectedMailbox();
                 if (!box) {
-                    me.mailboxSelectError(': Please select a recipient');
+                    me.mailboxSelectError(': ' + me.translate('mail-error-recipient'));
                     return false;
                 }
                 code = box.mailboxcode;
@@ -118,28 +119,28 @@ namespace Mailboxes {
             let valid = true;
 
             if (message.fromAddress.trim() == '') {
-                me.fromAddressError(': please enter your e-mail address');
+                me.fromAddressError(': ' + me.translate('form-error-your-email-blank'));
                 valid = false;
             }
             else {
                 let fromAddressOk = Peanut.Helper.ValidateEmail(message.fromAddress);
                 if (!fromAddressOk) {
-                    me.fromAddressError(': This e-mail address is not valid.');
+                    me.fromAddressError(': '+me.translate('form-error-email-invalid'));
                     valid = false;
                 }
             }
 
             if (message.fromName.trim() == '') {
-                me.fromNameError(': Please enter your name.')
+                me.fromNameError(': '+me.translate('form-error-your-name-blank')); //
             }
 
             if (message.subject.trim() == '') {
-                me.subjectError(': A subject is required');
+                me.subjectError(': '+me.translate('form-error-email-subject-blank')); //A subject is required
                 valid = false;
             }
 
             if (message.body.trim() == '') {
-                me.bodyError(': Message text is required.');
+                me.bodyError(': '+me.translate('form-error-email-message-blank')); // Message text is required.);
                 valid = false;
             }
             if (valid) {
@@ -153,12 +154,12 @@ namespace Mailboxes {
             let message = me.createMessage();
             if (message) {
                 me.application.hideServiceMessages();
-                me.application.showWaiter('Sending message...');
+                me.application.showWaiter(me.translate('wait-sending-message')); //'Sending message...');
                 me.services.executeService('peanut.Mailboxes::SendContactMessage', message,
                     function (serviceResponse: Peanut.IServiceResponse) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             me.formVisible(false);
-                            me.headerMessage('Thanks for your message.')
+                            me.headerMessage(me.translate('mail-thanks-message'));//'Thanks for your message.')
                         }
                     }
                 ).fail(function () {
@@ -173,10 +174,10 @@ namespace Mailboxes {
             let me = this;
             let title = 'Send a Message';
             if (selected) {
-                me.headerMessage('Send a message to: ' + selected.displaytext);
+                me.headerMessage(me.translate('mail-header-send') + ':  ' + selected.displaytext); // Send a message to
             }
             else {
-                me.headerMessage('Send a message: (please select recipient)');
+                me.headerMessage(me.translate('mail-header-select')); //'Send a message: (please select recipient)');
             }
         }
     }

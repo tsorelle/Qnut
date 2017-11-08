@@ -14,7 +14,9 @@
       "Tops\\": "web.root/modules/src/tops",
       "Peanut\\" : "web.root/modules/src/peanut",
       "Qnut\\test\\" : "tests/lib",
-      "Peanut\\qnut\\cms\\" : "web.root/qnutcms/src"
+      "Peanut\\qnut\\cms\\" : "web.root/qnutcms/src",
+      "Peanut\\QnutDirectory\\" : "web.root/modules/pnut/packages/qnut-directory/src",
+      "Peanut\\PeanutTasks\\" : "web.root/modules/pnut/packages/peanut-tasks/src"
     }
   },
   "require": {

@@ -12,8 +12,29 @@ namespace Peanut\Mailboxes\services;
 use Tops\mail\TMailbox;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
+use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
+/**
+ * Get mailbox list and translations for Mailboxes admin form
+ *
+ * Class GetMailboxListCommand
+ * @package Peanut\Mailboxes\services
+ *
+ * Response:
+ *     export interface IGetMailboxesResponse {
+ *          list: IMailBox[];
+ *          translations: string[];
+ *     }
+ *     export interface IMailBox {
+ *       id:string;
+ *       displaytext:string;
+ *       description:string;
+ *       mailboxcode:string ;
+ *       address:string;
+ *       'public': any;
+ *    }
+ */
 class GetMailboxListCommand extends TServiceCommand
 {
     protected function run()
@@ -24,7 +45,33 @@ class GetMailboxListCommand extends TServiceCommand
             $allBoxes = $this->getUser()->isAuthorized(TPermissionsManager::managePermissionsPermissionName);
         }
         $manager = TPostOffice::GetMailboxManager();
-        $result = $manager->getMailboxes($allBoxes);
-        $this->setReturnValue($result);
+        $response = new \stdClass();
+        $response->list = $manager->getMailboxes($allBoxes);
+        $response->translations = TLanguage::getTranslations(
+          array(
+              'form-error-email-invalid',
+              'label-address',
+              'label-cancel',
+              'label-cancel',
+              'label-code',
+              'label-delete',
+              'label-description',
+              'label-edit',
+              'label-email',
+              'label-mailbox',
+              'label-name',
+              'label-public',
+              'label-save-changes',
+              'label-yes',
+              'mailbox-error-code-blank',
+              'mailbox-error-description',
+              'mailbox-error-email-name',
+              'mailbox-label-delete',
+              'mailbox-label-public',
+              'mailbox-entity',
+              'mailbox-entity-plural'
+          )
+        );
+        $this->setReturnValue($response);
     }
 }

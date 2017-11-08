@@ -9,15 +9,24 @@
         <div id="mailbox-list">
             <table  class="table table-bordered">
                 <thead>
-                <th style="width: 80px">Mailbox</th><th>Name</th><th>Address</th><th>Public</th><th>Description</th><th>&nbsp;</th>
+                <th style="width: 80px"></th>
+                <!-- th><translate params="code:'label-mailbox',translator:getVmInstance"></translate></th -->
+                <th><translate params="code:'label-name',translator:getVmInstance"></translate></th>
+                <th><translate params="code:'label-address',translator:getVmInstance"></translate></th>
+                <th><translate params="code:'label-description',translator:getVmInstance"></translate></th>
+                <th><translate params="code:'label-public',translator:getVmInstance"></translate></th>
+                <th>&nbsp;</th>
                 </thead>
                 <tbody  data-bind="foreach: mailboxList">
                 <td data-bind="text: mailboxcode"></td>
                 <td data-bind="text: displaytext"></td>
                 <td data-bind="text: address"></td>
-                <td><span data-bind="visible:public === '1'">Yes</span>&nbsp;</td>
                 <td data-bind="text: description"></td>
-                <td><a href="#"  data-bind="click: $parent.editMailbox" >Edit</a> <a href="#" data-bind="click: $parent.confirmRemoveMailbox" >Delete</a> </td>
+                <td><span data-bind="visible:public !== '0'"><translate params="code:'label-yes',translator:$parent.getVmInstance"></translate></span> &nbsp;</td>
+                <td><a href="#"  data-bind="click: $parent.editMailbox" >
+                        <translate params="code:'label-edit',translator:$parent.getVmInstance"></translate></a>
+                    <a href="#" data-bind="click: $parent.confirmRemoveMailbox" >
+                        <translate params="code:'label-delete',translator:$parent.getVmInstance"></translate></a> </td>
                 </tbody>
             </table>
         </div>
@@ -32,37 +41,49 @@
                     <div class="modal-body">
                         <form>
                             <div class="form-group" data-bind="visible: editMode() == 'add', css: {'has-error': mailboxCodeHasError}">
-                                <label class="control-label" for="boxCode">Code</label>
-                                <span class="error" data-bind="visible: mailboxCodeHasError">: A mailbox code is required</span>
+                                <label class="control-label" for="boxCode">
+                                    <translate params="code:'label-code',translator:getVmInstance"></translate></label>
+                                <span class="error" data-bind="visible: mailboxCodeHasError">
+                                    : <translate params="code:'mailbox-error-code-blank',translator:getVmInstance"></translate></span>
                                 <input type="text" class="form-control" id="boxCode" data-bind="textInput: mailboxCode" />
                             </div>
 
                             <div class="form-group" data-bind="css: {'has-error': mailboxNameHasError}">
-                                <label class="control-label" for="boxName">Name</label>
-                                <span class="error" data-bind="visible: mailboxNameHasError">: A name for email address is required</span>
+                                <label class="control-label" for="boxName">
+                                    <translate params="code:'label-name',translator:getVmInstance"></translate></label>
+                                <span class="error" data-bind="visible: mailboxNameHasError">
+                                    : <translate params="code:'mailbox-error-email-name',translator:getVmInstance"></translate></span>
                                 <input type="text" class="form-control" id="boxName" data-bind="textInput: mailboxName" />
                             </div>
 
                             <div class="form-group">
                                 <input id="public-check" type="checkbox" data-bind="checked:mailboxPublic"/>
-                                <label for="public-check"  class="control-label">  Display in public lists </label>
+                                <label for="public-check"  class="control-label">
+                                    <translate params="code:'mailbox-label-public',translator:getVmInstance"></translate> </label>
                             </div>
 
                             <div class="form-group"  data-bind=" css: {'has-error': mailboxEmailHasError}">
-                                <label class="control-label" for="boxEmail">Email</label>
-                                <span class="error" data-bind="visible: mailboxEmailHasError">:  A valid email address is required</span>
+                                <label class="control-label" for="boxEmail"><translate params="code:'label-email',translator:getVmInstance"></translate></label>
+                                <span class="error" data-bind="visible: mailboxEmailHasError">
+                                    :  <translate params="code:'form-error-email-invalid',translator:getVmInstance"></translate></span>
                                 <input type="email" class="form-control" id="boxEmail" data-bind="textInput: mailboxEmail" />
                             </div>
                             <div class="form-group" data-bind=" css: {'has-error': mailboxDescriptionHasError}">
-                                <label class="control-label" for="boxDescription">Description</label>
-                                <span class="error" data-bind="visible: mailboxDescriptionHasError">: A mailbox description is required</span>
+                                <label class="control-label" for="boxDescription">
+                                    <translate params="code:'label-description',translator:getVmInstance"></translate></label>
+                                <span class="error" data-bind="visible: mailboxDescriptionHasError">
+                                    : <translate params="code:'mailbox-error-description',translator:getVmInstance"></translate></span>
                                 <input type="text" class="form-control" id="boxDescription" data-bind="textInput: mailboxDescription" />
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bind="click: updateMailbox">Save changes</button>
-                        <button type="button" class="btn btn-default"  data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" data-bind="click: updateMailbox">
+                            <translate params="code:'label-save-changes',translator:getVmInstance"></translate>
+                        </button>
+                        <button type="button" class="btn btn-default"  data-dismiss="modal">
+                            <translate params="code:'label-cancel',translator:getVmInstance"></translate>
+                        </button>
                     </div>
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
@@ -73,14 +94,18 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">Delete Mailbox</h4>
+                        <h4 class="modal-title">
+                            <translate params="code:'mailbox-label-delete',translator:getVmInstance"></translate></h4>
                     </div>
                     <div class="modal-body">
-                        <h3>Delete mailbox: <span data-bind="text: mailboxCode"></span>?</h3>
+                        <h3><translate params="code:'mailbox-label-delete',translator:getVmInstance"></translate>
+                            : <span data-bind="text: mailboxCode"></span>?</h3>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bind="click: removeMailbox">Delete</button>
-                        <button type="button" class="btn btn-default"  data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" data-bind="click: removeMailbox">
+                            <translate params="code:'label-delete',translator:getVmInstance"></translate></button>
+                        <button type="button" class="btn btn-default"  data-dismiss="modal">
+                            <translate params="code:'label-cancel',translator:getVmInstance"></translate></button>
                     </div>
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
