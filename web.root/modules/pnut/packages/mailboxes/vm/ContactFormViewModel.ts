@@ -1,7 +1,7 @@
 /// <reference path="../../../../pnut/core/ViewModelBase.ts" />
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
-/// <reference path='../../../../pnut/components/ViewModelHelpers.ts' />
+/// <reference path='../../../../pnut/js/ViewModelHelpers.ts' />
 /// <reference path='mailboxes.d.ts' />
 
 
