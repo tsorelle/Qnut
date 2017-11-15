@@ -9,11 +9,10 @@
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
 /// <reference path='../../../../pnut/js/searchListObservable.ts' />
-/// <reference path='../../../../pnut/js/editPanel.ts' />
 /// <reference path='../js/DirectoryEntities.ts' />
 
 namespace QnutDirectory {
-
+    /** Service Contracts  and related interfaces **/
 
     interface IDirectoryFamily {
         address : DirectoryAddress;
@@ -21,33 +20,37 @@ namespace QnutDirectory {
         selectedPersonId : any;
     }
 
-    /** Service Contracts **/
-    interface IInitDirectoryResponse {
-        canEdit : boolean;
-        directoryListingTypes : Peanut.INameValuePair[];
-        affiliationCodes : Peanut.INameValuePair[];
-        family : IDirectoryFamily;
-    }
-
-    interface addressPersonServiceRequest {
+    interface IAddressPersonServiceRequest {
         personId: any;
         addressId: any;
     }
 
-    interface newPersonForAddressRequest {
+    interface INewPersonForAddressRequest {
         person: DirectoryPerson;
         addressId: any;
     }
 
-    interface newAddressForPersonRequest {
+    interface INewAddressForPersonRequest {
         personId: any;
         address: DirectoryAddress;
+    }
+
+
+    interface IInitDirectoryResponse {
+        canEdit : boolean;
+        listingTypes : Peanut.ILookupItem[];
+        addressTypes : Peanut.ILookupItem[];
+        organizations: Peanut.ILookupItem[];
+        affiliationRoles: Peanut.ILookupItem[];
+        emailLists : Peanut.ILookupItem[];
+        postalLists : Peanut.ILookupItem[];
+        family : IDirectoryFamily;
+        translations : string[];
     }
 
     /** View Model **/
 
     export class DirectoryViewModel extends Peanut.ViewModelBase {
-        // todo: complete port from SCYM
         // observables
         public family = new clientFamily();
 
@@ -107,13 +110,15 @@ namespace QnutDirectory {
                 '@lib:jqueryui-css',
                 '@lib:jqueryui-js',
                 '@lib:lodash',
+                '@pnut/ViewModelHelpers',
+                '@pnut/searchListObservable',
                 '@pkg/qnut-directory/DirectoryEntities'
             ], () => {
                 me.familiesList = new Peanut.searchListObservable(6, 10);
                 me.personsList = new Peanut.searchListObservable(2, 12);
                 me.addressesList = new Peanut.searchListObservable(2, 12);
-                me.personForm = new personObservable();
-                me.addressForm = new addressObservable();
+                me.personForm = new personObservable(me);
+                me.addressForm = new addressObservable(me);
                 me.personFormHeader = ko.computed(me.computePersonFormHeader);
                 me.showEditButton = ko.computed(me.computeShowEditButton);
                 me.showAddPersonButton = ko.computed(me.computeShowAddPersonButton);
@@ -137,20 +142,20 @@ namespace QnutDirectory {
 
             let personId = Peanut.Helper.getRequestParam('pid');
             me.showLoadWaiter();
-            me.services.executeService('qnut-directory::InitDirectoryApp',personId,
+            me.services.executeService('peanut.qnut-directory::InitializeDirectory',personId,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IInitDirectoryResponse>serviceResponse.Value;
                         me.userCanEdit(response.canEdit);
-                        me.personForm.affiliations(response.affiliationCodes);
-                        me.personForm.directoryListingTypes(response.directoryListingTypes);
-                        // me.personForm.membershipTypes(response.membershipTypes);
-                        me.addressForm.directoryListingTypes(response.directoryListingTypes);
+                        me.personForm.listingTypes(response.listingTypes);
+                        me.addressForm.listingTypes(response.listingTypes);
+                        me.addressForm.addressTypes(response.addressTypes);
                         me.userIsAuthorized(true);
                         if (response.family) {
                             me.searchType('Persons');
                             me.selectFamily(response.family);
                         }
+                        me.addTranslations(response.translations);
                     }
                     else {
                         me.userCanEdit(false);
@@ -211,23 +216,18 @@ namespace QnutDirectory {
             let personList = [];
             if (selected) {
                 _.each(me.family.persons, function (person:DirectoryPerson) {
-                    if (person.editState != editState.deleted && person.id != selected.personId) {
-                        personList.push(<Peanut.IKeyValuePair> {
-                            Key: me.personForm.fullName(),
+                    if (person.editState != Peanut.editState.deleted && person.id != selected.personId) {
+                        personList.push(<Peanut.INameValuePair> {
+                            Name: me.personForm.fullName(),
                             Value: person.id.toString(),
                         });
                     }
                 }); // , selected);
                 if (me.userCanEdit()) {
-                    let newPersonItem = new Peanut.KeyValueDTO();
-                    // todo: KeyValue or NameValue?
-                    let temp  = <Peanut.INameValuePair>{
-                        Name: '',
-                        Value: ''
-                    };
-                    newPersonItem.Value = 'new';
-                    newPersonItem.Key = 'Find or create new person';
-                    personList.push(newPersonItem);
+                    personList.push(<Peanut.INameValuePair>{
+                        Name: 'new',
+                        Value: me.translate('dir-list-new-person') //'Find or create new person'
+                    });
                 }
             }
             me.addressPersonsList(personList);
@@ -245,7 +245,7 @@ namespace QnutDirectory {
             }
 
             let request = <IAddressPersonServiceRequest> {
-               addressId:  me.family.address.id,
+                addressId:  me.family.address.id,
                 personId: personItem.Value
             } ;
 
@@ -257,18 +257,6 @@ namespace QnutDirectory {
                     me.application.hideWaiter();
                 });
 
-        };
-
-        private handleAddPersonToAddressResponse = (serviceResponse: Peanut.IServiceResponse) => {
-            let me = this;
-            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let person = <DirectoryPerson>serviceResponse.Value;
-                me.personsList.reset();
-                me.family.addPersonToList(person);
-                me.buildPersonSelectList(person);
-                me.personForm.assign(person);
-                me.personForm.view();
-            }
         };
 
         /**
@@ -341,7 +329,6 @@ namespace QnutDirectory {
             let me = this;
             let list = [];
             if (me.family.address) {
-                // todo: KeyValue or NameValue?
                 list.push(<Peanut.INameValuePair>{
                     Name: '(No address)',
                     Value: null
@@ -396,7 +383,6 @@ namespace QnutDirectory {
             me.addressForm.close();
             me.addressPersonsList([]);
 
-            // todo: KeyValue or NameValue?
             let request  = <Peanut.INameValuePair>{
                 Name: me.searchType(),
                 Value: item.Value
@@ -404,7 +390,14 @@ namespace QnutDirectory {
 
             me.application.hideServiceMessages();
             me.application.showWaiter('Locating family...');
-            me.services.executeService('qnut-directory::GetFamily',request,me.handleFamilyResponse)
+            me.services.executeService('qnut-directory::GetFamily',request,
+                (serviceResponse: Peanut.IServiceResponse)=> {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let family = <IDirectoryFamily>serviceResponse.Value;
+                        me.selectFamily(family);
+                    }
+                }
+            )
                 .always(function() {
                     me.application.hideWaiter();
                 });
@@ -444,7 +437,15 @@ namespace QnutDirectory {
 
             me.application.hideServiceMessages();
             me.application.showWaiter('Deleting address...');
-            me.services.executeService('qnut-directory::DeleteAddress',request, me.handleClearAddressResponse)
+            me.services.executeService('qnut-directory::DeleteAddress',request,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        me.family.clearAddress();
+                        me.addressForm.empty();
+                        me.personForm.view();
+                    }
+                }
+            )
                 .always(function() {
                     me.application.hideWaiter();
                 });
@@ -459,7 +460,22 @@ namespace QnutDirectory {
 
             me.application.hideServiceMessages();
             me.application.showWaiter('Delete person...');
-            me.services.executeService('qnut-directory::DeletePerson',request, me.handleRemovePersonResponse)
+            me.services.executeService('qnut-directory::DeletePerson',request,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    // TODO: ui issue, last person disappears if address deleted.
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let selected = me.family.removePerson(me.family.selectedPersonId);
+                        me.buildPersonSelectList(selected);
+                        if (selected) {
+                            me.personForm.assign(selected);
+                            me.personForm.view();
+                        }
+                        else {
+                            me.personForm.empty();
+                        }
+                    }
+                }
+            )
                 .always(function() {
                     me.application.hideWaiter();
                 });
@@ -470,7 +486,6 @@ namespace QnutDirectory {
          */
         public findAddresses() {
             let me = this;
-            // todo: KeyValue or NameValue?
             let request = <Peanut.INameValuePair>{
                 Name: 'Addresses',
                 Value: me.addressesList.searchValue()
@@ -487,7 +502,6 @@ namespace QnutDirectory {
             let me = this;
             me.searchType(searchType);
             me.family.visible(false);
-            // todo: KeyValue or NameValue?
             let request = <Peanut.INameValuePair>{
                 Name: searchType,
                 Value: me.familiesList.searchValue()
@@ -495,7 +509,15 @@ namespace QnutDirectory {
 
             me.application.hideServiceMessages();
             me.application.showWaiter('Searching...');
-            me.services.executeService('qnut-directory::DirectorySearch',request, me.handleFindFamiliesResponse)
+            me.services.executeService('qnut-directory::DirectorySearch',request,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let list = <Peanut.INameValuePair[]>serviceResponse.Value;
+                        me.familiesList.setList(list);
+                        me.familiesList.searchValue('');
+                    }
+                }
+            )
                 .always(function() {
                     me.application.hideWaiter();
                 });
@@ -531,7 +553,6 @@ namespace QnutDirectory {
         public findPersons() {
             let me = this;
 
-            // todo: KeyValue or NameValue?
             let request =  <Peanut.INameValuePair>{
                 Name: 'Persons',
                 Value: me.personsList.searchValue()
@@ -545,79 +566,31 @@ namespace QnutDirectory {
                 });
         }
 
+
+        /** shared service response handlers **/
         private handleChangePersonAddress = (serviceResponse: Peanut.IServiceResponse) => {
-            let me = this;
+            var me = this;
             if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let family = <IDirectoryFamily>serviceResponse.Value;
-                let currentPersonId = family.selectedPersonId;
+                var family = <IDirectoryFamily>serviceResponse.Value;
+                var currentPersonId = family.selectedPersonId;
                 me.addressesList.reset();
-                let selected = me.family.setFamily(family);
+                var selected = me.family.setFamily(family);
                 me.refreshFamilyForms(selected);
             }
         };
 
-        private handleClearAddressResponse = (serviceResponse: Peanut.IServiceResponse) => {
-            let me = this;
+        private handleAddPersonToAddressResponse = (serviceResponse: Peanut.IServiceResponse) => {
+            var me = this;
             if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                me.family.clearAddress();
-                me.addressForm.empty();
+                var person = <DirectoryPerson>serviceResponse.Value;
+                me.personsList.reset();
+                me.family.addPersonToList(person);
+                me.buildPersonSelectList(person);
+                me.personForm.assign(person);
                 me.personForm.view();
             }
         };
 
-        private handleFamilyResponse = (serviceResponse: Peanut.IServiceResponse)=> {
-            let me = this;
-            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let family = <IDirectoryFamily>serviceResponse.Value;
-                me.selectFamily(family);
-            }
-        };
-        private handleFindFamiliesResponse = (serviceResponse: Peanut.IServiceResponse) => {
-            let me = this;
-            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let list = <Peanut.INameValuePair[]>serviceResponse.Value;
-                me.familiesList.setList(list);
-                me.familiesList.searchValue('');
-            }
-        };
-
-        private handleRemovePersonResponse = (serviceResponse: Peanut.IServiceResponse) => {
-            // TODO: ui issue, last person disappears if address deleted.
-            let me = this;
-            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let selected = me.family.removePerson(me.family.selectedPersonId);
-                me.buildPersonSelectList(selected);
-                if (selected) {
-                    me.personForm.assign(selected);
-                    me.personForm.view();
-                }
-                else {
-                    me.personForm.empty();
-                }
-            }
-        };
-        private handleUpdateAddressResponse = (serviceResponse: Peanut.IServiceResponse) => {
-            let me = this;
-            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let address = <DirectoryAddress>serviceResponse.Value;
-                let selected = me.family.setAddress(address);
-                me.addressForm.assign(address);
-                me.personForm.view();
-                me.addressForm.view();
-            }
-        };
-
-        private handleUpdateFamilyResponse = (serviceResponse: Peanut.IServiceResponse)=> {
-            let me = this;
-            me.addressPersonsList([]);
-            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                let family = <IDirectoryFamily>serviceResponse.Value;
-                // let currentSelected = me.family.getSelected();
-                // let personId = currentSelected ? currentSelected.personId : 0;
-                let selected = me.family.setFamily(family);
-                me.refreshFamilyForms(selected);
-            }
-        };
 
         private handleUpdatePersonResponse = (serviceResponse: Peanut.IServiceResponse) => {
             let me = this;
@@ -662,7 +635,7 @@ namespace QnutDirectory {
             me.family.visible(true);
         };
 
-         /**
+        /**
          * handle save click on address form in edit mode
          */
         public saveAddress() {
@@ -678,15 +651,15 @@ namespace QnutDirectory {
 
             if (!addressId) {
                 address = new DirectoryAddress();
-                address.editState = editState.created;
+                address.editState = Peanut.editState.created;
             }
             else {
                 address = me.family.address;
-                address.editState = editState.updated;
+                address.editState = Peanut.editState.updated;
             }
             me.addressForm.updateDirectoryAddress(address);
 
-            if (address.editState == editState.created && me.addressForm.relationId) {
+            if (address.editState == Peanut.editState.created && me.addressForm.relationId) {
                 let request = <INewAddressForPersonRequest> {
                     address: address,
                     personId: me.family.selectedPersonId
@@ -698,9 +671,19 @@ namespace QnutDirectory {
                     });
             }
             else {
-                let updateMessage = address.editState == editState.created ? 'Adding address ...' : 'Updating address...';
+                let updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
                 me.application.showWaiter(updateMessage);
-                me.services.executeService('qnut-directory::UpdateAddress',address, me.handleUpdateAddressResponse)
+                me.services.executeService('qnut-directory::UpdateAddress',address,
+                    (serviceResponse: Peanut.IServiceResponse) => {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let address = <DirectoryAddress>serviceResponse.Value;
+                            let selected = me.family.setAddress(address);
+                            me.addressForm.assign(address);
+                            me.personForm.view();
+                            me.addressForm.view();
+                        }
+                    }
+                )
                     .always(function() {
                         me.application.hideWaiter();
                     });
@@ -721,15 +704,15 @@ namespace QnutDirectory {
 
             if (!personId) {
                 person = new DirectoryPerson();
-                person.editState = editState.created;
+                person.editState = Peanut.editState.created;
             }
             else {
                 person = me.family.getPersonById(personId);
-                person.editState = editState.updated;
+                person.editState = Peanut.editState.updated;
             }
             me.personForm.updateDirectoryPerson(person);
 
-            if (person.editState == editState.created && me.personForm.relationId) {
+            if (person.editState == Peanut.editState.created && me.personForm.relationId) {
                 let request = <INewPersonForAddressRequest> {
                     person: person,
                     addressId: me.family.address ? me.family.address.id : null
@@ -741,7 +724,7 @@ namespace QnutDirectory {
                     });
             }
             else {
-                let updateMessage = person.editState == editState.created ? 'Adding person ...' : 'Updating person...';
+                let updateMessage = person.editState == Peanut.editState.created ? 'Adding person ...' : 'Updating person...';
                 me.application.showWaiter(updateMessage);
                 me.services.executeService('qnut-directory::UpdatePerson',person, me.handleUpdatePersonResponse)
                     .always(function() {
@@ -749,7 +732,6 @@ namespace QnutDirectory {
                     });
             }
         }
-
 
         /**
          * on select person in persons button dropdown on address panel
@@ -788,7 +770,6 @@ namespace QnutDirectory {
             if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                 let list = [];
                 if (me.family.address) {
-                    // todo: KeyValue or NameValue?
                     let removeItem =  <Peanut.INameValuePair>{
                         Name: '(No address)',
                         Value: null
@@ -825,6 +806,80 @@ namespace QnutDirectory {
     /** Supporting Definitions **/
 
     /** observable container classes **/
+        // borrowed from peanut.EditPanel, due to inheritance and loading issues.
+    export class editPanel {
+        public viewState = ko.observable('');
+        public hasErrors = ko.observable(false);
+        public isAssigned = false;
+        public relationId : any = null;
+        protected owner: any;
+
+        protected translator: Peanut.ITranslator;
+
+        public constructor(owner: any) {
+            let me = this;
+            me.owner = owner;
+        }
+
+        public translate = (code:string, defaultText:string = null) => {
+            return (<Peanut.ITranslator>this.owner).translate(code,defaultText);
+        };
+
+        /**
+         * set view state 'edit'
+         */
+        public edit(relationId: any = null){
+            let me = this;
+            me.viewState('edit');
+            me.relationId = relationId;
+        }
+        /**
+         * set view state 'closed'
+         */
+        public close() {
+            let me = this;
+            me.viewState('closed');
+        }
+        /**
+         * set view state 'search'
+         */
+        public search() {
+            let me = this;
+            me.viewState('search');
+        }
+        /**
+         * set view state 'empty'
+         */
+        public empty() {
+            let me = this;
+            me.viewState('empty');
+        }
+        /**
+         * set view state 'view'
+         */
+        public view() {
+            let me = this;
+            if (me.isAssigned) {
+                me.viewState('view');
+            }
+            else {
+                me.viewState('empty');
+            }
+        }
+
+        /**
+         * Set view state, iqnore any constraints
+         * @param state
+         */
+        public setViewState(state = 'view') {
+            let me = this;
+            me.viewState(state);
+        }
+    }
+
+
+
+
     /**
      * Local structure to track related persons and addresses and observables
      */
@@ -904,7 +959,7 @@ namespace QnutDirectory {
         private getActivePersons(): DirectoryPerson[] {
             let me = this;
             let result = _.filter(me.persons, function (person: DirectoryPerson) {
-                return person.editState != editState.deleted;
+                return person.editState != Peanut.editState.deleted;
             });
             return result;
         }
@@ -942,7 +997,7 @@ namespace QnutDirectory {
 
             if (persons) {
                 _.each(persons, function (person: DirectoryPerson) {
-                    person.editState = editState.unchanged;
+                    person.editState = Peanut.editState.unchanged;
                 });
 
                 me.persons = persons;
@@ -1055,19 +1110,19 @@ namespace QnutDirectory {
 
     }
 
-    class directoryEditPanel extends Peanut.editPanel {
+    class directoryEditPanel extends editPanel {
         public searchList: Peanut.searchListObservable;
         public directoryListingTypeId = ko.observable(1);
-        public selectedDirectoryListingType : KnockoutObservable<Peanut.INameValuePair> = ko.observable(null);
-        public directoryListingTypes = ko.observableArray<Peanut.INameValuePair>([]);
-        public constructor() {
-            super();
+        public selectedDirectoryListingType : KnockoutObservable<Peanut.ILookupItem> = ko.observable(null);
+        public listingTypes = ko.observableArray<Peanut.ILookupItem>([]);
+        public constructor(owner: any) {
+            super(owner);
             let me = this;
             me.searchList = new Peanut.searchListObservable(2,10);
         }
         protected getDirectoryListingItem = () => {
             let me = this;
-            let lookup = me.directoryListingTypes();
+            let lookup = me.listingTypes();
             let id = me.directoryListingTypeId();
             if (!id) {
                 id = 0;
@@ -1101,184 +1156,20 @@ namespace QnutDirectory {
         public active= ko.observable(1);
         public username = ko.observable('');
         public lastUpdate = ko.observable('');
-        public organization = ko.observable('');
-
-        public selectedAffiliation : KnockoutObservable<Peanut.INameValuePair> = ko.observable(null);
-        public affiliations = ko.observableArray<Peanut.INameValuePair>([]);
-        public selectedMembershipAffiliation : KnockoutObservable<Peanut.INameValuePair> = ko.observable(null);
-
-        public affiliation : KnockoutComputed<string>;
-        public membership : KnockoutComputed<string>;
-        public hasAffiliation : KnockoutComputed<boolean>;
-        public hasMembership : KnockoutComputed<boolean>;
         public emailLink : KnockoutComputed<string>;
 
         // public directoryListing: KnockoutComputed<string>;
 
         public nameError = ko.observable('');
         public emailError = ko.observable('');
-        // public affiliationError = ko.observable('');
-        // public showOutsideMeeting = ko.observable(false);
-        // public membershipType = ko.observable('');
-
         private ignoreTriggers = false;
 
 
-        constructor() {
-            super();
+        constructor(owner: any) {
+            super(owner);
             let me = this;
-            // me.directoryListing = ko.computed(me.computeDirectoryListing);
-            // me.membershipType = ko.computed(me.computeMembershipType);
-            // me.affiliation = ko.computed(me.computeAffiliation);
-            // me.membership = ko.computed(me.computeMembership);
-            // me.hasAffiliation = ko.computed(me.computeHasAffiliation);
-            // me.hasMembership = ko.computed(me.computeHasMembership);
             me.emailLink = ko.computed(me.computeEmailLink);
-            // me.selectedAffiliation.subscribe(me.onAffiliationCodeSelected);
-            // me.selectedMembershipAffiliation.subscribe(me.onMemberAffiliationSelected);
-            // me.membershipType.subscribe(me.onMembershiptypeChanged);
         }
-
-        private getAffiliationItem = (key: string) => {
-            let me = this;
-            let lookup = me.affiliations();
-            let result = _.find(lookup,function(item : Peanut.INameValuePair) {
-                return item.Value == key;
-            }); // ,me);
-            return result;
-        };
-
-        onAffiliationCodeSelected = (selected : Peanut.INameValuePair) => {
-            let me = this;
-            /*
-            if (!me.ignoreTriggers) {
-                if (selected) {
-                    me.affiliationcode(selected.Value);
-                }
-                else {
-                    me.affiliationcode('');
-                }
-                me.setMembershipType();
-
-            }
-            */
-        };
-
-        onMemberAffiliationSelected = (selected : Peanut.INameValuePair) => {
-            let me = this;
-            /*
-            if (!me.ignoreTriggers) {
-                if (selected) {
-                    me.memberaffiliation(selected.Value);
-                }
-                else {
-                    me.memberaffiliation('');
-                }
-                me.setMembershipType();
-
-            }
-            */
-        };
-
-        onMembershiptypeChanged = (value : string) => {
-            let me = this;
-            /*
-            if (!me.ignoreTriggers) {
-                if (value == 'attender') {
-                    me.setMembershipAffiliation('NONE');
-                }
-                else if (value == 'member') {
-                    let attending = me.affiliationcode();
-                    me.setMembershipAffiliation(attending);
-                }
-            }
-            */
-        };
-
-        setMembershipAffiliation(value : string) {
-            let me = this;
-            /*
-            me.ignoreTriggers = true;
-            let item = me.getAffiliationItem(value);
-            me.selectedMembershipAffiliation(item);
-            me.memberaffiliation(value);
-            me.ignoreTriggers = false;
-            */
-        }
-
-        setMembershipType = () => {
-            let me = this;
-            /*
-            let type = me.getMembershipType();
-            me.ignoreTriggers = true;
-            me.membershipType(type);
-            me.ignoreTriggers = false;
-            */
-        };
-
-        getMembershipType() {
-            let me = this;
-/*
-
-            let attender = me.affiliationcode();
-            let member = me.memberaffiliation();
-            if (member == 'OTHER' || attender=='OTHER') {
-                me.showOutsideMeeting(true);
-                return 'other';
-            }
-            me.showOutsideMeeting(false);
-            if (attender == 'NONE' || attender == '') {
-                return '';
-            }
-            if (member == 'NONE' || member == '') {
-                return 'attender';
-            }
-            if (member == attender) {
-                return 'member';
-            }
-            return 'other';
-*/
-        }
-
-        computeAffiliation = () => {
-            let me = this;
-/*
-            let key = me.affiliationcode();
-            let result = me.getAffiliationItem(key);
-            return result ? result.Name : '';
-*/
-        };
-
-        computeMembership = () => {
-            let me = this;
-/*
-            let key = me.memberaffiliation();
-            let result = me.getAffiliationItem(key);
-            return result ? result.Name : '';
-*/
-        };
-
-        computeHasAffiliation = () => {
-            let me = this;
-/*
-            let code = me.affiliationcode();
-            if (code == 'NONE' || code === '' || code === null ) {
-                return false;
-            }
-            return true;
-*/
-        };
-
-        computeHasMembership = () => {
-            let me = this;
-/*
-            let code = me.memberaffiliation();
-            if (code == 'NONE' || code === '' || code === null ) {
-                return false;
-            }
-            return true;
-*/
-        };
 
         computeEmailLink = () => {
             let me = this;
@@ -1290,11 +1181,10 @@ namespace QnutDirectory {
          * reset fields
          */
         public clear() {
-            // todo: check all fields included
             let me=this;
             me.isAssigned = false;
             me.clearValidations();
-            
+
             me.fullName('');
             me.username('');
             me.phone('');
@@ -1305,16 +1195,9 @@ namespace QnutDirectory {
             me.junior(false);
             me.active(1);
             me.sortkey('');
-            // me.affiliationcode('');
-            // me.memberaffiliation('');
-            // me.otheraffiliation('');
             me.directoryListingTypeId = ko.observable(1);
             me.lastUpdate('');
             me.personId('');
-            me.organization('');
-            me.selectedAffiliation(null);
-            me.selectedMembershipAffiliation(null);
-            // me.membershipType('');
         }
 
         public clearValidations() {
@@ -1346,19 +1229,11 @@ namespace QnutDirectory {
             me.junior(person.junior == '1');
             me.active(person.active);
             me.sortkey(person.sortkey);
-            // me.affiliationcode(person.affiliationcode);
-            // me.memberaffiliation(person.memberaffiliation);
-            // me.otheraffiliation(person.otheraffiliation);
             me.directoryListingTypeId(person.listingtypeId);
             me.lastUpdate(person.changedon);
             me.personId(person.id);
-            // let affiliationItem = me.getAffiliationItem(person.affiliationcode);
-            // me.selectedAffiliation(affiliationItem);
-            // affiliationItem = me.getAffiliationItem(person.memberaffiliation);
-            // me.selectedMembershipAffiliation(affiliationItem);
             let directoryListingItem = me.getDirectoryListingItem();
             me.selectedDirectoryListingType(directoryListingItem);
-            // me.setMembershipType();
         };
 
         public updateDirectoryPerson = (person: DirectoryPerson) => {
@@ -1366,23 +1241,10 @@ namespace QnutDirectory {
             let me = this;
 
             person.active = me.active();
-            // let affiliation = me.selectedAffiliation();
-            // if (affiliation) {
-            //     me.affiliationcode(affiliation.Value);
-            // }
-            // person.affiliationcode = me.affiliationcode();
-
-            // affiliation = me.selectedMembershipAffiliation();
-            // let membershipAffiliationCode = affiliation ? affiliation.Value : 'NONE';
-            // if (affiliation) {
-            //     me.memberaffiliation(membershipAffiliationCode);
-            // }
-            // person.memberaffiliation = membershipAffiliationCode;
-
             let listingType = me.selectedDirectoryListingType();
             if (listingType) {
-                let listingCode = listingType.Value ? Number(listingType.Value) : 0;
-                me.directoryListingTypeId(listingCode);
+                let listingId = listingType.id ? listingType.id : 0;
+                me.directoryListingTypeId(listingId);
             }
 
             person.listingtypeId = me.directoryListingTypeId();
@@ -1396,12 +1258,10 @@ namespace QnutDirectory {
             person.email = me.email();
             person.fullname = me.fullName();
             person.notes = me.notes();
-            // person.otheraffiliation = me.otheraffiliation();
             person.phone = me.phone();
             person.phone2 = me.phone2();
             person.sortkey = me.sortkey();
             person.username = me.username();
-            // person.organization = me.organization();
         };
 
         public validate = ():boolean => {
@@ -1410,32 +1270,21 @@ namespace QnutDirectory {
             let valid = true;
             let value = me.fullName();
             if (!value) {
-                // todo: translate
-                me.nameError(": Please enter the first name");
+                me.nameError(": " + me.translate('form-error-name-blank')); //Please enter the first name");
                 valid = false;
             }
             value = me.email();
             if (value) {
                 let emailOk = Peanut.Helper.ValidateEmail(value);
                 if (!emailOk) {
-                    // todo: tranlate
-                    me.emailError(': Please enter a valid email address.');
+                    me.emailError(': ' +  me.translate('form-error-email-invalid')); //Please enter a valid email address.');
                     valid = false;
                 }
             }
-/*
-            
-            value = me.affiliationcode();
-            if (!value) {
-                me.affiliationError(': Please select the attended meeting, or "None".');
-                valid = false;
-            }
-
-*/
             me.hasErrors(!valid);
             return valid;
         };
-        
+
     }
 
     /**
@@ -1459,9 +1308,13 @@ namespace QnutDirectory {
         public lastUpdate = ko.observable('');
         public cityLocation : KnockoutComputed<string>;
         public addressNameError = ko.observable('');
+        public addressTypes : KnockoutObservableArray<Peanut.ILookupItem> = ko.observableArray([]);
+        public selectedAddressType : KnockoutObservable<Peanut.ILookupItem>;
+        public listingTypes : KnockoutObservableArray<Peanut.ILookupItem> = ko.observableArray([]);
+        public selectedListingType:  KnockoutObservable<Peanut.ILookupItem>;
 
-        constructor() {
-            super();
+        constructor(owner: any) {
+            super(owner);
             let me = this;
             me.cityLocation = ko.computed(me.computeCityLocation);
         }
@@ -1534,8 +1387,7 @@ namespace QnutDirectory {
             let valid = true;
             let value = me.addressname();
             if (!value) {
-                // todo: translate
-                me.addressNameError(": Please enter a name for the address");
+                me.addressNameError(': ' + me.translate('form-error-name-blank')); //Please enter a name for the address");
                 me.hasErrors(true);
                 return false;
             }
@@ -1587,8 +1439,8 @@ namespace QnutDirectory {
 
             let listingType = me.selectedDirectoryListingType();
             if (listingType) {
-                let listingCode = listingType.Value ? Number(listingType.Value) : 0;
-                me.directoryListingTypeId(listingCode);
+                let listingId = listingType.id || 0;
+                me.directoryListingTypeId(listingId);
             }
             address.listingtypeId = me.directoryListingTypeId();
         }

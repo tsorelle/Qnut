@@ -1,20 +1,7 @@
 namespace QnutDirectory {
-
-    /**
-     * Constants for entities editState
-     */
-    // todo:maybe refactor to peanut for general use
-    export class editState {
-        public static unchanged : number = 0;
-        public static created : number = 1;
-        public static updated : number = 2;
-        public static deleted : number = 3;
-    }
-
     /**
      * Person DTO as returned from services
      */
-    // todo: update for peanut directory
     export class DirectoryPerson {
         public id             : any = null;
         public addressId      : any = null;
@@ -35,7 +22,7 @@ namespace QnutDirectory {
         public changedon      : string = '';
         public active         : number = 1;
 
-        public editState : number = editState.created;
+        public editState : number = Peanut.editState.created;
     }
 
     /**
@@ -63,31 +50,8 @@ namespace QnutDirectory {
         public createdby      : string = '';
         public active         : number = 1;
 
-        public editState: number = editState.created;
+        public editState: number = Peanut.editState.created;
     }
 
-    /**
-     * Related persons and address DTO as returned by service
-     */
-    export interface IDirectoryFamily {
-        address : DirectoryAddress;
-        persons: DirectoryPerson[];
-        selectedPersonId : any;
-    }
-
-    export interface IAddressPersonServiceRequest {
-        personId: any;
-        addressId: any;
-    }
-
-    export interface INewPersonForAddressRequest {
-        person: DirectoryPerson;
-        addressId: any;
-    }
-
-    export interface INewAddressForPersonRequest {
-        personId: any;
-        address: DirectoryAddress;
-    }
 
 }
