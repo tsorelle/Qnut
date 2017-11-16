@@ -30,6 +30,10 @@ class DirectorySearchCommand extends TServiceCommand
         else if ($searchRequest->Name == 'Addresses') {
             $result = $manager->getAddressList($searchRequest->Value);
         }
+        else {
+            $this->addErrorMessage("Invalid search type '$searchRequest->Name");
+            return;
+        }
 
         $this->setReturnValue($result);
         if (empty($result)) {

@@ -90,6 +90,6 @@ class DirectoryManager
 
     public function getAddressList($Value)
     {
-        return [];
+        return $this->getAddressesRepository()->search($Value);
     }
 }
