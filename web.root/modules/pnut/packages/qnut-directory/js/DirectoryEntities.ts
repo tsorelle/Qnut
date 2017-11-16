@@ -1,4 +1,6 @@
 namespace QnutDirectory {
+    import IKeyValuePair = Peanut.IKeyValuePair;
+
     /**
      * Person DTO as returned from services
      */
@@ -21,6 +23,8 @@ namespace QnutDirectory {
         public changedby      : string = '';
         public changedon      : string = '';
         public active         : number = 1;
+
+        public address: DirectoryAddress;
 
         public editState : number = Peanut.editState.created;
     }
@@ -49,6 +53,8 @@ namespace QnutDirectory {
         public changedon      : string = '';
         public createdby      : string = '';
         public active         : number = 1;
+
+        public residents : Peanut.INameValuePair[];
 
         public editState: number = Peanut.editState.created;
     }

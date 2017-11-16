@@ -109,6 +109,7 @@ class InitializeDirectoryCommand extends TServiceCommand
             'label-find',
             'label-found',
             'label-name',
+            'label-new',
             'label-notes',
             'label-phone',
             'label-save',

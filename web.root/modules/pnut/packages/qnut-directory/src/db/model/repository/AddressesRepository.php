@@ -50,8 +50,6 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
-
-
     protected function getTableName() {
         return 'qnut_addresses';
     }

@@ -11,22 +11,17 @@ namespace Peanut\QnutDirectory\services;
 
 use Peanut\QnutDirectory\db\model\entity\Address;
 use Peanut\QnutDirectory\db\model\entity\Person;
+use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
+use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 
 class GetFamilyResponse
 {
     public static function BuildResponseForAddress(Address $address,$selectedPersonId = 0)
     {
+        $repository = new PersonsRepository();
         $result = new \stdClass();
-        $result->persons = array();
         $result->address = $address;
-        $persons = $address->getPersons();
-        if (!empty($persons)) {
-            foreach($persons as $addrPerson) {
-                if ($addrPerson->active) {
-                    array_push($result->persons, $addrPerson);
-                }
-            }
-        }
+        $result->persons = $repository->getAddressResidents($address->id);
         $result->selectedPersonId = $selectedPersonId;
         return $result;
     }
@@ -34,14 +29,16 @@ class GetFamilyResponse
 
     public static function BuildResponseForPerson(Person $person)
     {
-
-        if ($person != null) {
-            $address = $person->getAddress();
+        if ($person != null && !empty($person->addressId)) {
+            $repository = new AddressesRepository();
+            /**
+             * @var $address Address
+             */
+            $address = $repository->get($person->addressId);
             if ($address != null) {
                 return self::BuildResponseForAddress($address,$person->id);
             }
         }
-
         $result = new \stdClass();
         $result->persons = array();
         $result->address = null;

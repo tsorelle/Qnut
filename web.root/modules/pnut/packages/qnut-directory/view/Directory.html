@@ -16,7 +16,7 @@
                             <button class="btn btn-default" data-bind="click:findFamiliesByAddressName"><translate params="code:'dir-entity-label-addresses',translator:self"></translate>  <span class="fa fa-search" aria-hidden="true"></span></button>
                             <div class="btn-group" data-bind="visible:userCanEdit">
                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    New <span class="caret"></span>
+                                    <translate params="code:'label-new',translator:self"></translate> <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a href="#" data-bind="click:newPerson"><translate params="code:'dir-entity-label-person',translator:self"></translate>
@@ -34,7 +34,7 @@
         <div id="found-panel" class="found well" data-bind="visible:familiesList.selectionCount">
             <div id="found-header" class="row">
                 <div class="col-md-2">
-                    Found: <span data-bind="text: familiesList.selectionCount"></span> <span data-bind="text: searchType"></span>.
+                    <translate params="code:'label-found',translator:self"></translate> <span class="caret"></span>: <span data-bind="text: familiesList.selectionCount"></span> <span data-bind="text: searchType"></span>.
                 </div>
                 <div class="col-md-2" style="padding-right: 3px" data-bind="visible:familiesList.hasPrevious">
                     <a href="#"  data-bind="click:familiesList.previousPage"><span class="glyphicon glyphicon-backward"></span> Show&nbsp;Previous</a>

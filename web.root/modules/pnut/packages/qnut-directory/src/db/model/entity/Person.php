@@ -25,6 +25,11 @@ class Person  extends \Tops\db\TimeStampedEntity
     public $notes;
     public $active;
 
+    /**
+     * @var $address Address
+     */
+    private $address = null;
+
     public function assignFromObject($dto)
     {
         if (isset($dto->id)) {
@@ -71,4 +76,13 @@ class Person  extends \Tops\db\TimeStampedEntity
         }
 
     }
+    public function setAddress($address)
+    {
+        $this->address = $address;
+    }
+
+    public function getAddress() {
+        return $this->address;
+    }
+
 }
