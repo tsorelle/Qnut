@@ -5,7 +5,8 @@
  * Date: 10/18/2017
  * Time: 9:11 AM
  */
-namespace Peanut\QnutDirectory\entity;
+namespace Peanut\QnutDirectory\db\model\entity;
+
 
 class Person  extends \Tops\db\TimeStampedEntity
 {

@@ -9,12 +9,30 @@
 namespace Peanut\QnutDirectory\db;
 
 
+use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
+use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\db\model\repository\LookupTableRepository;
 
 class DirectoryManager
 {
     const includeRelated = true;
     const parentClassOnly = false;
+    
+    private $personsRepository;
+    private function getPersonsRepository() {
+        if (!isset($this->personsRepository)) {
+            $this->personsRepository = new PersonsRepository();
+        }
+        return $this->personsRepository;
+    }
+
+    private $addressesRepository;
+    private function getAddressesRepository() {
+        if (!isset($this->addressesRepository)) {
+            $this->addressesRepository = new AddressesRepository();
+        }
+        return $this->addressesRepository;
+    }
 
 
     public function getPersonById($personId,$includeAddress = self::parentClassOnly)
@@ -63,5 +81,15 @@ class DirectoryManager
     {
         $repository = new LookupTableRepository('qnut_postal_lists');
         return $repository->getLookupList($translate);
+    }
+
+    public function getPersonList($Value)
+    {
+        return $this->getPersonsRepository()->search($Value);
+    }
+
+    public function getAddressList($Value)
+    {
+        return [];
     }
 }

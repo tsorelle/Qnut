@@ -25,4 +25,30 @@ class DatabaseTest extends TestCase
         $tables = $q->fetchAll(PDO::FETCH_COLUMN);
         $this->assertNotEmpty($tables);
     }
+
+    public function testPersonsSearch() {
+        $repository = new \Peanut\QnutDirectory\db\model\repository\PersonsRepository();
+        $searchVal = 'terry.sorelle@outlook.com';
+        $actual = $repository->search($searchVal);
+        $searchVal = 'sorelle';
+        $actual = $repository->search($searchVal);
+        $this->assertNotEmpty($actual);
+        $searchVal = 'tom';
+        $actual = $repository->search($searchVal);
+        $this->assertNotEmpty($actual);
+
+    }
+
+    public function testAddressSearch() {
+        $repository = new \Peanut\QnutDirectory\db\model\repository\AddressesRepository();
+        $searchVal = 'sorelle';
+        $actual = $repository->search($searchVal);
+        $this->assertNotEmpty($actual);
+        $searchVal = 'tom';
+        $actual = $repository->search($searchVal);
+        $this->assertNotEmpty($actual);
+
+    }
+
+
 }
