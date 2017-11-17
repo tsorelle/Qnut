@@ -70,37 +70,37 @@ class DirectoryManager
         return $address;
     }
 
-    public function getDirectoryListingTypeList($translate = true)
+    public function getDirectoryListingTypeList()
     {
         $repository = new LookupTableRepository('qnut_listingtypes');
-        return $repository->getLookupList($translate);
+        return $repository->getLookupList();
     }
 
-    public function getAddressTypeList($translate = true)
+    public function getAddressTypeList()
     {
         $repository = new LookupTableRepository('qnut_addresstypes');
-        return $repository->getLookupList($translate);
+        return $repository->getLookupList();
     }
 
-    public function getOrganizationsList($translate = true)
+    public function getOrganizationsList()
     {
         $repository = new LookupTableRepository('qnut_organizations');
-        return $repository->getLookupList($translate);
+        return $repository->getLookupList(false);
     }
 
-    public function getAffiliationRolesList($translate = true)
+    public function getAffiliationRolesList()
     {
         $repository = new LookupTableRepository('qnut_affiliation_roles');
-        return $repository->getLookupList($translate);
+        return $repository->getLookupList();
     }
 
-    public function getEmailListLookup($translate = true)
+    public function getEmailListLookup($translate = false)
     {
         $repository = new LookupTableRepository('qnut_email_lists');
         return $repository->getLookupList($translate);
     }
 
-    public function getPostalListLookup($translate = true)
+    public function getPostalListLookup($translate = false)
     {
         $repository = new LookupTableRepository('qnut_postal_lists');
         return $repository->getLookupList($translate);

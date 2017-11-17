@@ -12,6 +12,8 @@
 /// <reference path='../js/DirectoryEntities.ts' />
 
 namespace QnutDirectory {
+    import ILookupItem = Peanut.ILookupItem;
+
     /** Service Contracts  and related interfaces **/
 
     interface IDirectoryFamily {
@@ -71,6 +73,7 @@ namespace QnutDirectory {
         familiesList: Peanut.searchListObservable;
         personsList: Peanut.searchListObservable;
         addressesList: Peanut.searchListObservable;
+        directoryListingTypes: KnockoutObservableArray<ILookupItem> = ko.observableArray();
 
         personForm: personObservable;
         addressForm: addressObservable;
@@ -147,8 +150,7 @@ namespace QnutDirectory {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IInitDirectoryResponse>serviceResponse.Value;
                         me.userCanEdit(response.canEdit);
-                        me.personForm.listingTypes(response.listingTypes);
-                        me.addressForm.listingTypes(response.listingTypes);
+                        me.directoryListingTypes(response.listingTypes);
                         me.addressForm.addressTypes(response.addressTypes);
                         me.userIsAuthorized(true);
                         if (response.family) {
@@ -216,9 +218,9 @@ namespace QnutDirectory {
             let personList = [];
             if (selected) {
                 _.each(me.family.persons, function (person:DirectoryPerson) {
-                    if (person.editState != Peanut.editState.deleted && person.id != selected.personId) {
+                    if (person.editState != Peanut.editState.deleted && person.id != selected.id) {
                         personList.push(<Peanut.INameValuePair> {
-                            Name: me.personForm.fullName(),
+                            Name: person.fullname,
                             Value: person.id.toString(),
                         });
                     }
@@ -1117,7 +1119,7 @@ namespace QnutDirectory {
         public searchList: Peanut.searchListObservable;
         public directoryListingTypeId = ko.observable(1);
         public selectedDirectoryListingType : KnockoutObservable<Peanut.ILookupItem> = ko.observable(null);
-        public listingTypes = ko.observableArray<Peanut.ILookupItem>([]);
+        public listingTypes : KnockoutObservableArray<ILookupItem>;
         public constructor(owner: any) {
             super(owner);
             let me = this;
@@ -1125,15 +1127,30 @@ namespace QnutDirectory {
         }
         protected getDirectoryListingItem = () => {
             let me = this;
-            let lookup = me.listingTypes();
+            let lookup =  me.owner.directoryListingTypes(); // me.listingTypes();
             let id = me.directoryListingTypeId();
             if (!id) {
                 id = 0;
             }
             let key = id.toString();
 
-            let result = _.find(lookup,function(item : Peanut.INameValuePair) {
-                return item.Value == key;
+            let result = _.find(lookup,function(item : Peanut.ILookupItem) {
+                return item.id == key;
+            }); // ,me);  // lodash doesn't have context param
+            return result;
+        };
+
+        protected getLookupItem = (id: any, lookup: ILookupItem[]) => {
+            let me = this;
+            // let lookup =  me.owner.directoryListingTypes(); // me.listingTypes();
+            // let id = me.directoryListingTypeId();
+            if (!id) {
+                id = 0;
+            }
+            let key = id.toString();
+
+            let result = _.find(lookup,function(item : Peanut.ILookupItem) {
+                return item.id == key;
             }); // ,me);  // lodash doesn't have context param
             return result;
         };
@@ -1160,9 +1177,6 @@ namespace QnutDirectory {
         public username = ko.observable('');
         public lastUpdate = ko.observable('');
         public emailLink : KnockoutComputed<string>;
-
-        // public directoryListing: KnockoutComputed<string>;
-
         public nameError = ko.observable('');
         public emailError = ko.observable('');
         private ignoreTriggers = false;
@@ -1312,9 +1326,8 @@ namespace QnutDirectory {
         public cityLocation : KnockoutComputed<string>;
         public addressNameError = ko.observable('');
         public addressTypes : KnockoutObservableArray<Peanut.ILookupItem> = ko.observableArray([]);
-        public selectedAddressType : KnockoutObservable<Peanut.ILookupItem>;
-        public listingTypes : KnockoutObservableArray<Peanut.ILookupItem> = ko.observableArray([]);
-        public selectedListingType:  KnockoutObservable<Peanut.ILookupItem>;
+        public selectedAddressType : KnockoutObservable<Peanut.ILookupItem> = ko.observable();
+        public selectedListingType:  KnockoutObservable<Peanut.ILookupItem>  = ko.observable();
 
         constructor(owner: any) {
             super(owner);
@@ -1421,8 +1434,11 @@ namespace QnutDirectory {
             me.addressId(address.id);
             me.addressTypeId(address.addresstypeId);
             me.directoryListingTypeId(address.listingtypeId);
-            let directoryListingItem = me.getDirectoryListingItem();
+            // let directoryListingItem = me.getDirectoryListingItem();
+            let directoryListingItem = me.getLookupItem( me.directoryListingTypeId(), me.owner.directoryListingTypes());
             me.selectedDirectoryListingType(directoryListingItem);
+            let addressTypeItem = me.getLookupItem(address.addresstypeId, me.addressTypes());
+            me.selectedAddressType(addressTypeItem);
         };
 
         public updateDirectoryAddress(address: DirectoryAddress) {

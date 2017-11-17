@@ -45,13 +45,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
 
     public function getAddressResidents($addressId,$includeInactive=false)
     {
-        $residents = $this->getEntityCollection("addressId = ? AND deceased <> 1",[$addressId],$includeInactive);
-        $sql = $this->addSqlConditionals(
-            "SELECT fullname AS `Name`, id AS `Value` FROM ".$this->getTableName(),
-            $includeInactive,
-            "addressId = ? AND deceased <> 1");
-        $stmt = $this->executeStatement($sql,[$addressId]);
-        return $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $this->getEntityCollection("addressId = ? AND deceased is null",[$addressId],$includeInactive);
     }
 
     protected function getTableName() {

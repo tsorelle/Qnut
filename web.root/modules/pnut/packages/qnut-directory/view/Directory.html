@@ -83,7 +83,7 @@
 
         <div id="family-panel"  class="row" data-bind="visible:family.visible">
             <!-- person panels -->
-            <div id="person-panel"  class="col-md-6">
+            <div id="person-panel"  class="col-sm-6">
                 <div id="person-view-panel" data-bind="visible:personForm.viewState() == 'view'">
                     <form>
                         <fieldset id="person-view-fields">
@@ -173,7 +173,7 @@
                         <div class="form-group">
                             <label for="directory-listing-input" class="control-label"><translate params="code:'dir-label-directory-listing',translator:self"></translate>:</label>
                             <select class="form-control" id="directory-listing-input"
-                                    data-bind="options: personForm.directoryListingTypes,optionsText:'name', value: personForm.selectedDirectoryListingType"></select>
+                                    data-bind="options: directoryListingTypes,optionsText:'name', value: personForm.selectedDirectoryListingType"></select>
                         </div>
                         <div class="form-group">
                             <label for="username-input" class="control-label"><translate params="code:'dir-label-user-name',translator:self"></translate> </label>
@@ -244,7 +244,7 @@
             </div> <!-- end person panel -->
 
             <!-- address panels -->
-            <div id="address-panel"  class="col-md-6">
+            <div id="address-panel"  class="col-sm-6">
                 <div id="address-view-panel" data-bind="visible:addressForm.viewState() == 'view'">
                     <form>
                         <fieldset id="address-view-fields">
@@ -323,7 +323,7 @@
                     <div class="form-group">
                         <label for="address-type" class="control-label"><translate params="code:'dir-label-address-type',translator:self"></translate></label>
                         <select class="form-control" id="address-type"
-                                data-bind="options: addressForm.directoryListingTypes,optionsText:'name',value: addressForm.selectedAddressType">
+                                data-bind="options: addressForm.addressTypes,optionsText:'name',value: addressForm.selectedAddressType">
                         </select>
                     </div>
                     <div class="form-group">
@@ -362,7 +362,7 @@
                     <div class="form-group">
                         <label for="addr-directory-listing-input" class="control-label"><translate params="code:'dir-label-directory-listing',translator:self"></translate>:</label>
                         <select class="form-control" id="addr-directory-listing-input"
-                                data-bind="options: addressForm.directoryListingTypes,optionsText:'name',value: addressForm.selectedDirectoryListingType"></select>
+                                data-bind="options: directoryListingTypes,optionsText:'name',value: addressForm.selectedDirectoryListingType"></select>
                     </div>
 
                     <div class="form-group">
