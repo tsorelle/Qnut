@@ -118,6 +118,21 @@
                                 <strong><translate params="code:'label-phone',translator:self"></translate>&nbsp;2: </strong>
                                 <span data-bind="text:personForm.phone2"></span>
                             </div>
+                            <div>
+                                <strong>Affiliations</strong>
+                                <div>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <th>Organization</th>
+                                            <th>Role</th>
+                                        </thead>
+                                        <tbody data-bind="foreach:personForm.affiliationList">
+                                            <td data-bind="text:organizationName" ></td>
+                                            <td data-bind="text:roleName"></td>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                             <div data-bind="visible:personForm.notes">
                                 <strong><translate params="code:'label-notes',translator:self"></translate>:</strong><br>
                                 <span data-bind="text:personForm.notes">notes</span>
@@ -179,6 +194,27 @@
                             <label for="username-input" class="control-label"><translate params="code:'dir-label-user-name',translator:self"></translate> </label>
                             <input class="form-control" id="username-input" data-bind="value:personForm.username"/>
                         </div>
+
+                        <div class="form-group">
+                            <label class="control-label"><translate params="code:'dir-label-affiliations',translator:self"></translate></label>
+                            <div><a href="#" data-bind="click:personForm.showAddAffiliationModal">
+                                    <translate params="code:'dir-label-add-affiliation',translator:self"></translate>
+                                </a>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <th>Organization</th>
+                                    <th>Role</th>
+                                    <th>&nbsp</th>
+                                </thead>
+                                <tbody data-bind="foreach:personForm.affiliationList">
+                                    <td data-bind="text:organizationName" ></td>
+                                    <td data-bind="text:roleName"></td>
+                                    <td><a href="#" data-bind="click:$parent.personForm.removeAffiliation">Remove</a> </td>
+                                </tbody>
+                            </table>
+                        </div>
+
                         <div class="form-group">
                             <label for="sortkey-input" class="control-label"><translate params="code:'dir-label-sort-key',translator:self"></translate></label>
                             <input class="form-control" id="sortkey-input" data-bind="value:personForm.sortkey"/>
@@ -468,5 +504,66 @@
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
+
+        <div class="modal" id="add-affiliation-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form>
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title"><translate params="code:'dir-add-affiliation',translator:self"></translate> </h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div>
+                                    <span style="font-weight: bold">Organization: </span>
+                                    <span data-bind="visible:personForm.selectedOrgName()==''">(please select)</span>
+                                    <span data-bind="visible:personForm.selectedOrgName()!='', text:personForm.selectedOrgName"></span>
+                                </div>
+                                <div class="input-group">
+                                    <input class="form-control" id="orgsearch" type="search" name="search" placeholder="Search for an organization"
+                                           data-bind="value: personForm.orgSearchValue, valueUpdate: 'keyup'" autocomplete="off" />
+                                    <span class="input-group-btn"><button class="btn btn-default" type="button" data-bind="click:personForm.onShowOrgList">
+                                        <i data-bind="visible:personForm.orgListVisible" class="fa fa-caret-up"></i>
+                                        <i data-bind="visible:!personForm.orgListVisible()"class="fa fa-caret-down"></i>
+
+                                    </button></span>
+                                </div>
+                                <div style="position:absolute; z-index: 2; clear: both;background-color: white; max-height: 25ex; overflow: scroll; border: 1px solid lightgrey; padding: 10px"
+                                     data-bind="visible:personForm.orgListVisible">
+                                    <table class="table table-bordered" >
+                                        <thead><tr><th>Name</th><th>&nbsp;</th></tr></thead>
+                                        <tbody
+                                                data-bind="foreach:personForm.orgLookupList">
+                                        <tr>
+                                            <td data-bind="text:name"></td>
+                                            <td><a href="#" data-bind="click:$parent.personForm.onOrgSelect">Select</a> </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="role-select" class="control-label">
+                                        <translate params="code:'dir-label-roles',translator:self"></translate>:</label>
+                                    <select class="form-control" id="role-select"
+                                            data-bind="options: personForm.affiliationRoles,optionsText:'name', value: personForm.selectedAffiliationRole">
+                                    </select>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bind="click:personForm.addAffiliation"><translate params="code:'label-delete',translator:self"></translate> </button>
+                            <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                        </div>
+                    </form>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+
+
     </div>
 </div>

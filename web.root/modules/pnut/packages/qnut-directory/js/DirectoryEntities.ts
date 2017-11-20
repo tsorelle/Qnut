@@ -1,6 +1,4 @@
 namespace QnutDirectory {
-    import IKeyValuePair = Peanut.IKeyValuePair;
-
     /**
      * Person DTO as returned from services
      */
@@ -25,8 +23,19 @@ namespace QnutDirectory {
         public active         : number = 1;
 
         public address: DirectoryAddress;
+        public affiliations: IAffiliation[];
 
         public editState : number = Peanut.editState.created;
+    }
+
+    export interface IAffiliation {
+        organizationId: any;
+        roleId: any;
+    }
+
+    export interface IAffiliationListItem extends IAffiliation {
+        organizationName: string;
+        roleName: string;
     }
 
     /**

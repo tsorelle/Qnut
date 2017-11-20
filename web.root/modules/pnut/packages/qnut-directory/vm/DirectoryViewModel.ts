@@ -150,6 +150,8 @@ namespace QnutDirectory {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IInitDirectoryResponse>serviceResponse.Value;
                         me.userCanEdit(response.canEdit);
+                        me.personForm.organizations = response.organizations;
+                        me.personForm.affiliationRoles(response.affiliationRoles);
                         me.directoryListingTypes(response.listingTypes);
                         me.addressForm.addressTypes(response.addressTypes);
                         me.userIsAuthorized(true);
@@ -369,6 +371,15 @@ namespace QnutDirectory {
         public deletePerson() {
             let me = this;
             me.showPersonDeleteConfirmForm();
+        }
+
+        public addAffiliation = () => {
+            let me = this;
+            jQuery("#confirm-delete-address-modal").modal('hide');
+        };
+
+        public showAddAffiliationModal() {
+            jQuery("#confirm-delete-address-modal").modal('show');
         }
 
         /**
@@ -1180,12 +1191,26 @@ namespace QnutDirectory {
         public nameError = ko.observable('');
         public emailError = ko.observable('');
         private ignoreTriggers = false;
+        public affiliations : IAffiliation[] = [];
+        public affiliationList= ko.observableArray<IAffiliationListItem>();
+        public organizations : Peanut.ILookupItem[] = [];
+
+        public affiliationRoles = ko.observableArray<Peanut.ILookupItem>();
+        public selectedOrgnization = ko.observable<Peanut.ILookupItem>();
+        public selectedOrgName = ko.observable('');
+        public selectedAffiliationRole = ko.observable<Peanut.ILookupItem>();
+        public orgListVisible = ko.observable(false);
+        public orgListSubscription : KnockoutSubscription;
+        public orgLookupList = ko.observableArray<Peanut.ILookupItem>();
+        public orgSearchValue = ko.observable('');
 
 
         constructor(owner: any) {
             super(owner);
             let me = this;
             me.emailLink = ko.computed(me.computeEmailLink);
+            me.orgSearchValue('');
+            me.orgListSubscription = me.orgSearchValue.subscribe(me.onOrgSearchChange);
         }
 
         computeEmailLink = () => {
@@ -1251,6 +1276,98 @@ namespace QnutDirectory {
             me.personId(person.id);
             let directoryListingItem = me.getDirectoryListingItem();
             me.selectedDirectoryListingType(directoryListingItem);
+            me.affiliations = person.affiliations;
+            me.updateAffiliationList();
+
+        };
+
+        private updateAffiliationList() {
+            let me = this;
+            me.affiliationList([]);
+            _.each(me.affiliations,(affiliation: IAffiliation) => {
+                let org = _.find(me.organizations, (org: Peanut.ILookupItem) => {
+                    return org.id == affiliation.organizationId;
+                });
+
+                let role = _.find(me.affiliationRoles(), (role: Peanut.ILookupItem) => {
+                    return role.id = affiliation.roleId;
+                });
+                if (org && role) {
+                    me.affiliationList.push(
+                        {
+                            roleId: affiliation.roleId,
+                            organizationId: affiliation.organizationId,
+                            organizationName: org.name,
+                            roleName: role.name
+                        });
+                }
+            });
+        }
+
+        onOrgSearchChange = (value: string) => {
+            let me = this;
+            if (value) {
+                me.orgLookupList([]);
+                value = value.toLowerCase();
+                let newlist = _.filter(me.organizations, (org: Peanut.ILookupItem) => {
+                    return (org.name.toLowerCase().indexOf(value) >= 0);
+                });
+                me.orgLookupList(newlist);
+                me.orgListVisible(newlist.length > 0);
+            }
+            else {
+                me.orgLookupList(me.organizations);
+            }
+        };
+
+        onOrgSelect = (item: Peanut.ILookupItem) => {
+            let me = this;
+            me.selectedOrgnization(item);
+            me.selectedOrgName(item.name);
+            me.clearOrgSearch();
+        };
+
+        clearOrgSearch = () => {
+            let me=this;
+            me.orgListVisible(false);
+            me.orgListSubscription.dispose();
+            me.orgSearchValue('');
+            me.orgListSubscription = me.orgSearchValue.subscribe(me.onOrgSearchChange);
+        };
+
+        onShowOrgList = () => {
+            let me = this;
+            if (me.orgListVisible()) {
+                me.clearOrgSearch();
+            }
+            else {
+                me.orgLookupList(me.organizations);
+                me.orgListVisible(true);
+            }
+        };
+
+        removeAffiliation(affiliation: IAffiliationListItem) {
+            let me = this;
+            let newList = _.remove(me.affiliations,(item: IAffiliation) => {
+                return (item.organizationId == affiliation.organizationId && item.roleId == affiliation.roleId);
+            });
+            me.affiliations = newList;
+            me.updateAffiliationList();
+        }
+
+        public addAffiliation() {
+            let me = this;
+            jQuery("#add-affiliation-modal").modal('hide');
+            me.affiliations.push(
+                {
+                    organizationId: me.selectedOrgnization().id,
+                    roleId: me.selectedAffiliationRole().id
+                }
+            );
+        }
+
+        public showAddAffiliationModal = () => {
+            jQuery("#add-affiliation-modal").modal('show');
         };
 
         public updateDirectoryPerson = (person: DirectoryPerson) => {

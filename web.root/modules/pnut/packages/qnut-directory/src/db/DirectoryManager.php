@@ -12,6 +12,7 @@ namespace Peanut\QnutDirectory\db;
 use Peanut\QnutDirectory\db\model\entity\Address;
 use Peanut\QnutDirectory\db\model\entity\Person;
 use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
+use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\db\model\repository\LookupTableRepository;
 
@@ -26,6 +27,14 @@ class DirectoryManager
             $this->personsRepository = new PersonsRepository();
         }
         return $this->personsRepository;
+    }
+
+    private $organizationsRepository;
+    private function getOrganizationsRepository() {
+        if (!isset($this->organizationsRepository)) {
+            $this->organizationsRepository = new OrganizationsRepository();
+        }
+        return $this->organizationsRepository;
     }
 
     private $addressesRepository;
