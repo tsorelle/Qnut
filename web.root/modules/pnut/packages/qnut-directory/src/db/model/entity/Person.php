@@ -28,7 +28,8 @@ class Person  extends \Tops\db\TimeStampedEntity
     /**
      * @var $address Address
      */
-    private $address = null;
+    public $address = null;
+    public $affiliations = array();
 
     public function assignFromObject($dto)
     {
@@ -83,6 +84,14 @@ class Person  extends \Tops\db\TimeStampedEntity
 
     public function getAddress() {
         return $this->address;
+    }
+
+    public function getAffiliations() {
+        return isset($this->affiliations) ? $this->affiliations : array();
+    }
+
+    public function setAffilliations(array $value) {
+        $this->affiliations = $value;
     }
 
 }

@@ -53,9 +53,10 @@ class InitializeDirectoryCommand extends TServiceCommand
 
         $result->canEdit = $user->isAuthorized('administer directory');
 
+        $result->organizations = $manager->getOrganizationsList(DirectoryManager::listDefaultFirst);
+
         $result->listingTypes = $manager->getDirectoryListingTypeList();
         $result->addressTypes = $manager->getAddressTypeList();
-        $result->organizations = $manager->getOrganizationsList();
         $result->affiliationRoles = $manager->getAffiliationRolesList();
         $result->emailLists = $manager->getEmailListLookup();
         $result->postalLists = $manager->getPostalListLookup();
@@ -73,9 +74,14 @@ class InitializeDirectoryCommand extends TServiceCommand
         $result->translations = TLanguage::getTranslations(array(
             'dir-address-entity',
             'dir-address-entity-plural',
+            'dir-label-address-name',
+            'dir-affiliation-error',
             'dir-button-label-get-address',
             'dir-button-label-move',
             'dir-description-young-friend',
+            'dir-label-affiliation',
+            'dir-label-affiliation-plural',
+            'dir-label-affiliation-role',
             'dir-label-address-delete',
             'dir-label-address-type',
             'dir-label-city',
@@ -85,8 +91,10 @@ class InitializeDirectoryCommand extends TServiceCommand
             'dir-label-junior',
             'dir-label-kids-only',
             'dir-label-no-address',
+            'dir-label-organization',
             'dir-label-person-delete',
             'dir-label-pocode',
+            'dir-label-please-select',
             'dir-label-residents',
             'dir-label-sort-key',
             'dir-label-state',
@@ -112,11 +120,14 @@ class InitializeDirectoryCommand extends TServiceCommand
             'label-new',
             'label-notes',
             'label-phone',
+            'label-remove',
             'label-save',
+            'label-select',
             'label-updated',
             'label-young-friend',
             'nav-more',
             'nav-previous',
+
             ));
 
         $result->translations['dir-entity-label-persons']   = ucfirst(TLanguage::text('dir-person-entity-plural'));

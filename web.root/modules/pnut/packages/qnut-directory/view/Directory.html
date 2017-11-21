@@ -118,14 +118,10 @@
                                 <strong><translate params="code:'label-phone',translator:self"></translate>&nbsp;2: </strong>
                                 <span data-bind="text:personForm.phone2"></span>
                             </div>
-                            <div>
-                                <strong>Affiliations</strong>
+                            <div data-bind="visible:personForm.affiliationList().length">
+                                <div><strong><translate params="code:'dir-label-affiliation-plural',translator:self"></translate>:</strong></div>
                                 <div>
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <th>Organization</th>
-                                            <th>Role</th>
-                                        </thead>
+                                    <table class="table table-bordered" >
                                         <tbody data-bind="foreach:personForm.affiliationList">
                                             <td data-bind="text:organizationName" ></td>
                                             <td data-bind="text:roleName"></td>
@@ -196,21 +192,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="control-label"><translate params="code:'dir-label-affiliations',translator:self"></translate></label>
+                            <label class="control-label"><translate params="code:'dir-label-affiliation-plural',translator:self"></translate></label>
                             <div><a href="#" data-bind="click:personForm.showAddAffiliationModal">
-                                    <translate params="code:'dir-label-add-affiliation',translator:self"></translate>
+                                    <translate params="code:'label-add',translator:self"></translate>&nbsp;<translate params="code:'dir-label-affiliation',translator:self"></translate>
                                 </a>
                             </div>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <th>Organization</th>
-                                    <th>Role</th>
-                                    <th>&nbsp</th>
-                                </thead>
+                            <table class="table table-bordered"  data-bind="visible:personForm.affiliationList().length">
                                 <tbody data-bind="foreach:personForm.affiliationList">
                                     <td data-bind="text:organizationName" ></td>
                                     <td data-bind="text:roleName"></td>
-                                    <td><a href="#" data-bind="click:$parent.personForm.removeAffiliation">Remove</a> </td>
+                                    <td><a href="#" data-bind="click:$parent.personForm.removeAffiliation"><translate params="code:'label-remove',translator:$parent.self"></translate></a> </td>
                                 </tbody>
                             </table>
                         </div>
@@ -353,7 +344,7 @@
                         <translate params="code:'form-error-message',translator:self"></translate>
                     </div>
                     <div class="form-group" data-bind="css:{'has-error': addressForm.addressNameError}" >
-                        <label for="addressname-input" class="control-label">Name on address<span data-bind="text:addressForm.addressNameError"></span></label>
+                        <label for="addressname-input" class="control-label"><translate params="code:'dir-label-address-name',translator:self"></translate><span data-bind="text:addressForm.addressNameError"></span></label>
                         <input class="form-control" id="addressname-input" data-bind="value:addressForm.addressname"/>
                     </div>
                     <div class="form-group">
@@ -511,16 +502,19 @@
                     <form>
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title"><translate params="code:'dir-add-affiliation',translator:self"></translate> </h4>
+                            <h4 class="modal-title"><translate params="code:'label-add',translator:self"></translate>&nbsp;<translate params="code:'dir-label-affiliation',translator:self"></translate></h4>
                         </div>
                         <div class="modal-body">
+                            <div style="background-color: yellow; color:red; margin-bottom: 5px" data-bind="visible:personForm.affiliationError">
+                                <span data-bind="text:personForm.affiliationError"></span>
+                            </div>
                             <div class="form-group">
                                 <div>
-                                    <span style="font-weight: bold">Organization: </span>
-                                    <span data-bind="visible:personForm.selectedOrgName()==''">(please select)</span>
+                                    <span style="font-weight: bold"><translate params="code:'dir-label-organization',translator:self"></translate>: </span>
+                                    <span data-bind="visible:personForm.selectedOrgName()==''"><translate params="code:'dir-label-please-select',translator:self"></translate></span>
                                     <span data-bind="visible:personForm.selectedOrgName()!='', text:personForm.selectedOrgName"></span>
                                 </div>
-                                <div class="input-group">
+                                <div class="input-group" style="margin-bottom: 10px">
                                     <input class="form-control" id="orgsearch" type="search" name="search" placeholder="Search for an organization"
                                            data-bind="value: personForm.orgSearchValue, valueUpdate: 'keyup'" autocomplete="off" />
                                     <span class="input-group-btn"><button class="btn btn-default" type="button" data-bind="click:personForm.onShowOrgList">
@@ -532,12 +526,11 @@
                                 <div style="position:absolute; z-index: 2; clear: both;background-color: white; max-height: 25ex; overflow: scroll; border: 1px solid lightgrey; padding: 10px"
                                      data-bind="visible:personForm.orgListVisible">
                                     <table class="table table-bordered" >
-                                        <thead><tr><th>Name</th><th>&nbsp;</th></tr></thead>
-                                        <tbody
-                                                data-bind="foreach:personForm.orgLookupList">
+                                        <tbody data-bind="foreach:personForm.orgLookupList">
                                         <tr>
                                             <td data-bind="text:name"></td>
-                                            <td><a href="#" data-bind="click:$parent.personForm.onOrgSelect">Select</a> </td>
+                                            <td><a href="#" data-bind="click:$parent.personForm.onOrgSelect">::
+                                                <translate params="code:'label-select',translator:$parent.self"></translate></a> </td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -545,7 +538,7 @@
 
                                 <div class="form-group">
                                     <label for="role-select" class="control-label">
-                                        <translate params="code:'dir-label-roles',translator:self"></translate>:</label>
+                                        <translate params="code:'dir-label-affiliation-role',translator:self"></translate>:</label>
                                     <select class="form-control" id="role-select"
                                             data-bind="options: personForm.affiliationRoles,optionsText:'name', value: personForm.selectedAffiliationRole">
                                     </select>
@@ -555,7 +548,7 @@
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-bind="click:personForm.addAffiliation"><translate params="code:'label-delete',translator:self"></translate> </button>
+                            <button type="button" class="btn btn-primary" data-bind="click:personForm.addAffiliation"><translate params="code:'label-save',translator:self"></translate> </button>
                             <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                         </div>
                     </form>

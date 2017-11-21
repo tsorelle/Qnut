@@ -8,6 +8,7 @@ namespace Peanut\QnutDirectory\db\model\repository;
 
 use \PDO;
 use PDOStatement;
+use Peanut\QnutDirectory\db\model\entity\Person;
 use Tops\db\TDatabase;
 use \Tops\db\TEntityRepository;
 
@@ -58,6 +59,17 @@ class PersonsRepository extends \Tops\db\TEntityRepository
 
     protected function getClassName() {
         return 'Peanut\QnutDirectory\db\model\entity\Person';
+    }
+
+    public function getAffiliations($personId) {
+        $sql = 'select organizationId,roleId from qnut_person_affiliations WHERE personId=?';
+        $stmt = $this->executeStatement($sql,[$personId]);
+        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $result;
+    }
+
+    public function setAffiliations(Person &$person) {
+        $person->setAffilliations($this->getAffiliations($person->id));
     }
 
     protected function getFieldDefinitionList()

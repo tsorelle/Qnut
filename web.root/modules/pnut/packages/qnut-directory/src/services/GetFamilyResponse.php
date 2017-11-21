@@ -22,6 +22,9 @@ class GetFamilyResponse
         $result = new \stdClass();
         $result->address = $address;
         $result->persons = $repository->getAddressResidents($address->id);
+        foreach ($result->persons as $person) {
+            $repository->setAffiliations($person);
+        }
         $result->selectedPersonId = $selectedPersonId;
         return $result;
     }

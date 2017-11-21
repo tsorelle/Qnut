@@ -15,11 +15,17 @@ use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
 use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\db\model\repository\LookupTableRepository;
+use Tops\db\TVariables;
 
 class DirectoryManager
 {
     const includeRelated = true;
     const parentClassOnly = false;
+    const listDefaultFirst = true;
+    const personsCollection = 'persons';
+    const addressProperty = 'address';
+    const affiliationCollection = 'affiliations';
+    
     
     private $personsRepository;
     private function getPersonsRepository() {
@@ -46,7 +52,7 @@ class DirectoryManager
     }
 
 
-    public function getPersonById($personId,$includeAddress = self::parentClassOnly)
+    public function getPersonById($personId,$includes = array())
     {
         /**
          * @var $person Person
@@ -55,13 +61,16 @@ class DirectoryManager
         if (empty($person)) {
             return false;
         }
-        if ($includeAddress && !empty($person->addressId)) {
+        if (in_array(self::addressProperty,$includes) && !empty($person->addressId)) {
             /**
              * @var $address Address
              */
             $address = $this->getAddressById($person->addressId,self::includeRelated);
         }
 
+        if (in_array(self::affiliationCollection,$includes)) {
+            $this->getPersonsRepository()->setAffiliations($person);
+        }
 
         return $person;
     }
@@ -91,10 +100,29 @@ class DirectoryManager
         return $repository->getLookupList();
     }
 
-    public function getOrganizationsList()
+    public function getOrganizationsList($defaultFirst = false)
     {
+        // clear cache for testing only. Comment out for production.
+        // TVariables::Clear();
+
+        $siteOrg = $defaultFirst ? TVariables::Get('site-org') : null;
         $repository = new LookupTableRepository('qnut_organizations');
-        return $repository->getLookupList(false);
+        $result = $repository->getLookupList(
+            LookupTableRepository::noTranslation,
+            LookupTableRepository::sortByName,
+            empty($siteOrg) ? '' : "code <> '$siteOrg'");
+
+        if (!empty($siteOrg)) {
+            $org = $repository->getLookupList(
+                LookupTableRepository::noTranslation,
+                LookupTableRepository::noSort,
+                "code = '$siteOrg'");
+            if (!empty($org)) {
+                array_unshift($result, $org[0]);
+            }
+
+        }
+        return $result;
     }
 
     public function getAffiliationRolesList()

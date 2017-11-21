@@ -26,7 +26,7 @@ class GetFamilyCommand extends TServiceCommand
         $response = null;
         $manager = new DirectoryManager();
         if ($request->Name == 'Persons') {
-            $person = $manager->getPersonById($request->Value);
+            $person = $manager->getPersonById($request->Value,array(DirectoryManager::affiliationCollection));
             if (empty($person)) {
                 $this->addErrorMessage('Person not found for id ' . $request->Value);
                 return;

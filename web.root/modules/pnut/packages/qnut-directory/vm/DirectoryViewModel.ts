@@ -1172,8 +1172,6 @@ namespace QnutDirectory {
      * observable container for person panel
      */
     class personObservable extends directoryEditPanel {
-        // todo: figure what to do about affiliation
-
         public personId = ko.observable('');
         public fullName = ko.observable('');
         public phone = ko.observable('');
@@ -1188,15 +1186,19 @@ namespace QnutDirectory {
         public username = ko.observable('');
         public lastUpdate = ko.observable('');
         public emailLink : KnockoutComputed<string>;
-        public nameError = ko.observable('');
-        public emailError = ko.observable('');
         private ignoreTriggers = false;
         public affiliations : IAffiliation[] = [];
         public affiliationList= ko.observableArray<IAffiliationListItem>();
         public organizations : Peanut.ILookupItem[] = [];
 
+
+        public nameError = ko.observable('');
+        public emailError = ko.observable('');
+        public affiliationError = ko.observable('');
+
+
         public affiliationRoles = ko.observableArray<Peanut.ILookupItem>();
-        public selectedOrgnization = ko.observable<Peanut.ILookupItem>();
+        public selectedOrganization = ko.observable<Peanut.ILookupItem>();
         public selectedOrgName = ko.observable('');
         public selectedAffiliationRole = ko.observable<Peanut.ILookupItem>();
         public orgListVisible = ko.observable(false);
@@ -1246,7 +1248,7 @@ namespace QnutDirectory {
             let me = this;
             me.nameError('');
             me.emailError('');
-            // me.affiliationError('');
+            me.affiliationError('');
             me.hasErrors(false);
         }
 
@@ -1322,7 +1324,7 @@ namespace QnutDirectory {
 
         onOrgSelect = (item: Peanut.ILookupItem) => {
             let me = this;
-            me.selectedOrgnization(item);
+            me.selectedOrganization(item);
             me.selectedOrgName(item.name);
             me.clearOrgSearch();
         };
@@ -1346,25 +1348,31 @@ namespace QnutDirectory {
             }
         };
 
-        removeAffiliation(affiliation: IAffiliationListItem) {
+        removeAffiliation = (affiliation: IAffiliationListItem) => {
             let me = this;
             let newList = _.remove(me.affiliations,(item: IAffiliation) => {
                 return (item.organizationId == affiliation.organizationId && item.roleId == affiliation.roleId);
             });
             me.affiliations = newList;
             me.updateAffiliationList();
-        }
+        };
 
-        public addAffiliation() {
+        public addAffiliation = () => {
             let me = this;
+            let org = me.selectedOrganization();
+            if (!org) {
+                me.affiliationError(me.translate('dir-affiliation-error'));
+                return;
+            }
             jQuery("#add-affiliation-modal").modal('hide');
             me.affiliations.push(
                 {
-                    organizationId: me.selectedOrgnization().id,
+                    organizationId: me.selectedOrganization().id,
                     roleId: me.selectedAffiliationRole().id
                 }
             );
-        }
+            me.updateAffiliationList();
+        };
 
         public showAddAffiliationModal = () => {
             jQuery("#add-affiliation-modal").modal('show');
