@@ -511,11 +511,9 @@
                             <div class="form-group">
                                 <div>
                                     <span style="font-weight: bold"><translate params="code:'dir-label-organization',translator:self"></translate>: </span>
-                                    <span data-bind="visible:personForm.selectedOrgName()==''"><translate params="code:'dir-label-please-select',translator:self"></translate></span>
-                                    <span data-bind="visible:personForm.selectedOrgName()!='', text:personForm.selectedOrgName"></span>
                                 </div>
                                 <div class="input-group" style="margin-bottom: 10px">
-                                    <input class="form-control" id="orgsearch" type="search" name="search" placeholder="Search for an organization"
+                                    <input class="form-control" id="orgsearch" type="search" name="search" placeholder="Select or search for an organization"
                                            data-bind="value: personForm.orgSearchValue, valueUpdate: 'keyup'" autocomplete="off" />
                                     <span class="input-group-btn"><button class="btn btn-default" type="button" data-bind="click:personForm.onShowOrgList">
                                         <i data-bind="visible:personForm.orgListVisible" class="fa fa-caret-up"></i>
@@ -529,7 +527,7 @@
                                         <tbody data-bind="foreach:personForm.orgLookupList">
                                         <tr>
                                             <td data-bind="text:name"></td>
-                                            <td><a href="#" data-bind="click:$parent.personForm.onOrgSelect">::
+                                            <td><a href="#" data-bind="click:$parent.personForm.onOrgSelect">
                                                 <translate params="code:'label-select',translator:$parent.self"></translate></a> </td>
                                         </tr>
                                         </tbody>
@@ -540,10 +538,9 @@
                                     <label for="role-select" class="control-label">
                                         <translate params="code:'dir-label-affiliation-role',translator:self"></translate>:</label>
                                     <select class="form-control" id="role-select"
-                                            data-bind="options: personForm.affiliationRoles,optionsText:'name', value: personForm.selectedAffiliationRole">
+                                            data-bind="options: personForm.affiliationRoles,optionsText:'name', value: personForm.selectedAffiliationRole, optionsCaption:'Select a role, such as Member or Attender...'">
                                     </select>
                                 </div>
-
                             </div>
 
                         </div>

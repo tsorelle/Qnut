@@ -76,6 +76,7 @@ class InitializeDirectoryCommand extends TServiceCommand
             'dir-address-entity-plural',
             'dir-label-address-name',
             'dir-affiliation-error',
+            'dir-affiliation-role-error',
             'dir-button-label-get-address',
             'dir-button-label-move',
             'dir-description-young-friend',

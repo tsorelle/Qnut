@@ -1199,7 +1199,6 @@ namespace QnutDirectory {
 
         public affiliationRoles = ko.observableArray<Peanut.ILookupItem>();
         public selectedOrganization = ko.observable<Peanut.ILookupItem>();
-        public selectedOrgName = ko.observable('');
         public selectedAffiliationRole = ko.observable<Peanut.ILookupItem>();
         public orgListVisible = ko.observable(false);
         public orgListSubscription : KnockoutSubscription;
@@ -1292,7 +1291,7 @@ namespace QnutDirectory {
                 });
 
                 let role = _.find(me.affiliationRoles(), (role: Peanut.ILookupItem) => {
-                    return role.id = affiliation.roleId;
+                    return role.id == affiliation.roleId;
                 });
                 if (org && role) {
                     me.affiliationList.push(
@@ -1309,6 +1308,7 @@ namespace QnutDirectory {
         onOrgSearchChange = (value: string) => {
             let me = this;
             if (value) {
+                me.selectedOrganization(null);
                 me.orgLookupList([]);
                 value = value.toLowerCase();
                 let newlist = _.filter(me.organizations, (org: Peanut.ILookupItem) => {
@@ -1325,15 +1325,15 @@ namespace QnutDirectory {
         onOrgSelect = (item: Peanut.ILookupItem) => {
             let me = this;
             me.selectedOrganization(item);
-            me.selectedOrgName(item.name);
-            me.clearOrgSearch();
+            me.affiliationError('');
+            me.clearOrgSearch(item.name);
         };
 
-        clearOrgSearch = () => {
+        clearOrgSearch = (text: string = '') => {
             let me=this;
             me.orgListVisible(false);
             me.orgListSubscription.dispose();
-            me.orgSearchValue('');
+            me.orgSearchValue(text);
             me.orgListSubscription = me.orgSearchValue.subscribe(me.onOrgSearchChange);
         };
 
@@ -1350,10 +1350,9 @@ namespace QnutDirectory {
 
         removeAffiliation = (affiliation: IAffiliationListItem) => {
             let me = this;
-            let newList = _.remove(me.affiliations,(item: IAffiliation) => {
+            _.remove(me.affiliations,(item: IAffiliation) => {
                 return (item.organizationId == affiliation.organizationId && item.roleId == affiliation.roleId);
             });
-            me.affiliations = newList;
             me.updateAffiliationList();
         };
 
@@ -1362,6 +1361,11 @@ namespace QnutDirectory {
             let org = me.selectedOrganization();
             if (!org) {
                 me.affiliationError(me.translate('dir-affiliation-error'));
+                return;
+            }
+            let role = me.selectedAffiliationRole();
+            if (!role) {
+                me.affiliationError(me.translate('dir-affiliation-role-error'));
                 return;
             }
             jQuery("#add-affiliation-modal").modal('hide');
@@ -1375,6 +1379,11 @@ namespace QnutDirectory {
         };
 
         public showAddAffiliationModal = () => {
+            let me = this;
+            // me.selectedAffiliationRole(null);
+            me.affiliationError('');
+            me.selectedOrganization(null);
+            me.clearOrgSearch();
             jQuery("#add-affiliation-modal").modal('show');
         };
 
