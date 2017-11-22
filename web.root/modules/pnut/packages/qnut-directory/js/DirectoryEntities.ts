@@ -12,7 +12,7 @@ namespace QnutDirectory {
         public phone          : string = '';
         public phone2         : string = '';
         public dateofbirth    : string = '';
-        public junior         : string = '';
+        // public junior         : string = '';
         public deceased       : string = '';
         public sortkey        : string = '';
         public notes          : string = '';

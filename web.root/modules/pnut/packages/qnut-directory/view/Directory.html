@@ -83,7 +83,8 @@
 
         <div id="family-panel"  class="row" data-bind="visible:family.visible">
             <!-- person panels -->
-            <div id="person-panel"  class="col-sm-6">
+            <div id="person-panel"
+                 data-bind="visible:personForm.viewState() !== 'empty', css: personFormColumnClass">
                 <div id="person-view-panel" data-bind="visible:personForm.viewState() == 'view'">
                     <form>
                         <fieldset id="person-view-fields">
@@ -103,13 +104,15 @@
                                     <span data-bind="text:personForm.email"></span>
                                 </a>
                             </div>
-                            <div data-bind="visible:personForm.junior">
+                            <!-- div data-bind="visible:personForm.junior">
                                 <strong><translate params="code:'dir-label-junior',translator:self"></translate></strong><br>
-                            </div>
+                            </div -->
                             <div data-bind="visible:personForm.dateOfBirth">
                                 <strong><translate params="code:'label-birth-date',translator:self"></translate>: </strong>
                                 <span data-bind="text:personForm.dateOfBirth"></span>
                             </div>
+
+
                             <div data-bind="visible:personForm.phone">
                                 <strong><translate params="code:'label-phone',translator:self"></translate>: </strong>
                                 <span data-bind="text:personForm.phone"></span>
@@ -170,7 +173,7 @@
                             <div class="input-group" style="">
                                 <input class="form-control" id="sortkey-input"
                                        data-bind="value:personForm.sortkey"/>
-                                <span class="input-group-btn"><button class="btn btn-default" type="button" data-bind="click:personForm.refreshSortKey">
+                                <span class="input-group-btn"><button class="btn btn-default" type="button" tabindex="-1" data-bind="click:personForm.refreshSortKey">
 		                            <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
                             </div>
 
@@ -189,12 +192,29 @@
                         </div>
                         <div class="form-group">
                             <label for="dob-input" class="control-label"><translate params="code:'label-birth-date',translator:self"></translate>  (<translate params="code:'dir-label-kids-only',translator:self"></translate>)</label>
-                            <input class="form-control datepicker" type="text" id="dob-input" data-bind="value:personForm.dateOfBirth"/>
+
+                            <div class="input-group" style="">
+                                <input class="form-control datepicker" type="text" id="dob-input" data-bind="value:personForm.dateOfBirth"/>
+                                <span class="input-group-btn" data-bind="visible:personForm.dateOfBirth()==''">
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle" tabindex="" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        Age?
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1" data-bind="foreach:personForm.ages">
+                                        <li><a href="#" data-bind="click:$parent.personForm.calculateDob"><span data-bind="text:$data"></span></a></li>
+                                    </ul>
+                                </div>
+                                </span>
+                            </div>
+
+
                         </div>
-                        <div class="form-group" data-bind="visible:personForm.dateOfBirth() == ''">
+
+                        <!-- div class="form-group" data-bind="visible:personForm.dateOfBirth() == ''">
                             <input id="junior-input" type="checkbox" data-bind="checked:personForm.junior"/>
                             <label for="junior-input" class="control-label"><translate params="code:'dir-label-junior',translator:self"></translate> (<translate params="code:'dir-description-young-friend',translator:self"></translate> )</label>
-                        </div>
+                        </div -->
                         <div class="form-group">
                             <label for="directory-listing-input" class="control-label"><translate params="code:'dir-label-directory-listing',translator:self"></translate>:</label>
                             <select class="form-control" id="directory-listing-input"
@@ -284,7 +304,7 @@
             </div> <!-- end person panel -->
 
             <!-- address panels -->
-            <div id="address-panel"  class="col-sm-6">
+            <div id="address-panel"  data-bind="visible:addressForm.viewState() !== 'empty', css: addressFormColumnClass">
                 <div id="address-view-panel" data-bind="visible:addressForm.viewState() == 'view'">
                     <form>
                         <fieldset id="address-view-fields">
@@ -371,7 +391,7 @@
 
                         <div class="input-group" style="">
                             <input class="form-control" id="address-sortkey-input" data-bind="value:addressForm.sortkey"/>
-                            <span class="input-group-btn"><button class="btn btn-default" type="button" data-bind="click:addressForm.refreshSortKey">
+                            <span class="input-group-btn"><button class="btn btn-default" type="button" tabindex="-1" data-bind="click:addressForm.refreshSortKey">
 		                        <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
                         </div>
                     </div>
@@ -470,7 +490,7 @@
                     </form>
                 </div>
                 <div id="address-empty-panel"  data-bind="visible:addressForm.viewState() == 'empty'">
-                    <p><translate params="code:'div-label-no-address',translator:self"></translate></p>
+                    <p><translate params="code:'dir-label-no-address',translator:self"></translate></p>
                 </div>
             </div> <!-- end address panel -->
         </div> <!-- end family panel -->

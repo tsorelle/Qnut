@@ -89,7 +89,7 @@ class InitializeDirectoryCommand extends TServiceCommand
             'dir-label-country',
             'dir-label-directory-listing',
             'dir-label-household-phone',
-            'dir-label-junior',
+            // 'dir-label-junior',
             'dir-label-kids-only',
             'dir-label-no-address',
             'dir-label-organization',

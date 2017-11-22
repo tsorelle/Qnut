@@ -83,7 +83,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         'phone'=>PDO::PARAM_STR,
         'phone2'=>PDO::PARAM_STR,
         'dateofbirth'=>PDO::PARAM_STR,
-        'junior'=>PDO::PARAM_STR,
+        // 'junior'=>PDO::PARAM_STR,
         'deceased'=>PDO::PARAM_STR,
         'listingtypeId'=>PDO::PARAM_INT,
         'sortkey'=>PDO::PARAM_STR,

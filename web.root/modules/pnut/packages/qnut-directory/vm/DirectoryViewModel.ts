@@ -585,20 +585,20 @@ namespace QnutDirectory {
 
         /** shared service response handlers **/
         private handleChangePersonAddress = (serviceResponse: Peanut.IServiceResponse) => {
-            var me = this;
+            let me = this;
             if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                var family = <IDirectoryFamily>serviceResponse.Value;
-                var currentPersonId = family.selectedPersonId;
+                let family = <IDirectoryFamily>serviceResponse.Value;
+                let currentPersonId = family.selectedPersonId;
                 me.addressesList.reset();
-                var selected = me.family.setFamily(family);
+                let selected = me.family.setFamily(family);
                 me.refreshFamilyForms(selected);
             }
         };
 
         private handleAddPersonToAddressResponse = (serviceResponse: Peanut.IServiceResponse) => {
-            var me = this;
+            let me = this;
             if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                var person = <DirectoryPerson>serviceResponse.Value;
+                let person = <DirectoryPerson>serviceResponse.Value;
                 me.personsList.reset();
                 me.family.addPersonToList(person);
                 me.buildPersonSelectList(person);
@@ -740,8 +740,8 @@ namespace QnutDirectory {
                     });
             }
             else {
-                let updateMessage = person.editState == Peanut.editState.created ? 'Adding person ...' : 'Updating person...';
-                me.application.showWaiter(updateMessage);
+                let updateAction = person.editState == Peanut.editState.created ? 'add' : 'update';
+                me.showActionWaiterBanner(updateAction,'dir-person-entity');
                 me.services.executeService('peanut.qnut-directory::UpdatePerson',person, me.handleUpdatePersonResponse)
                     .always(function() {
                         me.application.hideWaiter();
@@ -817,6 +817,19 @@ namespace QnutDirectory {
                 me.personsList.setList(list);
             }
         };
+
+        public personFormColumnClass = ko.pureComputed(() => {
+/*
+            let me = this;
+            let vs = me.addressForm.viewState();
+            let result = vs === 'empty' ?
+                'col-sm-12' : 'col-sm-6';
+*/
+            return this.addressForm.viewState() === 'empty' ? 'col-sm-12' : 'col-sm-6';
+        });
+        public addressFormColumnClass = ko.pureComputed( () => {
+            return this.personForm.viewState() === 'empty' ? 'col-sm-12' : 'col-sm-6';
+        });
     }
 
     /** Supporting Definitions **/
@@ -1178,7 +1191,7 @@ namespace QnutDirectory {
         public phone2 = ko.observable('');
         public email = ko.observable('');
         public dateOfBirth = ko.observable('');
-        public junior= ko.observable(false);
+        // public junior= ko.observable(false);
         public deceased= ko.observable('');
         public sortkey = ko.observable('');
         public notes = ko.observable('');
@@ -1207,6 +1220,8 @@ namespace QnutDirectory {
 
         private nameSubscription : KnockoutSubscription = null;
 
+        ages = ko.observableArray(['Infant','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']);
+
 
         constructor(owner: any) {
             super(owner);
@@ -1220,6 +1235,20 @@ namespace QnutDirectory {
             let me = this;
             let email = me.email();
             return email ? 'mailto:' + me.fullName() + '<' + email + '>' : '#';
+        };
+
+        calculateDob = (item: any) => {
+            let me = this;
+            if (isNaN(item)) {
+                item = 0;
+            }
+            let today = new Date;
+            let year = today.getFullYear();
+            let dd = today.getDate();
+            let mm = today.getMonth()+1; //January is 0!
+
+            year -= item;
+            me.dateOfBirth(year + '-' + mm + '-' + dd);
         };
 
         /**
@@ -1237,7 +1266,7 @@ namespace QnutDirectory {
             me.email('');
             me.dateOfBirth('');
             me.notes('');
-            me.junior(false);
+            // me.junior(false);
             me.active(1);
             me.sortkey('');
             me.directoryListingTypeId = ko.observable(1);
@@ -1273,7 +1302,7 @@ namespace QnutDirectory {
             me.email(person.email);
             me.dateOfBirth(person.dateofbirth);
             me.notes(person.notes);
-            me.junior(person.junior == '1');
+            // me.junior(person.junior == '1');
             me.active(person.active);
             me.directoryListingTypeId(person.listingtypeId);
             me.lastUpdate(person.changedon);
@@ -1418,24 +1447,26 @@ namespace QnutDirectory {
         };
 
         public updateDirectoryPerson = (person: DirectoryPerson) => {
-            // todo: check all fields included
             let me = this;
 
             person.active = me.active();
+            person.id = me.personId();
             let listingType = me.selectedDirectoryListingType();
             if (listingType) {
                 let listingId = listingType.id ? listingType.id : 0;
                 me.directoryListingTypeId(listingId);
-            }
 
+            }
+            person.affiliations = me.affiliations;
             person.listingtypeId = me.directoryListingTypeId();
-            person.id = me.personId();
             person.dateofbirth = me.dateOfBirth();
-            // todo: check this logic
+            /*
             if (person.dateofbirth) {
                 me.junior(false);
             }
             person.junior = me.junior() ? '1' : '0';
+            */
+            person.deceased = me.deceased();
             person.email = me.email();
             person.fullname = me.fullName();
             person.notes = me.notes();
