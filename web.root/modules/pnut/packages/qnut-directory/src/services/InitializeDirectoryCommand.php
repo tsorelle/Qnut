@@ -112,6 +112,7 @@ class InitializeDirectoryCommand extends TServiceCommand
             'label-birth-date',
             'label-cancel',
             'label-delete',
+            'label-deceased',
             'label-edit',
             'label-email',
             'label-error',

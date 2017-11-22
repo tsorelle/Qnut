@@ -1179,7 +1179,7 @@ namespace QnutDirectory {
         public email = ko.observable('');
         public dateOfBirth = ko.observable('');
         public junior= ko.observable(false);
-        public deceased= ko.observable(false);
+        public deceased= ko.observable('');
         public sortkey = ko.observable('');
         public notes = ko.observable('');
         public active= ko.observable(1);
@@ -1204,6 +1204,8 @@ namespace QnutDirectory {
         public orgListSubscription : KnockoutSubscription;
         public orgLookupList = ko.observableArray<Peanut.ILookupItem>();
         public orgSearchValue = ko.observable('');
+
+        private nameSubscription : KnockoutSubscription = null;
 
 
         constructor(owner: any) {
@@ -1262,7 +1264,9 @@ namespace QnutDirectory {
             }
             me.isAssigned = true;
             me.clearValidations();
-            me.fullName(person.fullname);
+            me.sortkey(person.sortkey);
+            me.setName(person.fullname);
+            // me.fullName(person.fullname);
             me.username(person.username);
             me.phone(person.phone);
             me.phone2(person.phone2);
@@ -1271,7 +1275,6 @@ namespace QnutDirectory {
             me.notes(person.notes);
             me.junior(person.junior == '1');
             me.active(person.active);
-            me.sortkey(person.sortkey);
             me.directoryListingTypeId(person.listingtypeId);
             me.lastUpdate(person.changedon);
             me.personId(person.id);
@@ -1279,8 +1282,35 @@ namespace QnutDirectory {
             me.selectedDirectoryListingType(directoryListingItem);
             me.affiliations = person.affiliations;
             me.updateAffiliationList();
-
         };
+
+        private setName = (value) => {
+            let me = this;
+            if (me.nameSubscription) {
+                me.nameSubscription.dispose();
+            }
+            me.fullName(value);
+            me.nameSubscription = me.fullName.subscribe(me.updateSortKey);
+        };
+
+        public updateSortKey = (name: string) => {
+            let me = this;
+            name = name.trim();
+            if (name == '') {
+                me.sortkey('');
+            }
+            else if (me.sortkey().trim() == '') {
+                me.sortkey(NameParser.getFileAsName(name));
+            }
+        };
+
+        public refreshSortKey = () => {
+            let me = this;
+            me.sortkey('');
+            me.updateSortKey(me.fullName());
+        };
+
+
 
         private updateAffiliationList() {
             let me = this;
@@ -1463,6 +1493,8 @@ namespace QnutDirectory {
         public selectedAddressType : KnockoutObservable<Peanut.ILookupItem> = ko.observable();
         public selectedListingType:  KnockoutObservable<Peanut.ILookupItem>  = ko.observable();
 
+        private nameSubscription : KnockoutSubscription = null;
+
         constructor(owner: any) {
             super(owner);
             let me = this;
@@ -1553,7 +1585,8 @@ namespace QnutDirectory {
             let me = this;
             me.isAssigned = true;
             me.clearValidations();
-            me.addressname(address.addressname);
+            me.sortkey(address.sortkey);
+            me.setName(address.addressname);
             me.address1(address.address1);
             me.address2(address.address2);
             me.city(address.city);
@@ -1563,7 +1596,6 @@ namespace QnutDirectory {
             me.phone(address.phone);
             me.notes(address.notes);
             me.active (address.active);
-            me.sortkey(address.sortkey);
             me.lastUpdate(address.changedon);
             me.addressId(address.id);
             me.addressTypeId(address.addresstypeId);
@@ -1573,6 +1605,38 @@ namespace QnutDirectory {
             me.selectedDirectoryListingType(directoryListingItem);
             let addressTypeItem = me.getLookupItem(address.addresstypeId, me.addressTypes());
             me.selectedAddressType(addressTypeItem);
+        };
+        
+        private setName = (value) => {
+            let me = this;
+            if (me.nameSubscription) {
+                me.nameSubscription.dispose();
+            }
+            me.addressname(value);
+            me.nameSubscription = me.addressname.subscribe(me.updateSortKey);
+        };
+
+        public updateSortKey = (name: string) => {
+            let me = this;
+            name = name.trim();
+            if (name == '') {
+                me.sortkey('');
+            }
+            else if (me.sortkey().trim() == '') {
+                let addressType = me.selectedAddressType();
+                if (addressType !== null && addressType.code == 'home') {
+                    me.sortkey(NameParser.getFileAsName(name));
+                }
+                else {
+                    me.sortkey(NameParser.getAddressSortKey(name));
+                }
+            }
+        };
+
+        public refreshSortKey = () => {
+            let me = this;
+            me.sortkey('');
+            me.updateSortKey(me.addressname());
         };
 
         public updateDirectoryAddress(address: DirectoryAddress) {
@@ -1636,15 +1700,33 @@ namespace QnutDirectory {
                     let part = parts.shift();
                     if (NameParser.isTitle(part)) {
                         if (parts.length === 0) {
-                            return last;
+                            return last.trim();
                         }
                     }
                     else {
-                        return last + ',' + part + ' ' + parts.join(' ');
+                        name = last + ',' + part + ' ' + parts.join(' ');
+                        return name.trim();
                     }
                 }
             }
 
+            return name.trim();
+        }
+
+        public static getAddressSortKey(addressname,leadingArticles='the,a,an,el,la,los') {
+            if (typeof addressname !== 'string') {
+                return <string>'';
+            }
+            let name: string = addressname ? addressname.trim().toLowerCase() : '';
+            if (name.length > 0) {
+                let articles = leadingArticles.split(',');
+                let parts = name.split(' ');
+                if (parts.length > 1 && articles.indexOf(parts[0]) > -1) {
+                    parts.shift();
+                    name = parts.join(' ');
+                    return name.trim();
+                }
+            }
             return name;
         }
 
