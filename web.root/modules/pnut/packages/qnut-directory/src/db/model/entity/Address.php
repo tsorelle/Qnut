@@ -10,6 +10,9 @@ use Tops\sys\TNameValuePair;
 
 class Address  extends \Tops\db\TimeStampedEntity
 {
+    const postalSubscriptionsProperty = 'postalsubscriptions';
+    const residentsProperty = 'residents';
+
     public $id;
     public $addressname;
     public $address1;
@@ -30,7 +33,8 @@ class Address  extends \Tops\db\TimeStampedEntity
     /**
      * @var TNameValuePair[]
      */
-    private $residents = array();
+    private $residents = [];
+    public $postalSubscriptions = [];
 
     public function assignFromObject($dto)
     {
@@ -86,10 +90,20 @@ class Address  extends \Tops\db\TimeStampedEntity
     }
 
     public function getResidents() {
-        return $this->residents;
+        return isset($this->residents) ? $this->residents : [];
     }
 
     public function setResidents($value) {
         $this->residents = $value;
     }
+
+    public function getPostalSubscriptions() {
+        return isset($this->postalSubscriptions) ? $this->postalSubscriptions : [];
+    }
+
+    public function setPostalSubscriptions(array $value) {
+        $this->postalSubscriptions = $value;
+    }
+
+
 }

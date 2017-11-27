@@ -8,8 +8,14 @@
 namespace Peanut\QnutDirectory\db\model\entity;
 
 
-class Person  extends \Tops\db\TimeStampedEntity
+use Tops\db\TimeStampedEntity;
+
+class Person  extends TimeStampedEntity
 {
+    const affiliationsProperty = 'affiliations';
+    const emailSubscriptionsProperty = 'emailsubscriptions';
+    const addressProperty = 'address';
+
     public $id;
     public $fullname;
     public $addressId;
@@ -29,7 +35,8 @@ class Person  extends \Tops\db\TimeStampedEntity
      * @var $address Address
      */
     public $address = null;
-    public $affiliations = array();
+    public $affiliations = [];
+    public $emailSubscriptions = [];
 
     public function assignFromObject($dto)
     {
@@ -75,8 +82,8 @@ class Person  extends \Tops\db\TimeStampedEntity
         if (isset($dto->active)) {
             $this->active = $dto->active;
         }
-
     }
+
     public function setAddress($address)
     {
         $this->address = $address;
@@ -92,6 +99,14 @@ class Person  extends \Tops\db\TimeStampedEntity
 
     public function setAffilliations(array $value) {
         $this->affiliations = $value;
+    }
+
+    public function getEmailSubscriptions() {
+        return isset($this->emailSubscriptions) ? $this->emailSubscriptions : array();
+    }
+
+    public function setEmailSubscriptions(array $value) {
+        $this->emailSubscriptions = $value;
     }
 
 }

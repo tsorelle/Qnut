@@ -8,6 +8,7 @@ namespace Peanut\QnutDirectory\db\model\repository;
 
 use \PDO;
 use PDOStatement;
+use Peanut\QnutDirectory\db\model\entity\Address;
 use Tops\db\TDatabase;
 use \Tops\db\TEntityRepository;
 
@@ -52,6 +53,21 @@ class AddressesRepository extends \Tops\db\TEntityRepository
 
     protected function getTableName() {
         return 'qnut_addresses';
+    }
+
+    public function getPostalSubscriptions($addressId)
+    {
+        $sql = 'SELECT listId FROM qnut_postal_subscriptions WHERE addressId=?';
+        $stmt = $this->executeStatement($sql,[$addressId]);
+        $result = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return $result;
+    }
+
+    /**
+     * @param Address $address
+     */
+    public function setPostalSubscriptions($address) {
+        $address->setPostalSubscriptions($this->getPostalSubscriptions($address->id));
     }
 
     protected function getDatabaseId() {

@@ -14,6 +14,14 @@ use \Tops\db\TEntityRepository;
 
 class PersonsRepository extends \Tops\db\TEntityRepository
 {
+    private $subscriptionsAssociation;
+    private function getSubscriptionsAssociation()
+    {
+        if (!isset($this->subscriptionsAssociation)) {
+            $this->subscriptionsAssociation = new EmailSubscriptionAssociation();
+        }
+        return $this->subscriptionsAssociation;
+    }
     /**
      * @param $name
      * @param bool $includeInactive
@@ -68,9 +76,88 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
-    public function setAffiliations(Person &$person) {
+    /**
+     * @param Person $person
+     */
+    public function setAffiliations(&$person) {
         $person->setAffilliations($this->getAffiliations($person->id));
     }
+
+    public function getSubscriptionValues($personId) {
+        return $this->getSubscriptionsAssociation()->getListValues($personId);
+    }
+
+    /**
+     * @param Person $person
+     */
+    public function setSubscriptionValues(&$person) {
+        $person->setEmailSubscriptions($this->getSubscriptionValues($person->id));
+    }
+
+
+
+    /**
+     * @param $affiliation
+     * @param array $list
+     *
+     * Data structure:
+     *   export interface IAffiliation {
+     * 		organizationId: any;
+     * 		roleId: any;
+     * 	 }
+     */
+    private function hasAffiliation($affiliation,array $list) {
+        foreach ($list as $item) {
+            if ($item->organizationId == $affiliation->organizationId && $item->roleId == $affiliation->roleId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param $person Person
+     * @param array $newAffiliations
+     */
+    public function updateAffiliations($person,array $newAffiliations) {
+        $affiliationsToAdd = array_filter($newAffiliations, function($a) use ($person) {
+            return $this->hasAffiliation($a,$person->affiliations) === false;
+        });
+        $affiliationsToDelete = array_filter($person->affiliations, function($a) use ($newAffiliations) {
+            return $this->hasAffiliation($a,$newAffiliations) === false;
+        });
+        $addCount = sizeof($affiliationsToAdd);
+        $deleteCount = sizeof($affiliationsToDelete);
+        if ($addCount + $deleteCount > 0) {
+            $dbh = $this->getConnection();
+            if ($deleteCount > 0) {
+                /**
+                 * @var PDOStatement
+                 */
+                $deleteSql = 'DELETE FROM qnut_person_affiliations WHERE personId=? AND organizationId = ? AND roleId=?';
+                $stmt = $dbh->prepare($deleteSql);
+                foreach ($affiliationsToDelete as $affiliation) {
+                    $stmt->execute([$person->id,$affiliation->organizationId,$affiliation->roleId]);
+                }
+            }
+            if ($addCount > 0) {
+                $insertSql = 'INSERT INTO qnut_person_affiliations (personId,organizationId,roleId) VALUES (?,?,?)';
+                $stmt = $dbh->prepare($insertSql);
+                foreach ($affiliationsToAdd as $affiliation) {
+                    $stmt->execute([$person->id,$affiliation->organizationId,$affiliation->roleId]);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param $person Person
+     * @param $newSubsctiption
+     */
+    public function updateEmailSubscriptions($person,$newSubsctiptions) {
+        $this->getSubscriptionsAssociation()->updateSubscriptions($person->id,$newSubsctiptions);
+    }
+
 
     protected function getFieldDefinitionList()
     {

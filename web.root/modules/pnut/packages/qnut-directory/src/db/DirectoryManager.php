@@ -22,6 +22,7 @@ class DirectoryManager
     const includeRelated = true;
     const parentClassOnly = false;
     const listDefaultFirst = true;
+
     const personsCollection = 'persons';
     const addressProperty = 'address';
     const affiliationCollection = 'affiliations';
@@ -52,7 +53,7 @@ class DirectoryManager
     }
 
 
-    public function getPersonById($personId,$includes = array())
+    public function getPersonById($personId,array $includes = [], array $addressIncludes = [])
     {
         /**
          * @var $person Person
@@ -61,32 +62,83 @@ class DirectoryManager
         if (empty($person)) {
             return false;
         }
-        if (in_array(self::addressProperty,$includes) && !empty($person->addressId)) {
-            /**
-             * @var $address Address
-             */
-            $address = $this->getAddressById($person->addressId,self::includeRelated);
-        }
-
-        if (in_array(self::affiliationCollection,$includes)) {
-            $this->getPersonsRepository()->setAffiliations($person);
-        }
-
+        $this->includePersonProperties($person,$includes, $addressIncludes);
         return $person;
     }
 
-    public function getAddressById($addressId,$includeResidents=self::parentClassOnly,$excludePersonId=0)
+    public function getAddressResidents($addressId,$includes=[]) {
+        $residents = $this->getPersonsRepository()->getAddressResidents($addressId);
+        foreach ($residents as $resident) {
+            $this->includePersonProperties($resident,$includes);
+        }
+        return $residents;
+    }
+
+    /**
+     * @param Person $person
+     * @param array $includes
+     * @param array $addressIncludes
+     */
+    public function includePersonProperties(Person &$person, array $includes=[], array $addressIncludes=[])
+    {
+        foreach ($includes as $include) {
+            switch ($include) {
+                case Person::addressProperty :
+                    /**
+                     * @var $address Address
+                     */
+                    $address = $this->getAddressById($person->addressId, $addressIncludes);
+                    if (!empty($address)) {
+                        $person->setAddress($address);
+                    }
+                    break;
+                case Person::affiliationsProperty :
+                    $this->getPersonsRepository()->setAffiliations($person);
+                    break;
+                case Person::emailSubscriptionsProperty :
+                    $this->getPersonsRepository()->setSubscriptions($person);
+                    break;
+            }
+        }
+    }
+
+
+    public function getAddressById($addressId,array $includes=[],array $residentIncludes=[])
     {
         /**
          * @var $address Address
          */
         $address = $this->getAddressesRepository()->get($addressId);
-        if ($includeResidents && !empty($address)) {
-            $residents = $this->getPersonsRepository()->getAddressResidents($addressId);
-            $address->setResidents($residents);
+        if (empty($address)) {
+            return false;
         }
+        $this->includeAddressProperties($address, $includes,$residentIncludes);
+
         return $address;
     }
+
+    /**
+     * @param $address Address
+     * @param array $includes
+     */
+    private function includeAddressProperties(Address &$address, array $includes=[],array $residentIncludes=[])
+    {
+        foreach ($includes as $include) {
+            switch ($include) {
+                case Address::residentsProperty :
+                    $residents = $this->getPersonsRepository()->getAddressResidents($address->id);
+                    foreach ($residents as $resident) {
+                        $this->includePersonProperties($resident, $residentIncludes);
+                    }
+                    $address->setResidents($residents);
+                    break;
+                case Address::postalSubscriptionsProperty :
+                    $this->getAddressesRepository()->setPostalSubscriptions($address);
+                    break;
+            }
+        }
+    }
+
 
     public function getDirectoryListingTypeList()
     {
@@ -148,8 +200,12 @@ class DirectoryManager
         return $this->getPersonsRepository()->search($Value);
     }
 
+
     public function getAddressList($Value)
     {
         return $this->getAddressesRepository()->search($Value);
     }
+
+
+
 }

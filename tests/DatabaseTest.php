@@ -16,6 +16,17 @@ class DatabaseTest extends TestCase
     }
 
 
+    public function testArr() {
+        $this->ClearCaches();
+        $dbh = \Tops\db\TDatabase::getConnection();
+        $q = $dbh->prepare("SELECT id from qnut_persons");
+        $s = $q->execute();
+        $a = $q->fetchAll(PDO::FETCH_COLUMN);
+        $this->assertNotEmpty($a);
+
+
+    }
+
     public function testConnection() {
         $this->ClearCaches();
         $dbh = \Tops\db\TDatabase::getConnection();
@@ -47,6 +58,56 @@ class DatabaseTest extends TestCase
         $searchVal = 'tom';
         $actual = $repository->search($searchVal);
         $this->assertNotEmpty($actual);
+
+    }
+
+    public function testEmailAsso() {
+        $repository = new \Peanut\QnutDirectory\db\model\repository\EmailSubscriptionAssociation();
+        $listId = 12;
+        $personId = 173;
+        $subscriptions = [9,10,11,12];
+
+        $repository->removeSubscriber($personId);
+        $repository->updateSubscriptions($personId,$subscriptions);
+
+        $actual = $repository->getLists($personId);
+        $this->assertNotEmpty($actual);
+
+        $actual = $repository->getListValues($personId);
+        $this->assertNotEmpty($actual);
+
+        $actual = $repository->getSubscribers($listId);
+        $this->assertNotEmpty($actual);
+
+        $actual = $repository->getSubscriberValues($listId);
+        $this->assertNotEmpty($actual);
+
+        $repository->updateSubscriptions($personId,[9,10,12,100,101]);
+
+        $repository->unsubscribe($personId,$listId);
+
+        $repository->subscribe($personId,$listId);
+
+        $repository->removeList($listId);
+
+        $repository->updateSubscriptions($personId,$subscriptions);
+
+    }
+
+    public function testPostalAsso() {
+        $repository = new \Peanut\QnutDirectory\db\model\repository\PostaSubscriptionAssociation();
+        $actual = $repository->getLists(110);
+        $this->assertNotEmpty($actual);
+
+        $actual = $repository->getRightValues(110);
+        $this->assertNotEmpty($actual);
+
+        $actual = $repository->getAddresses(1);
+        $this->assertNotEmpty($actual);
+
+        $actual = $repository->getLeftValues(1);
+        $this->assertNotEmpty($actual);
+
 
     }
 
