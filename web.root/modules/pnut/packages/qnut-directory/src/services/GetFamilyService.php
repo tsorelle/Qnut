@@ -54,6 +54,7 @@ use Tops\sys\TLanguage;
  *               public active         : number = 1;
  *
  *               public residents : Peanut.INameValuePair[];
+ *               public postalSubscriptions: any[];
  *
  *               public editState: number = Peanut.editState.created; // added on client side.
  *           }
@@ -79,6 +80,7 @@ use Tops\sys\TLanguage;
  *
  *               public address: DirectoryAddress;
  *               public affiliations: IAffiliation[];
+ *               public emailSubscriptions : any[];
  *
  *               public editState : number = Peanut.editState.created; // added on client side
  *           }

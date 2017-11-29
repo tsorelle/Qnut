@@ -13,6 +13,7 @@
 
 namespace QnutDirectory {
     import ILookupItem = Peanut.ILookupItem;
+    import INameValuePair = Peanut.INameValuePair;
 
     /** Service Contracts  and related interfaces **/
 
@@ -48,6 +49,10 @@ namespace QnutDirectory {
         postalLists : Peanut.ILookupItem[];
         family : IDirectoryFamily;
         translations : string[];
+    }
+
+    interface ISubscriptionListItem extends Peanut.ILookupItem  {
+        subscribed: boolean;
     }
 
     /** View Model **/
@@ -154,7 +159,11 @@ namespace QnutDirectory {
                         me.personForm.affiliationRoles(response.affiliationRoles);
                         me.directoryListingTypes(response.listingTypes);
                         me.addressForm.addressTypes(response.addressTypes);
-                        me.userIsAuthorized(true);
+                        me.userIsAuthorized(true); // todo: set from response
+
+                        me.personForm.assignEmailSubscriptionList(response.emailLists);
+                        me.addressForm.assignPostalSubscriptionList(response.postalLists);
+
                         if (response.family) {
                             me.searchType('Persons');
                             me.selectFamily(response.family);
@@ -1179,6 +1188,41 @@ namespace QnutDirectory {
             return result;
         };
 
+        protected createSubscriptionList(list: KnockoutObservableArray<ISubscriptionListItem>,items: Peanut.ILookupItem[]) {
+            items.sort((a: Peanut.ILookupItem, b: Peanut.ILookupItem) => {
+                if (a.name === b.name) {
+                    return 0;
+                }
+                else if (a.name > b.name) {
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
+            });
+            _.each(items, (item) => {
+                list.push(
+                    <ISubscriptionListItem>{
+                    code : item.code,
+                    id: item.id,
+                    name: item.name,
+                    description: item.description,
+                    subscribed: false
+                });
+            });
+
+        }
+
+        protected assignSubscriptions(list: KnockoutObservableArray<ISubscriptionListItem>,subscriptions: any[]) {
+            let me = this;
+            let temp = list();
+            _.each(temp,(item: ISubscriptionListItem) => {
+                item.subscribed =  subscriptions.indexOf(item.id) > -1;
+            });
+            list(temp);
+        }
+
+
     }
 
     /**
@@ -1218,6 +1262,10 @@ namespace QnutDirectory {
         public orgLookupList = ko.observableArray<Peanut.ILookupItem>();
         public orgSearchValue = ko.observable('');
 
+        public emailSubscriptionList : KnockoutObservableArray<ISubscriptionListItem> = ko.observableArray([])
+
+       // public emailLists :
+
         private nameSubscription : KnockoutSubscription = null;
 
         ages = ko.observableArray(['Infant','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']);
@@ -1251,6 +1299,18 @@ namespace QnutDirectory {
             me.dateOfBirth(year + '-' + mm + '-' + dd);
         };
 
+        assignEmailSubscriptionList(items: Peanut.ILookupItem[]) {
+            let me = this;
+            this.createSubscriptionList(me.emailSubscriptionList,items);
+        }
+
+        assignEmailSubscriptions(subscriptions: any[]) {
+            let me=this;
+            me.assignSubscriptions(me.emailSubscriptionList,subscriptions);
+        }
+
+
+
         /**
          * reset fields
          */
@@ -1272,6 +1332,7 @@ namespace QnutDirectory {
             me.directoryListingTypeId = ko.observable(1);
             me.lastUpdate('');
             me.personId('');
+            me.assignEmailSubscriptions([]);
         }
 
         public clearValidations() {
@@ -1311,6 +1372,7 @@ namespace QnutDirectory {
             me.selectedDirectoryListingType(directoryListingItem);
             me.affiliations = person.affiliations;
             me.updateAffiliationList();
+            me.assignEmailSubscriptions(person.emailSubscriptions);
         };
 
         private setName = (value) => {
@@ -1523,6 +1585,7 @@ namespace QnutDirectory {
         public addressTypes : KnockoutObservableArray<Peanut.ILookupItem> = ko.observableArray([]);
         public selectedAddressType : KnockoutObservable<Peanut.ILookupItem> = ko.observable();
         public selectedListingType:  KnockoutObservable<Peanut.ILookupItem>  = ko.observable();
+        public postalSubscriptionList: KnockoutObservableArray<ISubscriptionListItem> = ko.observableArray([]);
 
         private nameSubscription : KnockoutSubscription = null;
 
@@ -1564,6 +1627,17 @@ namespace QnutDirectory {
             return result;
         };
 
+        assignPostalSubscriptionList(items: Peanut.ILookupItem[]) {
+            let me = this;
+            this.createSubscriptionList(me.postalSubscriptionList,items);
+        }
+
+        assignPostalSubscriptions(subscriptions: any[]) {
+            let me=this;
+            me.assignSubscriptions(me.postalSubscriptionList,subscriptions);
+        }
+
+
         /**
          * reset fields
          */
@@ -1586,6 +1660,7 @@ namespace QnutDirectory {
             me.addressId(null);
             me.addressTypeId(1);
             me.directoryListingTypeId(1);
+            me.assignPostalSubscriptions([]);
         }
 
         private clearValidations() {
@@ -1636,6 +1711,7 @@ namespace QnutDirectory {
             me.selectedDirectoryListingType(directoryListingItem);
             let addressTypeItem = me.getLookupItem(address.addresstypeId, me.addressTypes());
             me.selectedAddressType(addressTypeItem);
+            me.assignPostalSubscriptions(address.postalSubscriptions);
         };
         
         private setName = (value) => {

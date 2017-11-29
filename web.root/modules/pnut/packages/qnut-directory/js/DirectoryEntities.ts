@@ -24,6 +24,7 @@ namespace QnutDirectory {
 
         public address: DirectoryAddress;
         public affiliations: IAffiliation[];
+        public emailSubscriptions : any[];
 
         public editState : number = Peanut.editState.created;
     }
@@ -64,6 +65,7 @@ namespace QnutDirectory {
         public active         : number = 1;
 
         public residents : Peanut.INameValuePair[];
+        public postalSubscriptions: any[];
 
         public editState: number = Peanut.editState.created;
     }
