@@ -132,6 +132,14 @@
                                     </table>
                                 </div>
                             </div>
+
+                            <div data-bind="visible:personForm.emailSubscriptionsView().length > 0">
+                                <strong><translate params="code:'dir-label-subscriptions',translator:self"></translate>: </strong></br>
+                                <ul data-bind="foreach:personForm.emailSubscriptionsView">
+                                    <li data-bind="text:name"></li>
+                                </ul>
+                            </div>
+
                             <div data-bind="visible:personForm.deceased">
                                 <strong><translate params="code:'label-deceased',translator:self"></translate>: </strong>
                                 <span data-bind="text:personForm.deceased"></span>
@@ -239,6 +247,17 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <div class="form-group">
+                            <label class="control-label"><translate params="code:'dir-label-subscriptions',translator:self"></translate></label>
+                            <ul  style="list-style: none" data-bind="foreach:personForm.emailSubscriptionList">
+                                <li>
+                                    <input type="checkbox" data-bind="checked:subscribed"/>
+                                    <span data-bind="text:name"></span>
+                                </li>
+                            </ul>
+                        </div>
+
                         <div class="form-group">
                             <label for="deceased-input" class="control-label"><translate params="code:'label-deceased',translator:self"></translate></label>
                             <input class="form-control datepicker" type="text" id="deceased-input" data-bind="value:personForm.deceased"/>
@@ -346,6 +365,14 @@
                                 <strong><translate params="code:'dir-label-household-phone',translator:self"></translate>: </strong>
                                 <span data-bind="text:addressForm.phone"></span>
                             </div>
+
+                            <div data-bind="visible:addressForm.postalSubscriptionsView().length > 0">
+                                <strong><translate params="code:'dir-label-subscriptions',translator:self"></translate>: </strong></br>
+                                <ul data-bind="foreach:addressForm.postalSubscriptionsView">
+                                    <li data-bind="text:name"></li>
+                                </ul>
+                            </div>
+
                             <div data-bind="visible:addressForm.notes">
                                 <strong><translate params="code:'label-notes',translator:self"></translate>:</strong><br>
                                 <span data-bind="text:addressForm.notes"><translate params="code:'label-notes',translator:self"></translate></span>
@@ -429,6 +456,17 @@
                         <label for="address-phone-input" class="control-label"><translate params="code:'dir-label-household-phone',translator:self"></translate></label>
                         <input class="form-control" id="address-phone-input" data-bind="value:addressForm.phone"/>
                     </div>
+
+                    <div class="form-group">
+                        <label class="control-label"><translate params="code:'dir-label-subscriptions',translator:self"></translate></label>
+                        <ul  style="list-style: none" data-bind="foreach:addressForm.postalSubscriptionList">
+                            <li>
+                                <input type="checkbox" data-bind="checked:subscribed"/>
+                                <span data-bind="text:name"></span>
+                            </li>
+                        </ul>
+                    </div>
+
                     <div class="form-group">
                         <label for="addr-directory-listing-input" class="control-label"><translate params="code:'dir-label-directory-listing',translator:self"></translate>:</label>
                         <select class="form-control" id="addr-directory-listing-input"

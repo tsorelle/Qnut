@@ -99,6 +99,7 @@ class InitializeDirectoryCommand extends TServiceCommand
             'dir-label-sort-key',
             'dir-label-state',
             'dir-label-street-address',
+            'dir-label-subscriptions',
             'dir-label-user-name',
             'dir-list-new-person',
             'dir-person-entity',

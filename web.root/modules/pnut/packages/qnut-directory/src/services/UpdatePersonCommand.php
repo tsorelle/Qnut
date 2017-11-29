@@ -21,36 +21,14 @@ class UpdatePersonCommand extends TServiceCommand
     }
 
 
-    /**
-     * @param $affiliation
-     * @param array $list
-     *
-     * Data structure:
-     *   export interface IAffiliation {
-     * 		organizationId: any;
-     * 		roleId: any;
-     * 	 }
-     */
-    private function hasAffiliation($affiliation,array $list) {
-        foreach ($list as $item) {
-            if ($item->organizationId == $affiliation->organizationId && $item->roleId == $affiliation->roleId) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     protected function run()
     {
         $request = $this->getRequest();
         $manager = new DirectoryManager();
         $id = $request->personId;
         $person = null;
-        $affiliationsToAdd = [];
-        $affiliationsToDelete = [];
         if ($request->editState == 1) { // editState.created
             $person = new Person();
-            $affiliationsToAdd = $request->affiliations;
         }
         else {
             $person = $manager->getPersonById($id);
@@ -60,17 +38,17 @@ class UpdatePersonCommand extends TServiceCommand
             }
         }
 
-        $valid = $person->
-        updateFromDataTransferObject($request);
+/*        $valid = $person->updateFromDataTransferObject($request);
         if (!$valid) {
             $this->addErrorMessage('Cannot update person entity due to invalid data.');
         }
 
         $manager->updateEntity($person);
         $result = $person->getDataTransferObject();
-        $this->setReturnValue($result);
+        $this->setReturnValue($result);*/
 
 
+        //todo: finish implementation
         $this->addErrorMessage('Not implemented yet');
     }
 }

@@ -663,7 +663,7 @@ namespace QnutDirectory {
         /**
          * handle save click on address form in edit mode
          */
-        public saveAddress() {
+        public saveAddress = () => {
             let me = this;
 
             if (!me.addressForm.validate()) {
@@ -1213,13 +1213,34 @@ namespace QnutDirectory {
 
         }
 
-        protected assignSubscriptions(list: KnockoutObservableArray<ISubscriptionListItem>,subscriptions: any[]) {
+        protected assignSubscriptions(
+            checkList: KnockoutObservableArray<ISubscriptionListItem>,
+            viewList: KnockoutObservableArray<ISubscriptionListItem>,subscriptions: any[]) {
             let me = this;
-            let temp = list();
-            _.each(temp,(item: ISubscriptionListItem) => {
-                item.subscribed =  subscriptions.indexOf(item.id) > -1;
+            let check = checkList();
+            let view = [];
+            _.each(check,(item: ISubscriptionListItem) => {
+                if (subscriptions.indexOf(item.id) > -1) {
+                    item.subscribed =  subscriptions.indexOf(item.id) > -1;
+                    view.push(item);
+                }
             });
-            list(temp);
+            checkList(check);
+            viewList(view);
+        }
+
+        protected getSelectedSubscriptions(checkList: KnockoutObservableArray<ISubscriptionListItem>,
+                                      viewList: KnockoutObservableArray<ISubscriptionListItem>) {
+            let selected = [];
+            let subscriptions = checkList();
+            let temp = _.filter(subscriptions,(item: ISubscriptionListItem) => {
+                if (item.subscribed) {
+                    selected.push(item.id);
+                    return true;
+                }
+            });
+            viewList(temp);
+            return selected;
         }
 
 
@@ -1263,6 +1284,7 @@ namespace QnutDirectory {
         public orgSearchValue = ko.observable('');
 
         public emailSubscriptionList : KnockoutObservableArray<ISubscriptionListItem> = ko.observableArray([])
+        public emailSubscriptionsView : KnockoutObservableArray<ISubscriptionListItem> = ko.observableArray([])
 
        // public emailLists :
 
@@ -1306,7 +1328,7 @@ namespace QnutDirectory {
 
         assignEmailSubscriptions(subscriptions: any[]) {
             let me=this;
-            me.assignSubscriptions(me.emailSubscriptionList,subscriptions);
+            me.assignSubscriptions(me.emailSubscriptionList,me.emailSubscriptionsView, subscriptions);
         }
 
 
@@ -1536,6 +1558,7 @@ namespace QnutDirectory {
             person.phone2 = me.phone2();
             person.sortkey = me.sortkey();
             person.username = me.username();
+            person.emailSubscriptions = me.getSelectedSubscriptions(me.emailSubscriptionList,me.emailSubscriptionsView);
         };
 
         public validate = ():boolean => {
@@ -1586,6 +1609,7 @@ namespace QnutDirectory {
         public selectedAddressType : KnockoutObservable<Peanut.ILookupItem> = ko.observable();
         public selectedListingType:  KnockoutObservable<Peanut.ILookupItem>  = ko.observable();
         public postalSubscriptionList: KnockoutObservableArray<ISubscriptionListItem> = ko.observableArray([]);
+        public postalSubscriptionsView: KnockoutObservableArray<ISubscriptionListItem> = ko.observableArray([]);
 
         private nameSubscription : KnockoutSubscription = null;
 
@@ -1634,7 +1658,7 @@ namespace QnutDirectory {
 
         assignPostalSubscriptions(subscriptions: any[]) {
             let me=this;
-            me.assignSubscriptions(me.postalSubscriptionList,subscriptions);
+            me.assignSubscriptions(me.postalSubscriptionList,me.postalSubscriptionsView, subscriptions);
         }
 
 
@@ -1767,6 +1791,7 @@ namespace QnutDirectory {
                 me.directoryListingTypeId(listingId);
             }
             address.listingtypeId = me.directoryListingTypeId();
+            address.postalSubscriptions = me.getSelectedSubscriptions(me.postalSubscriptionList,me.postalSubscriptionsView);
         }
     }
 
