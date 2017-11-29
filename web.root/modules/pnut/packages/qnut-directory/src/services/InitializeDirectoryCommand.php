@@ -36,6 +36,7 @@ use Peanut\QnutDirectory\db\DirectoryManager;
  *      persons: DirectoryPerson[];
  *      selectedPersonId : any;
  *   }
+ *   See GetFamilyService for details
  */
 
 
@@ -64,13 +65,11 @@ class InitializeDirectoryCommand extends TServiceCommand
         $result->family = null;
         $personId = $this->getRequest();
         if ($personId) {
-            $person = $manager->getPersonById($personId);
-            if (empty($person)) {
-                $this->addErrorMessage('Person not found for id ' . $personId);
-            } else {
-                $result->family = GetFamilyResponse::BuildResponseForPerson($person);
-            }
+            $service = new GetFamilyService($this->getMessages());
+            $service->getPerson($personId);
+            $result->family = $service->getResponse();
         }
+
         $result->translations = TLanguage::getTranslations(array(
             'dir-address-entity',
             'dir-address-entity-plural',

@@ -90,6 +90,21 @@ class PersonsRepository extends \Tops\db\TEntityRepository
     /**
      * @param Person $person
      */
+    public function setSubscriptions(&$person) {
+
+        $subscriptions = $this->getSubscriptionValues($person->id);
+        if ($subscriptions === false) {
+            return;
+        }
+        $person->setEmailSubscriptions($this->getSubscriptionValues($person->id));
+    }
+
+
+
+
+    /**
+     * @param Person $person
+     */
     public function setSubscriptionValues(&$person) {
         $person->setEmailSubscriptions($this->getSubscriptionValues($person->id));
     }

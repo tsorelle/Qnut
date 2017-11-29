@@ -20,13 +20,21 @@ use Tops\services\TServiceCommand;
  * @package Peanut\QnutDirectory\services
  *
  * Service contract
- *   Request: INameValue
+ *   Request:
+ *       export interface INameValuePair {
+ *               Name: string;
+ *               Value: any;
+ *           }
+ *        Where Name is 'Address' or 'Person' and Value is corresponding entity id (personId or addressId)
+ *
  *   Response:
- *     interface IDirectoryFamily {
- *         address : DirectoryAddress;
- *         persons: DirectoryPerson[];
- *         selectedPersonId : any;
- *     }
+ *           interface IDirectoryFamily {
+ *               address : DirectoryAddress;
+ *               persons: DirectoryPerson[];
+ *               selectedPersonId : any;
+ *           }
+ *          See GetFamilyService for details
+ *
  */
 class GetFamilyCommand extends TServiceCommand
 {
@@ -37,48 +45,20 @@ class GetFamilyCommand extends TServiceCommand
 
     protected function run()
     {
-        // todo: translate error messages
         $request = $this->getRequest();
-        $manager = new DirectoryManager();
-        $response = new \stdClass();
+        $service = new GetFamilyService($this->getMessages());
         if ($request->Name == 'Persons') {
-            $person = $manager->getPersonById($request->Value,
-                [   Person::affiliationsProperty,
-                    Person::emailSubscriptionsProperty]);
-            if (empty($person)) {
-                $this->addErrorMessage('Person not found for id ' . $request->Value);
-                return;
-            }
-            $address = $manager->getAddressById($person->addressId, [Address::postalSubscriptionsProperty]);
-            $response->address = $address;
-            if (empty($address)) {
-                $response->persons = [$person];
-            }
-            else {
-                $response->persons =
-                    $manager->getAddressResidents($address->id,
-                        [   Person::emailSubscriptionsProperty,
-                            Person::affiliationsProperty]);
-            }
-            $response->selectedPersonId = $person->id;
+            $service->GetPerson($request->Value);
         }
         else if ($request->Name == 'Addresses') {
-            $address = $manager->getAddressById($request->Value, [Address::postalSubscriptionsProperty]);
-            if (empty($address)) {
-                $this->addErrorMessage('Address not found for id  ' . $request->Value);
-            }
-            $response->address = $address;
-            $response->persons =
-                $manager->getAddressResidents($address->id,
-                    [   Person::emailSubscriptionsProperty,
-                        Person::affiliationsProperty]);
-            $response->selectedPersonId = empty($response->persons) ? null : $response->persons[0]->id;
+            $service->GetAddress($request->Value);
         }
         else {
             $this->addErrorMessage('Invalid request name');
             return;
         }
 
+        $response = $service->getResponse();
         $this->setReturnValue($response);
     }
 }

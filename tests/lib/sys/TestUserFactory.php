@@ -8,10 +8,10 @@
 
 namespace Qnut\test\sys;
 
-use Tops\sys\TUser;
+use Tops\sys\IUser;
 use Peanut\qnut\cms\CmsUser;
 
-class TestUserFactory
+class TestUserFactory  implements \Tops\sys\IUserFactory
 {
     private static $config = ['settings' => ['current' => 'guest']];
 
@@ -19,10 +19,29 @@ class TestUserFactory
         self::$config['settings']['current'] = $username;
     }
 
+    public static function setAdmin() {
+        if (empty(self::$config['admin'])) {
+            self::addUser(self::CreateAdmin());
+        }
+        self::$config['settings']['current'] = 'admin';
+    }
+
+    public static function setTestUser($roles='') {
+        if (empty(self::$config['testuser'])) {
+            self::addUser(self::CreateUserConfig($roles));
+        }
+        self::$config['settings']['current'] = 'testuser';
+    }
+
+    public static function setGuest() {
+        self::$config['settings']['current'] = 'guest';
+    }
+
     public static function addUser($userConfig,$setCurrent=true) {
-        self::$config[$userConfig->name] = $userConfig;
+        $name = $userConfig['name'];
+        self::$config[$name] = $userConfig;
         if ($setCurrent) {
-            self::setCurrent($userConfig->name);
+            self::setCurrent($name);
         }
     }
 
@@ -47,12 +66,13 @@ class TestUserFactory
 
     }
 
-    public static function GetUser() {
+    /**
+     * @return IUser
+     */
+    public function createUser()
+    {
         return new CmsUser(self::$config);
     }
 
-    public static function SetCurrentUser() {
-        TUser::setCurrent();
-    }
 
 }

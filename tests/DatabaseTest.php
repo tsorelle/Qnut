@@ -95,7 +95,7 @@ class DatabaseTest extends TestCase
     }
 
     public function testPostalAsso() {
-        $repository = new \Peanut\QnutDirectory\db\model\repository\PostaSubscriptionAssociation();
+        $repository = new \Peanut\QnutDirectory\db\model\repository\PostalSubscriptionAssociation();
         $actual = $repository->getLists(110);
         $this->assertNotEmpty($actual);
 

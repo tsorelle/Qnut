@@ -11,7 +11,7 @@ namespace Peanut\QnutDirectory\db\model\repository;
 
 use Tops\db\TAssociationRepository;
 
-class PostaSubscriptionAssociation extends SubscriptionAssociation
+class PostalSubscriptionAssociation extends SubscriptionAssociation
 {
     public function __construct()
     {
