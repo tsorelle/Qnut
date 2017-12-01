@@ -37,10 +37,10 @@
                     <translate params="code:'label-found',translator:self"></translate> <span class="caret"></span>: <span data-bind="text: familiesList.selectionCount"></span> <span data-bind="text: searchType"></span>.
                 </div>
                 <div class="col-md-2" style="padding-right: 3px" data-bind="visible:familiesList.hasPrevious">
-                    <a href="#"  data-bind="click:familiesList.previousPage"><span class="glyphicon glyphicon-backward"></span> Show&nbsp;Previous</a>
+                    <a href="#"  data-bind="click:familiesList.previousPage"><span class="fa fa-backward"></span> Show&nbsp;Previous</a>
                 </div>
                 <div class="col-md-2" style="padding-right: 3px" data-bind="visible:familiesList.hasMore">
-                    <a href="#" data-bind="click:familiesList.nextPage">Show&nbsp;More&nbsp;<span class="glyphicon glyphicon-forward"></span></a>
+                    <a href="#" data-bind="click:familiesList.nextPage">Show&nbsp;More&nbsp;<span class="fa fa-forward"></span></a>
                 </div>
                 <div class="col-md-6"></div>
             </div> <!-- end found header -->
@@ -168,7 +168,7 @@
                         </div>
                         <legend data-bind="text:personFormHeader"></legend>
                         <div class="alert alert-danger" role="alert" data-bind="visible:personForm.hasErrors">
-                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                            <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
                             <span class="sr-only"><translate params="code:'label-error',translator:self"></translate> :</span>
                             <translate params="code:'form-error-message',translator:self"></translate>
                         </div>
@@ -277,9 +277,9 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <button class="btn btn-default" data-bind="click:findPersons" title="Search"><span class="glyphicon glyphicon-search"></span> </button>
-                                    <button class="btn btn-default" data-bind="click:createPersonForAddress" title="Create new person for address."><span class="glyphicon glyphicon-plus"></span></button>
-                                    <button class="btn btn-default" data-bind="click:cancelPersonSearch" title="Cancel"><span class="glyphicon glyphicon-remove"></span></button>
+                                    <button class="btn btn-default" data-bind="click:findPersons" title="Search"><span class="fa fa-search"></span> </button>
+                                    <button class="btn btn-default" data-bind="click:createPersonForAddress" title="Create new person for address."><span class="fa fa-plus"></span></button>
+                                    <button class="btn btn-default" data-bind="click:cancelPersonSearch" title="Cancel"><span class="fa fa-remove"></span></button>
                                 </div>
                             </div>
                             <div id="findPersonResults"  class="row found well" data-bind="visible:personsList.selectionCount">
@@ -397,7 +397,7 @@
                         <button class="btn btn-default" data-bind="click:cancelAddressEdit"><translate params="code:'label-cancel',translator:self"></translate> </button>
                     </div>
                     <div class="alert alert-danger" role="alert" data-bind="visible:addressForm.hasErrors">
-                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
                         <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
                         <translate params="code:'form-error-message',translator:self"></translate>
                     </div>
@@ -487,9 +487,9 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <button class="btn btn-default" data-bind="click:findAddresses" title="Search"><span class="glyphicon glyphicon-search"></span> </button>
-                                    <button class="btn btn-default" data-bind="click:createAddressForPerson" title="Create new address for person."><span class="glyphicon glyphicon-plus"></span></button>
-                                    <button class="btn btn-default" data-bind="click:cancelAddressSearch" title="Cancel"><span class="glyphicon glyphicon-remove"></span></button>
+                                    <button class="btn btn-default" data-bind="click:findAddresses" title="Search"><span class="fa fa-search"></span> </button>
+                                    <button class="btn btn-default" data-bind="click:createAddressForPerson" title="Create new address for person."><span class="fa fa-plus"></span></button>
+                                    <button class="btn btn-default" data-bind="click:cancelAddressSearch" title="Cancel"><span class="fa fa-remove"></span></button>
                                 </div>
                             </div>
                             <div id="findAddressResults"  class="row found well" data-bind="visible:addressesList.selectionCount">

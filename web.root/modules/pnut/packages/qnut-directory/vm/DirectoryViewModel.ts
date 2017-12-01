@@ -277,6 +277,8 @@ namespace QnutDirectory {
          * @param addressItem
          */
         public assignAddressToPerson = (addressItem : Peanut.INameValuePair) => {
+            // todo: Test case: move person
+
             let me = this;
             let request = <IAddressPersonServiceRequest> {
                 addressId: addressItem.Value,
@@ -448,6 +450,8 @@ namespace QnutDirectory {
         }
 
         public executeDeleteAddress() {
+            // todo: Test case: delete address
+
             let me = this;
             jQuery("#confirm-delete-address-modal").modal('hide');
             let addressId = me.family.address ? me.family.address.id : 0;
@@ -475,6 +479,8 @@ namespace QnutDirectory {
         }
 
         public executeDeletePerson() {
+            // todo: Test case: delete person
+
             let me = this;
             jQuery("#confirm-delete-person-modal").modal('hide');
 
@@ -685,6 +691,7 @@ namespace QnutDirectory {
             me.addressForm.updateDirectoryAddress(address);
 
             if (address.editState == Peanut.editState.created && me.addressForm.relationId) {
+                // todo: Test case: new address for person
                 let request = <INewAddressForPersonRequest> {
                     address: address,
                     personId: me.family.selectedPersonId
@@ -696,6 +703,7 @@ namespace QnutDirectory {
                     });
             }
             else {
+                // todo: Test case: New address
                 let updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
                 me.application.showWaiter(updateMessage);
                 me.services.executeService('peanut.qnut-directory::UpdateAddress',address,
@@ -724,7 +732,6 @@ namespace QnutDirectory {
             }
 
             let person = null;
-            let updateMessage = 'Updating person...';
             let personId = me.personForm.personId();
 
             if (!personId) {
@@ -737,8 +744,8 @@ namespace QnutDirectory {
             }
             me.personForm.updateDirectoryPerson(person);
 
-            // todo: test this case New person from address
             if (person.editState == Peanut.editState.created && me.personForm.relationId) {
+                // todo: Test case: new person for address
                 let request = <INewPersonForAddressRequest> {
                     person: person,
                     addressId: me.family.address ? me.family.address.id : null
@@ -750,6 +757,7 @@ namespace QnutDirectory {
                     });
             }
             else {
+                // todo: Test case: new person
                 let updateAction = person.editState == Peanut.editState.created ? 'add' : 'update';
                 me.showActionWaiterBanner(updateAction,'dir-person-entity');
                 me.services.executeService('peanut.qnut-directory::UpdatePerson',person, me.handleUpdatePersonResponse)
