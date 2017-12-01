@@ -25,7 +25,8 @@ class DirectorySearchCommand extends TServiceCommand
         $result = array();
         $manager = new DirectoryManager();
         if ($searchRequest->Name == 'Persons') {
-            $result = $manager->getPersonList($searchRequest->Value);
+            $result = $manager->getPersonList($searchRequest->Value,
+                isset($searchRequest->Exclude) ? $searchRequest->Exclude : 0);
         }
         else if ($searchRequest->Name == 'Addresses') {
             $result = $manager->getAddressList($searchRequest->Value);

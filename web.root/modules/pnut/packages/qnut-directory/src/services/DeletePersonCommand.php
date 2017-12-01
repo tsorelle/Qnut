@@ -28,6 +28,17 @@ class DeletePersonCommand extends TServiceCommand
 
     protected function run()
     {
-        // TODO: Implement run() method.
+        $id = $this->getRequest();
+        if (empty($id)) {
+            $this->addErrorMessage('error-no-id');
+            return;
+        }
+        $person = $this->manager->getPersonById($id);
+        if (empty($person)) {
+            $this->addWarningMessage('service-warning-no-deletion',[$id]);
+            return;
+        }
+        $this->manager->removePerson($id);
+        $this->addInfoMessage('service-dropped',[$person->fullname]);
     }
 }

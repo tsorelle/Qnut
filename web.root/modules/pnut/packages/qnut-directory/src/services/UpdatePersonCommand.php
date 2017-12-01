@@ -69,6 +69,7 @@ class UpdatePersonCommand extends TServiceCommand
         else {
             $person = $this->getPerson($id);
             if ($person === false) {
+                $this->addErrorMessage('err-no-person',$id);
                 return;
             }
         }

@@ -47,6 +47,12 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         return $id;
     }
 
+    public function remove($id)
+    {
+        $this->getSubscriptionsAssociation()->removeSubscriber($id);
+        return parent::remove($id);
+    }
+
     private function addSubscriptions($personId, $postalSubscriptions)
     {
         $associations = $this->getSubscriptionsAssociation();
@@ -89,7 +95,8 @@ class AddressesRepository extends \Tops\db\TEntityRepository
             "             IF((state IS NULL OR state='') OR (city IS NULL OR city=''),'',' '), IFNULL(country,'')) ".
             "   ) AS Description FROM ".$this->getTableName(),
             $includeInactive,
-            "addressname LIKE :search OR sortkey LIKE :search  ORDER BY addressname,sortkey");
+            "addressname LIKE :search OR sortkey LIKE :search",
+            "ORDER BY addressname,sortkey");
 
         $dbh = $this->getConnection();
         /**
@@ -142,7 +149,7 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         'country'=>PDO::PARAM_STR,
         'phone'=>PDO::PARAM_STR,
         'notes'=>PDO::PARAM_STR,
-        'addresstypeid'=>PDO::PARAM_INT,
+        'addresstypeId'=>PDO::PARAM_INT,
         'sortkey'=>PDO::PARAM_STR,
         'listingtypeId'=>PDO::PARAM_INT,
         'latitude'=>PDO::PARAM_STR,

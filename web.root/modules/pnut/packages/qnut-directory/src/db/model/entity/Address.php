@@ -23,7 +23,7 @@ class Address  extends \Tops\db\TimeStampedEntity
     public $country;
     public $phone;
     public $notes;
-    public $addresstype;
+    public $addresstypeId;
     public $sortkey;
     public $listingtypeId;
     public $latitude;
@@ -68,8 +68,8 @@ class Address  extends \Tops\db\TimeStampedEntity
         if (isset($dto->notes)) {
             $this->notes = $dto->notes;
         }
-        if (isset($dto->addresstype)) {
-            $this->addresstype = $dto->addresstype;
+        if (isset($dto->addresstypeId)) {
+            $this->addresstypeId  = $dto->addresstypeId;
         }
         if (isset($dto->sortkey)) {
             $this->sortkey = $dto->sortkey;

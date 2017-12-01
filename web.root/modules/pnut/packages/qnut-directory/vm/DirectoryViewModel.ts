@@ -38,6 +38,9 @@ namespace QnutDirectory {
         address: DirectoryAddress;
     }
 
+    interface ISearchRequest extends Peanut.INameValuePair {
+        Exclude: any;
+    }
 
     interface IInitDirectoryResponse {
         canEdit : boolean;
@@ -238,8 +241,8 @@ namespace QnutDirectory {
                 }); // , selected);
                 if (me.userCanEdit()) {
                     personList.push(<Peanut.INameValuePair>{
-                        Name: 'new',
-                        Value: me.translate('dir-list-new-person') //'Find or create new person'
+                        Name: me.translate('dir-list-new-person'), //'Find or create new person'
+                        Value: 'new'
                     });
                 }
             }
@@ -262,7 +265,7 @@ namespace QnutDirectory {
                 personId: personItem.Value
             } ;
 
-
+            // todo: add person to address
             me.application.hideServiceMessages();
             me.application.showWaiter('Updating...');
             me.services.executeService('peanut.qnut-directory::AddPersonToAddress',request, me.handleAddPersonToAddressResponse)
@@ -422,10 +425,12 @@ namespace QnutDirectory {
                     }
                 }
             )
-                .always(function() {
-                    me.application.hideWaiter();
-                });
-
+            .fail(() => {
+                let err = me.services.getErrorInformation();
+            })
+            .always(function() {
+                me.application.hideWaiter();
+            });
         };
 
         /**
@@ -479,7 +484,6 @@ namespace QnutDirectory {
         }
 
         public executeDeletePerson() {
-            // todo: Test case: delete person
 
             let me = this;
             jQuery("#confirm-delete-person-modal").modal('hide');
@@ -584,11 +588,12 @@ namespace QnutDirectory {
         public findPersons() {
             let me = this;
 
-            let request =  <Peanut.INameValuePair>{
+            let request =  <ISearchRequest>{
                 Name: 'Persons',
-                Value: me.personsList.searchValue()
+                Value: me.personsList.searchValue(),
+                Exclude:  me.addressForm.viewState() == 'view' ? me.addressForm.addressId() : 0
             };
-
+            me.personsList.reset();
             me.application.hideServiceMessages();
             me.application.showWaiter('Searching...');
             me.services.executeService('peanut.qnut-directory::DirectorySearch',request, me.showPersonSearchResults)
@@ -772,6 +777,7 @@ namespace QnutDirectory {
         public selectPerson = (item : Peanut.INameValuePair) => {
             let me = this;
             if (item.Value == 'new') {
+                // me.findPersonForAddress();
                 me.personForm.search();
             }
             else {

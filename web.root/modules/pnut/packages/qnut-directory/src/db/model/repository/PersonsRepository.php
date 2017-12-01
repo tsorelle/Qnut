@@ -33,13 +33,19 @@ class PersonsRepository extends \Tops\db\TEntityRepository
      *       Description: string;
      *   }
      */
-    public function search($searchValue,$includeInactive=false) {
+    public function search($searchValue,$excludeAddress=0,
+                           $includeInactive=false) {
+
         $searchValue = "%$searchValue%";
+        $where = "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search";
+        if ($excludeAddress) {
+            $where = sprintf('(%s) and (addressId is NULL OR addressId <> :addressId)',$where);
+        }
         $sql = $this->addSqlConditionals(
             "SELECT fullname AS `Name`, id AS `Value`,CONCAT(fullname,IF (email IS NULL OR email = '','',".
             "CONCAT(' (',email,')')))  AS Description FROM ".$this->getTableName(),
             $includeInactive,
-            "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search",
+            $where, // "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search",
             "ORDER BY fullname,sortkey");
 
         $dbh = $this->getConnection();
@@ -48,6 +54,9 @@ class PersonsRepository extends \Tops\db\TEntityRepository
          */
         $stmt = $dbh->prepare($sql);
         $stmt->bindParam(':search',$searchValue);
+        if ($excludeAddress) {
+            $stmt->bindParam(':addressId',$excludeAddress);
+        }
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_OBJ);
         return $result;
@@ -207,6 +216,17 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
+    public function assignPersonAddress($personId,$addressId) {
+        $sql = 'UPDATE '.$this->getTableName().' SET addressId=? WHERE id=?';
+        $this->executeStatement($sql,[$addressId,$personId]);
+    }
+
+    public function remove($id)
+    {
+        $this->getSubscriptionsAssociation()->removeSubscriber($id);
+        return parent::remove($id);
+    }
+
     public function insert($dto, $userName = 'admin')
     {
         $id = parent::insert($dto, $userName);
@@ -221,6 +241,16 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         }
         return $id;
 
+    }
+
+    public function unlinkAddress($addressId) {
+        $sql = 'UPDATE '.$this->getTableName().' SET addressId = null where addressId=?';
+        $this->executeStatement($sql,[$addressId]);
+    }
+
+    public function linkAddress($personId,$addressId) {
+        $sql = 'UPDATE '.$this->getTableName().' SET addressId = ? where personId=?';
+        $this->executeStatement($sql,[$addressId,$personId]);
     }
 
     protected function getFieldDefinitionList()

@@ -28,6 +28,17 @@ class DeleteAddressCommand extends TServiceCommand
 
     protected function run()
     {
-        // TODO: Implement run() method.
+        $id = $this->getRequest();
+        if (empty($id)) {
+            $this->addErrorMessage('error-no-id');
+            return;
+        }
+        $address = $this->manager->getAddressById($id);
+        if (empty($address)) {
+            $this->addWarningMessage('service-warning-no-deletion',[$id]);
+            return;
+        }
+        $this->manager->removeAddress($id);
+        $this->addInfoMessage('service-dropped',[$address->addressname]);
     }
 }

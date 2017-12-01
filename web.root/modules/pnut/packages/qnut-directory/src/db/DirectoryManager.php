@@ -88,6 +88,9 @@ class DirectoryManager
     }
 
 
+    public function assignPersonAddress($personId,$addressId) {
+        $this->getPersonsRepository()->assignPersonAddress($personId,$addressId);
+    }
 
     public function getPersonById($personId,array $includes = [], array $addressIncludes = [])
     {
@@ -104,6 +107,9 @@ class DirectoryManager
 
     public function getAddressResidents($addressId,$includes=[]) {
         $residents = $this->getPersonsRepository()->getAddressResidents($addressId);
+        if (!is_array($residents)) {
+            return [];
+        }
         foreach ($residents as $resident) {
             $this->includePersonProperties($resident,$includes);
         }
@@ -231,9 +237,9 @@ class DirectoryManager
         return $repository->getLookupList($translate);
     }
 
-    public function getPersonList($Value)
+    public function getPersonList($Value,$excludeAddress=0)
     {
-        return $this->getPersonsRepository()->search($Value);
+        return $this->getPersonsRepository()->search($Value,$excludeAddress);
     }
 
 
@@ -242,6 +248,14 @@ class DirectoryManager
         return $this->getAddressesRepository()->search($Value);
     }
 
+    public function removePerson($personId) {
+        $this->getPersonsRepository()->remove($personId);
+    }
+
+    public function removeAddress($addressId) {
+        $this->getPersonsRepository()->unlinkAddress($addressId);
+        $this->getAddressesRepository()->remove($addressId);
+    }
 
 
 }
