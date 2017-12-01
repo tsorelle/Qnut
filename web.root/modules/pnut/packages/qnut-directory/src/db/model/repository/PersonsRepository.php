@@ -151,24 +151,19 @@ class PersonsRepository extends \Tops\db\TEntityRepository
      * @param $person Person
      * @param array $newAffiliations
      */
-    public function updateAffiliations($person,array $newAffiliations=null) {
-        if ($newAffiliations === null) {
-            $newAffiliations = $person->affiliations;
-        }
-        $affiliationsToAdd = array_filter($newAffiliations, function($a) use ($person) {
-            return $this->hasAffiliation($a,$person->affiliations) === false;
+    public function updateAffiliations(Person $person) {
+        $existing = $this->getAffiliations($person->id);
+        $affiliationsToAdd = array_filter($person->affiliations, function($a) use ($existing) {
+            return $this->hasAffiliation($a,$existing) === false;
         });
-        $affiliationsToDelete = array_filter($person->affiliations, function($a) use ($newAffiliations) {
-            return $this->hasAffiliation($a,$newAffiliations) === false;
+        $affiliationsToDelete = array_filter($existing, function($a) use ($person) {
+            return $this->hasAffiliation($a,$person->affiliations) === false;
         });
         $addCount = sizeof($affiliationsToAdd);
         $deleteCount = sizeof($affiliationsToDelete);
         if ($addCount + $deleteCount > 0) {
             $dbh = $this->getConnection();
             if ($deleteCount > 0) {
-                /**
-                 * @var PDOStatement
-                 */
                 $deleteSql = 'DELETE FROM qnut_person_affiliations WHERE personId=? AND organizationId = ? AND roleId=?';
                 $stmt = $dbh->prepare($deleteSql);
                 foreach ($affiliationsToDelete as $affiliation) {
