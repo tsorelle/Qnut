@@ -39,7 +39,8 @@ class PersonsRepository extends \Tops\db\TEntityRepository
             "SELECT fullname AS `Name`, id AS `Value`,CONCAT(fullname,IF (email IS NULL OR email = '','',".
             "CONCAT(' (',email,')')))  AS Description FROM ".$this->getTableName(),
             $includeInactive,
-            "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search ORDER BY fullname,sortkey");
+            "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search",
+            "ORDER BY fullname,sortkey");
 
         $dbh = $this->getConnection();
         /**
@@ -130,6 +131,22 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         return false;
     }
 
+    public function addAffiliations($personId,array $affiliations) {
+        $dbh = $this->getConnection();
+        $insertSql = 'INSERT INTO qnut_person_affiliations (personId,organizationId,roleId) VALUES (?,?,?)';
+        $stmt = $dbh->prepare($insertSql);
+        foreach ($affiliations as $affiliation) {
+            $stmt->execute([$personId,$affiliation->organizationId,$affiliation->roleId]);
+        }
+    }
+
+    public function addSubscriptions($personId,array $subscriptions) {
+        $associations = $this->getSubscriptionsAssociation();
+        foreach ($subscriptions as $listId) {
+            $associations->subscribe($personId,$listId);
+        }
+    }
+
     /**
      * @param $person Person
      * @param array $newAffiliations
@@ -202,10 +219,10 @@ class PersonsRepository extends \Tops\db\TEntityRepository
             return false;
         }
         if (isset($dto->affiliations)) {
-            $this->updateAffiliations($dto);
+            $this->addAffiliations($id,$dto->affiliations);
         }
         if (isset($dto->emailSubscriptions)) {
-            $this->updateEmailSubscriptions($dto);
+            $this->addSubscriptions($id,$dto->emailSubscriptions);
         }
         return $id;
 

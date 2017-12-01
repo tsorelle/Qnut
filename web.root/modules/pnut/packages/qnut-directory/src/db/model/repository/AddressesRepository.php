@@ -38,6 +38,24 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         }
     }
 
+    public function insert($dto, $userName = 'admin')
+    {
+        $id = parent::insert($dto, $userName);
+        if ($id && isset($dto->postalSubscriptions)) {
+            $this->addSubscriptions($id, $dto->postalSubscriptions);
+        }
+        return $id;
+    }
+
+    private function addSubscriptions($personId, $postalSubscriptions)
+    {
+        $associations = $this->getSubscriptionsAssociation();
+        foreach ($postalSubscriptions as $listId) {
+            $associations->subscribe($personId,$listId);
+        }
+    }
+
+
     public function update($dto, $userName = 'admin')
     {
         $result = parent::update($dto, $userName);
@@ -135,4 +153,5 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         'changedby'=>PDO::PARAM_STR,
         'changedon'=>PDO::PARAM_STR);
     }
-}
+
+ }

@@ -144,7 +144,10 @@ class GetFamilyService
             $this->response = null;
             return;
         }
-        if (!(empty($person->addressId))) {
+        if (empty($person->addressId)) {
+            $this->response->persons = [$person];
+        }
+        else {
             $this->GetAddress($person->addressId);
             if ($this->response === null) {
                 return;

@@ -159,7 +159,7 @@ namespace QnutDirectory {
                         me.personForm.affiliationRoles(response.affiliationRoles);
                         me.directoryListingTypes(response.listingTypes);
                         me.addressForm.addressTypes(response.addressTypes);
-                        me.userIsAuthorized(true); // todo: set from response
+                        me.userIsAuthorized(response.canEdit);
 
                         me.personForm.assignEmailSubscriptionList(response.emailLists);
                         me.addressForm.assignPostalSubscriptionList(response.postalLists);
@@ -703,7 +703,6 @@ namespace QnutDirectory {
                     });
             }
             else {
-                // todo: Test case: New address
                 let updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
                 me.application.showWaiter(updateMessage);
                 me.services.executeService('peanut.qnut-directory::UpdateAddress',address,
@@ -757,7 +756,6 @@ namespace QnutDirectory {
                     });
             }
             else {
-                // todo: Test case: new person
                 let updateAction = person.editState == Peanut.editState.created ? 'add' : 'update';
                 me.showActionWaiterBanner(updateAction,'dir-person-entity');
                 me.services.executeService('peanut.qnut-directory::UpdatePerson',person, me.handleUpdatePersonResponse)
@@ -1227,14 +1225,18 @@ namespace QnutDirectory {
             viewList: KnockoutObservableArray<ISubscriptionListItem>,subscriptions: any[]) {
             let me = this;
             let check = checkList();
+            checkList([]);
+            viewList([]);
             let view = [];
-            _.each(check,(item: ISubscriptionListItem) => {
-                if (subscriptions.indexOf(item.id) > -1) {
-                    item.subscribed =  subscriptions.indexOf(item.id) > -1;
+            let newList = [];
+            _.each(check, (item: ISubscriptionListItem) => {
+                item.subscribed = (subscriptions.indexOf(item.id) > -1);
+                if (item.subscribed) {
                     view.push(item);
                 }
+                newList.push(item);
             });
-            checkList(check);
+            checkList(newList);
             viewList(view);
         }
 
@@ -1330,22 +1332,21 @@ namespace QnutDirectory {
             me.dateOfBirth(year + '-' + mm + '-' + dd);
         };
 
-        assignEmailSubscriptionList(items: Peanut.ILookupItem[]) {
+        assignEmailSubscriptionList = (items: Peanut.ILookupItem[]) => {
             let me = this;
             this.createSubscriptionList(me.emailSubscriptionList,items);
-        }
+        };
 
-        assignEmailSubscriptions(subscriptions: any[]) {
+        assignEmailSubscriptions = (subscriptions: any[]) => {
             let me=this;
             me.assignSubscriptions(me.emailSubscriptionList,me.emailSubscriptionsView, subscriptions);
-        }
-
+        };
 
 
         /**
          * reset fields
          */
-        public clear() {
+        public clear = () => {
             let me=this;
             me.isAssigned = false;
             me.clearValidations();
@@ -1364,15 +1365,17 @@ namespace QnutDirectory {
             me.lastUpdate('');
             me.personId('');
             me.assignEmailSubscriptions([]);
-        }
+            me.affiliations = [];
+            me.updateAffiliationList();
+        };
 
-        public clearValidations() {
+        public clearValidations = () => {
             let me = this;
             me.nameError('');
             me.emailError('');
             me.affiliationError('');
             me.hasErrors(false);
-        }
+        };
 
         /**
          * set fields from person DTO
@@ -1434,7 +1437,7 @@ namespace QnutDirectory {
 
 
 
-        private updateAffiliationList() {
+        private updateAffiliationList = () => {
             let me = this;
             me.affiliationList([]);
             _.each(me.affiliations,(affiliation: IAffiliation) => {
@@ -1455,7 +1458,7 @@ namespace QnutDirectory {
                         });
                 }
             });
-        }
+        };
 
         onOrgSearchChange = (value: string) => {
             let me = this;
@@ -1660,21 +1663,21 @@ namespace QnutDirectory {
             return result;
         };
 
-        assignPostalSubscriptionList(items: Peanut.ILookupItem[]) {
+        assignPostalSubscriptionList = (items: Peanut.ILookupItem[]) => {
             let me = this;
             this.createSubscriptionList(me.postalSubscriptionList,items);
-        }
+        };
 
-        assignPostalSubscriptions(subscriptions: any[]) {
+        assignPostalSubscriptions = (subscriptions: any[]) => {
             let me=this;
             me.assignSubscriptions(me.postalSubscriptionList,me.postalSubscriptionsView, subscriptions);
-        }
+        };
 
 
         /**
          * reset fields
          */
-        public clear() {
+        public clear = () => {
             let me = this;
             me.isAssigned = false;
             me.clearValidations();
@@ -1694,13 +1697,13 @@ namespace QnutDirectory {
             me.addressTypeId(1);
             me.directoryListingTypeId(1);
             me.assignPostalSubscriptions([]);
-        }
+        };
 
-        private clearValidations() {
+        private clearValidations = () => {
             let me = this;
             me.hasErrors(false);
             me.addressNameError('');
-        }
+        };
 
         public validate = ():boolean => {
             let me = this;
@@ -1779,7 +1782,7 @@ namespace QnutDirectory {
             me.updateSortKey(me.addressname());
         };
 
-        public updateDirectoryAddress(address: DirectoryAddress) {
+        public updateDirectoryAddress = (address: DirectoryAddress) => {
             let me = this;
             address.address1 = me.address1();
             address.address2 = me.address2();
