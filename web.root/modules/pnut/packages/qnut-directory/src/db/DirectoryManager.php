@@ -16,6 +16,7 @@ use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\db\model\repository\LookupTableRepository;
 use Tops\db\TVariables;
+use Tops\sys\IUser;
 
 class DirectoryManager
 {
@@ -26,8 +27,17 @@ class DirectoryManager
     const personsCollection = 'persons';
     const addressProperty = 'address';
     const affiliationCollection = 'affiliations';
-    
-    
+
+
+    public function __construct($username = 'system')
+    {
+        $this->username = $username;
+    }
+
+    /**
+     * @var string
+     */
+    private $username = 'system';
     private $personsRepository;
     private function getPersonsRepository() {
         if (!isset($this->personsRepository)) {
@@ -36,7 +46,40 @@ class DirectoryManager
         return $this->personsRepository;
     }
 
+    private $addresssRepository;
+    private function getAddressesRepository() {
+        if (!isset($this->addressesRepository)) {
+            $this->addresssRepository = new AddressesRepository();
+        }
+        return $this->addresssRepository;
+    }
+
+
+
     private $organizationsRepository;
+
+    public function updatePerson($person)
+    {
+        return $this->getPersonsRepository()->update($person,$this->username);
+    }
+
+    public function addPerson($person)
+    {
+        return $this->getPersonsRepository()->insert($person,$this->username);
+    }
+
+    public function updateAddress($address)
+    {
+        return $this->getAddressesRepository()->update($address,$this->username);
+    }
+
+
+    public function addAddress($address)
+    {
+        return $this->getAddressesRepository()->insert($address,$this->username);
+    }
+
+
     private function getOrganizationsRepository() {
         if (!isset($this->organizationsRepository)) {
             $this->organizationsRepository = new OrganizationsRepository();
@@ -44,13 +87,6 @@ class DirectoryManager
         return $this->organizationsRepository;
     }
 
-    private $addressesRepository;
-    private function getAddressesRepository() {
-        if (!isset($this->addressesRepository)) {
-            $this->addressesRepository = new AddressesRepository();
-        }
-        return $this->addressesRepository;
-    }
 
 
     public function getPersonById($personId,array $includes = [], array $addressIncludes = [])

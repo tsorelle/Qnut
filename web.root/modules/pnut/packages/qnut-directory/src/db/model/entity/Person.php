@@ -9,6 +9,7 @@ namespace Peanut\QnutDirectory\db\model\entity;
 
 
 use Tops\db\TimeStampedEntity;
+use Tops\sys\TDates;
 
 class Person  extends TimeStampedEntity
 {
@@ -49,6 +50,7 @@ class Person  extends TimeStampedEntity
         if (isset($dto->addressId)) {
             $this->addressId = $dto->addressId;
         }
+
         if (isset($dto->email)) {
             $this->email = $dto->email;
         }
@@ -62,13 +64,13 @@ class Person  extends TimeStampedEntity
             $this->phone2 = $dto->phone2;
         }
         if (isset($dto->dateofbirth)) {
-            $this->dateofbirth = $dto->dateofbirth;
+            $this->dateofbirth = TDates::formatMySqlDate($dto->dateofbirth);
         }
-        if (isset($dto->junior)) {
+/*        if (isset($dto->junior)) {
             $this->junior = $dto->junior;
-        }
+        }*/
         if (isset($dto->deceased)) {
-            $this->deceased = $dto->deceased;
+            $this->deceased = TDates::formatMySqlDate($dto->deceased);
         }
         if (isset($dto->listingtypeId)) {
             $this->listingtypeId = $dto->listingtypeId;
@@ -81,6 +83,12 @@ class Person  extends TimeStampedEntity
         }
         if (isset($dto->active)) {
             $this->active = $dto->active;
+        }
+        if (isset($dto->affiliations)) {
+            $this->affiliations = $dto->affiliations;
+        }
+        if (isset($dto->emailSubscriptions)) {
+            $this->emailSubscriptions = $dto->emailSubscriptions;
         }
     }
 

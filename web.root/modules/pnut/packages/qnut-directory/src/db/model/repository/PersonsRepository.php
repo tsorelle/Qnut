@@ -134,7 +134,10 @@ class PersonsRepository extends \Tops\db\TEntityRepository
      * @param $person Person
      * @param array $newAffiliations
      */
-    public function updateAffiliations($person,array $newAffiliations) {
+    public function updateAffiliations($person,array $newAffiliations=null) {
+        if ($newAffiliations === null) {
+            $newAffiliations = $person->affiliations;
+        }
         $affiliationsToAdd = array_filter($newAffiliations, function($a) use ($person) {
             return $this->hasAffiliation($a,$person->affiliations) === false;
         });
@@ -169,10 +172,44 @@ class PersonsRepository extends \Tops\db\TEntityRepository
      * @param $person Person
      * @param $newSubsctiption
      */
-    public function updateEmailSubscriptions($person,$newSubsctiptions) {
-        $this->getSubscriptionsAssociation()->updateSubscriptions($person->id,$newSubsctiptions);
+    public function updateEmailSubscriptions($person,$newSubsctiptions = null) {
+        if ($newSubsctiptions === null && isset($person->emailSubscriptions)) {
+            $newSubsctiptions = $person->emailSubscriptions;
+        }
+        if (is_array($newSubsctiptions)) {
+            $this->getSubscriptionsAssociation()->updateSubscriptions($person->id,$newSubsctiptions);
+        }
     }
 
+    public function update($dto, $userName = 'admin')
+    {
+        $result = parent::update($dto, $userName);
+        if ($result) {
+            if (isset($dto->affiliations)) {
+                $this->updateAffiliations($dto);
+            }
+            if (isset($dto->emailSubscriptions)) {
+                $this->updateEmailSubscriptions($dto);
+            }
+        }
+        return $result;
+    }
+
+    public function insert($dto, $userName = 'admin')
+    {
+        $id = parent::insert($dto, $userName);
+        if (empty($id)) {
+            return false;
+        }
+        if (isset($dto->affiliations)) {
+            $this->updateAffiliations($dto);
+        }
+        if (isset($dto->emailSubscriptions)) {
+            $this->updateEmailSubscriptions($dto);
+        }
+        return $id;
+
+    }
 
     protected function getFieldDefinitionList()
     {

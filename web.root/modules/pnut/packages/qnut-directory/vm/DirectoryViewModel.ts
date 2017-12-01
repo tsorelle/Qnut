@@ -713,7 +713,7 @@ namespace QnutDirectory {
                         me.application.hideWaiter();
                     });
             }
-        }
+        };
         /**
          * on save button click on person panel in edit mode
          */
@@ -737,6 +737,7 @@ namespace QnutDirectory {
             }
             me.personForm.updateDirectoryPerson(person);
 
+            // todo: test this case New person from address
             if (person.editState == Peanut.editState.created && me.personForm.relationId) {
                 let request = <INewPersonForAddressRequest> {
                     person: person,

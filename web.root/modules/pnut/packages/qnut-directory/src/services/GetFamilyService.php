@@ -115,17 +115,12 @@ class GetFamilyService
         $this->response->selectedPersonId = 0;
     }
 
-    private function addErrorMessage($messageCode,$id) {
-        $translation = TLanguage::text($messageCode);
-        $this->messages->AddErrorMessage(sprintf($translation,$id));
-    }
-
     public function getAddress($addressId)
     {
         if (!empty($addressId)) {
             $address = $this->manager->getAddressById($addressId, [Address::postalSubscriptionsProperty]);
             if (empty($address)) {
-                $this->addErrorMessage('err-no-address',$addressId);
+                $this->messages->addErrorMessage('err-no-address',[$addressId]);
                 $this->response = null;
             } else {
                 $this->response->persons =
@@ -145,7 +140,7 @@ class GetFamilyService
             [   Person::affiliationsProperty,
                 Person::emailSubscriptionsProperty]);
         if (empty($person)) {
-            $this->addErrorMessage('err-no-person', $personId);
+            $this->messages->addErrorMessage('err-no-person', [$personId]);
             $this->response = null;
             return;
         }

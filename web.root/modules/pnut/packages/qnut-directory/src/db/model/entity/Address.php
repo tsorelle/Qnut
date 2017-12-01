@@ -87,6 +87,10 @@ class Address  extends \Tops\db\TimeStampedEntity
             $this->active = $dto->active;
         }
 
+        if (isset($dto->postalSubscriptions)) {
+            $this->postalSubscriptions = $dto->postalSubscriptions;
+        }
+
     }
 
     public function getResidents() {

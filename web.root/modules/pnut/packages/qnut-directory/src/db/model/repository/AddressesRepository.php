@@ -15,6 +15,39 @@ use \Tops\db\TEntityRepository;
 class AddressesRepository extends \Tops\db\TEntityRepository
 {
 
+    private $subscriptionsAssociation;
+    private function getSubscriptionsAssociation()
+    {
+        if (!isset($this->subscriptionsAssociation)) {
+            $this->subscriptionsAssociation = new PostalSubscriptionAssociation();
+        }
+        return $this->subscriptionsAssociation;
+    }
+
+    /**
+     * @param $address Address
+     * @param $newSubsctiptions
+     */
+    public function updateSubscriptions($address,$newSubsctiptions = null)
+    {
+        if ($newSubsctiptions === null && isset($address->postalSubscriptions)) {
+            $newSubsctiptions = $address->postalSubscriptions;
+        }
+        if (is_array($newSubsctiptions)) {
+            $this->getSubscriptionsAssociation()->updateSubscriptions($address->id, $newSubsctiptions);
+        }
+    }
+
+    public function update($dto, $userName = 'admin')
+    {
+        $result = parent::update($dto, $userName);
+        if ($result && isset($dto->postalSubscriptions)) {
+            $this->updateSubscriptions($dto);
+        }
+        return $result;
+    }
+
+
     /**
      * @param $name
      * @param bool $includeInactive
@@ -91,7 +124,7 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         'country'=>PDO::PARAM_STR,
         'phone'=>PDO::PARAM_STR,
         'notes'=>PDO::PARAM_STR,
-        'addresstype'=>PDO::PARAM_INT,
+        'addresstypeid'=>PDO::PARAM_INT,
         'sortkey'=>PDO::PARAM_STR,
         'listingtypeId'=>PDO::PARAM_INT,
         'latitude'=>PDO::PARAM_STR,

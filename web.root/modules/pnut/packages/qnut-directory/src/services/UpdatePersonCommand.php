@@ -11,44 +11,94 @@ namespace Peanut\QnutDirectory\services;
 
 use Peanut\QnutDirectory\db\DirectoryManager;
 use Peanut\QnutDirectory\db\model\entity\Person;
+use Tops\services\TEditState;
 use Tops\services\TServiceCommand;
+use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
+/**
+ * Class UpdatePersonCommand
+ * @package Peanut\QnutDirectory\services
+ *
+ * Service contract:
+ *      Request:  DirectoryPerson, See GetFamilyService.php
+ *
+ *
+ */
 class UpdatePersonCommand extends TServiceCommand
 {
+    /**
+     * @var DirectoryManager
+     */
+    private $manager;
+
     public function __construct() {
         $this->addAuthorization(TPermissionsManager::updateDirectoryPermissionName);
+        $this->manager = new DirectoryManager($this->getUser()->getUserName());
     }
 
+    private function validatePerson(Person $person)
+    {
+        $valid = true;
+        if (empty($person->fullname)) {
+            $this->addErrorMessage('valid-person-name');
+            $valid = false;
+        }
+        return $valid;
+    }
+
+    private function getPerson($id) {
+        $person = $this->manager->getPersonById($id,
+            [   Person::affiliationsProperty,
+                Person::emailSubscriptionsProperty]);
+        if (empty($person)) {
+            $this->addErrorMessage('err-no-person', [$id]);
+            return false;
+        }
+        return $person;
+    }
 
     protected function run()
     {
         $request = $this->getRequest();
-        $manager = new DirectoryManager();
-        $id = $request->personId;
+        $id = $request->id;
         $person = null;
-        if ($request->editState == 1) { // editState.created
+        if ($request->editState == TEditState::Created) {
             $person = new Person();
         }
         else {
-            $person = $manager->getPersonById($id);
-            if (empty($person)) {
-                $this->addErrorMessage('Person not found for id ' . $request->Value);
+            $person = $this->getPerson($id);
+            if ($person === false) {
                 return;
             }
         }
 
-/*        $valid = $person->updateFromDataTransferObject($request);
-        if (!$valid) {
-            $this->addErrorMessage('Cannot update person entity due to invalid data.');
+        $person->assignFromObject($request);
+        if (!$this->validatePerson($person)) {
+            return;
         }
 
-        $manager->updateEntity($person);
-        $result = $person->getDataTransferObject();
-        $this->setReturnValue($result);*/
+        $entityName = TLanguage::text('dir-person-entity','person');
 
+        if ($request->editState == TEditState::Created) {
+            $id = $this->manager->addPerson($person);
+            if (empty($id)) {
+                $this->addErrorMessage('error-insert-failed',[$entityName]);
+                return;
+            }
+        }
+        else {
+            $updateResult = $this->manager->updatePerson($person);
+            if (empty($updateResult)) {
+                $this->addErrorMessage('error-update-failed', [$entityName]);
+                return;
+            }
+        }
 
-        //todo: finish implementation
-        $this->addErrorMessage('Not implemented yet');
+        $person = $this->getPerson($id);
+        if ($person === false) {
+            return;
+        }
+        $this->setReturnValue($person);
     }
 }
