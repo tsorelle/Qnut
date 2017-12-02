@@ -22,8 +22,7 @@ use Tops\sys\TPermissionsManager;
  *
  * Service contract:
  *      Request:  DirectoryPerson, See GetFamilyService.php
- *
- *
+ *      Response: DirectoryPerson (updated)
  */
 class UpdatePersonCommand extends TServiceCommand
 {
@@ -34,72 +33,31 @@ class UpdatePersonCommand extends TServiceCommand
 
     public function __construct() {
         $this->addAuthorization(TPermissionsManager::updateDirectoryPermissionName);
-        $this->manager = new DirectoryManager($this->getUser()->getUserName());
+        $this->manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
     }
 
-    private function validatePerson(Person $person)
-    {
-        $valid = true;
-        if (empty($person->fullname)) {
-            $this->addErrorMessage('valid-person-name');
-            $valid = false;
-        }
-        return $valid;
-    }
-
-    private function getPerson($id) {
-        $person = $this->manager->getPersonById($id,
-            [   Person::affiliationsProperty,
-                Person::emailSubscriptionsProperty]);
-        if (empty($person)) {
-            $this->addErrorMessage('err-no-person', [$id]);
-            return false;
-        }
-        return $person;
-    }
 
     protected function run()
     {
         $request = $this->getRequest();
-        $id = $request->id;
-        $person = null;
-        if ($request->editState == TEditState::Created) {
-            $person = new Person();
-        }
-        else {
-            $person = $this->getPerson($id);
-            if ($person === false) {
-                $this->addErrorMessage('err-no-person',$id);
-                return;
-            }
-        }
-
-        $person->assignFromObject($request);
-        if (!$this->validatePerson($person)) {
+        if (empty($request)) {
+            $this->addErrorMessage('service-no-request');
             return;
         }
+        $editState = isset($request->editState) ? $request->editState : TEditState::Updated;
 
-        $entityName = TLanguage::text('dir-person-entity','person');
-
-        if ($request->editState == TEditState::Created) {
-            $id = $this->manager->addPerson($person);
-            if (empty($id)) {
-                $this->addErrorMessage('error-insert-failed',[$entityName]);
-                return;
-            }
+        if ($editState == TEditState::Created) {
+            $id = $this->manager->createPersonFromDto($request);
         }
         else {
-            $updateResult = $this->manager->updatePerson($person);
-            if (empty($updateResult)) {
-                $this->addErrorMessage('error-update-failed', [$entityName]);
-                return;
-            }
+            $id = $this->manager->updatePersonFromDto($request);
         }
 
-        $person = $this->getPerson($id);
-        if ($person === false) {
-            return;
+        if (!empty($id)) {
+            $person = $this->manager->getPerson($id);
+            if ($person !== false) {
+                $this->setReturnValue($person);
+            }
         }
-        $this->setReturnValue($person);
     }
 }

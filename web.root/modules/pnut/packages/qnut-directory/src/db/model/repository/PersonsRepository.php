@@ -205,7 +205,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
     public function update($dto, $userName = 'admin')
     {
         $result = parent::update($dto, $userName);
-        if ($result) {
+        if ($result !== false) {
             if (isset($dto->affiliations)) {
                 $this->updateAffiliations($dto);
             }

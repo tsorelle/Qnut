@@ -13,6 +13,14 @@ use Peanut\QnutDirectory\db\DirectoryManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TPermissionsManager;
 
+/**
+ * Class DeletePersonCommand
+ * @package Peanut\QnutDirectory\services
+ *
+ * Service contract:
+ *      Request: personId int
+ *      Response: none
+ */
 class DeletePersonCommand extends TServiceCommand
 {
     /**
@@ -22,7 +30,8 @@ class DeletePersonCommand extends TServiceCommand
 
     public function __construct() {
         $this->addAuthorization(TPermissionsManager::updateDirectoryPermissionName);
-        $this->manager = new DirectoryManager($this->getUser()->getUserName());
+        $this->manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
+
     }
 
 

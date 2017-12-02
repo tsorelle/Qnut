@@ -8,7 +8,6 @@
 
 namespace Peanut\QnutDirectory\db;
 
-
 use Peanut\QnutDirectory\db\model\entity\Address;
 use Peanut\QnutDirectory\db\model\entity\Person;
 use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
@@ -16,21 +15,32 @@ use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\db\model\repository\LookupTableRepository;
 use Tops\db\TVariables;
-use Tops\sys\IUser;
+use Tops\services\IMessageContainer;
+use Tops\services\NullMessageContainer;
+use Tops\sys\TL;
+use Tops\sys\TLanguage;
 
 class DirectoryManager
 {
     const includeRelated = true;
+    const includeAddress = true;
     const parentClassOnly = false;
-    const listDefaultFirst = true;
 
+    const listDefaultFirst = true;
     const personsCollection = 'persons';
     const addressProperty = 'address';
+
     const affiliationCollection = 'affiliations';
 
+    /**
+     * @var IMessageContainer $messages
+     */
+    private $messages;
 
-    public function __construct($username = 'system')
+
+    public function __construct(IMessageContainer $messages = null, $username = 'system')
     {
+        $this->messages = $messages === null ? new NullMessageContainer() : $messages;
         $this->username = $username;
     }
 
@@ -54,29 +64,49 @@ class DirectoryManager
         return $this->addresssRepository;
     }
 
-
-
     private $organizationsRepository;
 
     public function updatePerson($person)
     {
-        return $this->getPersonsRepository()->update($person,$this->username);
+        $updateResult = $this->getPersonsRepository()->update($person,$this->username);
+        if ($updateResult === false) {
+            $entityName = TLanguage::text('dir-person-entity','person');
+            $this->messages->addErrorMessage('error-update-failed', [$entityName]);
+        }
+        return $updateResult;
     }
 
     public function addPerson($person)
     {
-        return $this->getPersonsRepository()->insert($person,$this->username);
+        $id =  $this->getPersonsRepository()->insert($person,$this->username);
+        if (empty($id)) {
+            $entityName = TLanguage::text('dir-person-entity','person');
+            $this->messages->addErrorMessage('error-insert-failed',[$entityName]);
+        }
+        return $id;
     }
 
     public function updateAddress($address)
     {
-        return $this->getAddressesRepository()->update($address,$this->username);
+        $updateResult = $this->getAddressesRepository()->update($address,$this->username);
+        if (empty($updateResult)) {
+            $entityName = TLanguage::text('dir-address-entity','address');
+            $this->messages->addErrorMessage('error-update-failed', [$entityName]);
+        }
+        return $updateResult;
+
     }
 
 
     public function addAddress($address)
     {
-        return $this->getAddressesRepository()->insert($address,$this->username);
+        $id = $this->getAddressesRepository()->insert($address,$this->username);
+        if (empty($id)) {
+            $entityName = TLanguage::text('dir-address-entity','address');
+            $this->messages->addErrorMessage('error-insert-failed',[$entityName]);
+        }
+        return $id;
+
     }
 
 
@@ -159,6 +189,19 @@ class DirectoryManager
         return $address;
     }
 
+    public function getAddress($addressId,$includeSubscriptions=true, $includeResidents = false) {
+        $includes = ($includeSubscriptions) ? [Address::postalSubscriptionsProperty] : [];
+        if ($includeResidents) {
+            $includes[] = Address::residentsProperty;
+        }
+        $address = $this->getAddressById($addressId, $includes);
+        if (empty($address)) {
+            $this->messages->addErrorMessage('err-no-address', [$addressId]);
+            return false;
+        }
+        return $address;
+    }
+
     /**
      * @param $address Address
      * @param array $includes
@@ -180,7 +223,6 @@ class DirectoryManager
             }
         }
     }
-
 
     public function getDirectoryListingTypeList()
     {
@@ -255,6 +297,95 @@ class DirectoryManager
     public function removeAddress($addressId) {
         $this->getPersonsRepository()->unlinkAddress($addressId);
         $this->getAddressesRepository()->remove($addressId);
+    }
+
+    public function validatePerson($person)
+    {
+        $valid = true;
+        if (empty($person->fullname)) {
+            $this->messages->addErrorMessage('valid-person-name');
+            $valid = false;
+        }
+        return $valid;
+    }
+
+    public function validateAddress($address) {
+        $valid = true;
+        if (empty($address->addressname)) {
+            $this->messages->addErrorMessage('valid-address-name');
+            $valid = false;
+        }
+        return $valid;
+    }
+
+    public function getPerson($id, $includeAddress = false, array $addressIncludes = []) {
+        $includes = [Person::affiliationsProperty, Person::emailSubscriptionsProperty];
+        if ($includeAddress) {
+            $includes[] = Person::addressProperty;
+        }
+        $person = $this->getPersonById($id, $includes,$addressIncludes);
+        if (empty($person)) {
+            $this->messages->addErrorMessage('err-no-person', [$id]);
+            return false;
+        }
+        return $person;
+    }
+
+    public function updatePersonFromDto($request) {
+        if (empty($request->id)) {
+            $this->messages->AddErrorMessage('error-no-id');
+            return false;
+        }
+        $id = $request->id;
+        $person = $this->getPerson($id);
+        if ($person === false) {
+            return false;
+        }
+        $person->assignFromObject($request);
+        if (!$this->validatePerson($person)) {
+            return false;
+        }
+        $updateResult = $this->updatePerson($person);
+        return $updateResult !== false ? $id : false;
+    }
+
+    public function updateAddressFromDto($request) {
+        if (empty($request->id)) {
+            $this->messages->AddErrorMessage('error-no-id');
+            return false;
+        }
+        $id = $request->id;
+        $address = $this->getAddress($id);
+        if ($address === false) {
+            return false;
+        }
+        $address->assignFromObject($request);
+        if (!$this->validateaddress($address)) {
+            return false;
+        }
+        $updateResult = $this->updateAddress($address);
+        return $updateResult !== false ? $id : false;
+
+    }
+
+    public function createPersonFromDto($request) {
+        $person = new Person();
+        $person->assignFromObject($request);
+        if (!$this->validatePerson($person)) {
+            return false;
+        }
+        $id = $this->addPerson($person);
+        return empty($id) ? false: $id;
+    }
+
+    public function createAddressFromDto($request) {
+        $address = new address();
+        $address->assignFromObject($request);
+        if (!$this->validateAddress($address)) {
+            return false;
+        }
+        $id = $this->addAddress($address);
+        return empty($id) ? false: $id;
     }
 
 

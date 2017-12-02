@@ -265,8 +265,8 @@ namespace QnutDirectory {
                 personId: personItem.Value
             } ;
 
-            // todo: add person to address
             me.application.hideServiceMessages();
+            me.showActionWaiterBanner('update','dir-address-entity')
             me.application.showWaiter('Updating...');
             me.services.executeService('peanut.qnut-directory::AddPersonToAddress',request, me.handleAddPersonToAddressResponse)
                 .always(function() {
@@ -484,7 +484,7 @@ namespace QnutDirectory {
         }
 
         public executeDeletePerson() {
-
+            // todo: test delete person
             let me = this;
             jQuery("#confirm-delete-person-modal").modal('hide');
 

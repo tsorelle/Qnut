@@ -19,6 +19,8 @@ use Peanut\QnutDirectory\db\DirectoryManager;
  * @package Peanut\QnutDirectory\services
  *
  *  Service contract
+ *  Request: none
+ *  Response:
  *    interface IInitDirectoryResponse {
  *       canEdit : boolean;
  *       listingTypes : Peanut.ILookupItem[];
@@ -49,7 +51,7 @@ class InitializeDirectoryCommand extends TServiceCommand
     protected function run()
     {
         $result = new \stdClass();
-        $manager = new DirectoryManager();
+        $manager = new DirectoryManager($this->getMessages());
         $user = TUser::getCurrent();
 
         $result->canEdit = $user->isAuthorized('administer directory');

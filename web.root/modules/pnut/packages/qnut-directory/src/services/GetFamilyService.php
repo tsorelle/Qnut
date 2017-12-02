@@ -105,10 +105,10 @@ class GetFamilyService
     private $response;
     private $manager;
 
-    public function __construct($messages)
+    public function __construct($messages,$username='system')
     {
         $this->messages = $messages;
-        $this->manager = new DirectoryManager();
+        $this->manager = new DirectoryManager($messages,$username);
         $this->response = new \stdClass();
         $this->response->persons = [];
         $this->response->address = null;

@@ -46,19 +46,29 @@ class GetFamilyCommand extends TServiceCommand
     protected function run()
     {
         $request = $this->getRequest();
-        $service = new GetFamilyService($this->getMessages());
-        if ($request->Name == 'Persons') {
-            $service->GetPerson($request->Value);
-        }
-        else if ($request->Name == 'Addresses') {
-            $service->GetAddress($request->Value);
-        }
-        else {
-            $this->addErrorMessage('Invalid request name');
+        if (empty($request)) {
+            $this->addErrorMessage('service-no-request');
             return;
         }
-
-        $response = $service->getResponse();
-        $this->setReturnValue($response);
+        $requestValidation = new DirectoryServiceRequests($this->getMessages());
+        $searchType = $requestValidation->getNameRequest($request,'service-type-search');
+        if ($searchType !== false) {
+            $value = $requestValidation->getValueRequest($request,'service-type-search');
+            if ($value !== false) {
+                $service = new GetFamilyService($this->getMessages());
+                if ($searchType == 'Persons') {
+                    $service->GetPerson($value);
+                }
+                else if ($searchType == 'Addresses') {
+                    $service->GetAddress($value);
+                }
+                else {
+                    $this->addErrorMessage('Invalid search type');
+                    return;
+                }
+                $response = $service->getResponse();
+                $this->setReturnValue($response);
+            }
+        }
     }
 }

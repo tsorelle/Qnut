@@ -65,7 +65,7 @@ class AddressesRepository extends \Tops\db\TEntityRepository
     public function update($dto, $userName = 'admin')
     {
         $result = parent::update($dto, $userName);
-        if ($result && isset($dto->postalSubscriptions)) {
+        if (($result !== false) && isset($dto->postalSubscriptions)) {
             $this->updateSubscriptions($dto);
         }
         return $result;

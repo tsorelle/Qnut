@@ -22,6 +22,7 @@ use Tops\sys\TPermissionsManager;
  *
  * Service contract:
  *     Request:  DirectoryAddress, See GetFamilyService.php
+ *     Response: DirectoryAddress (updated)
  */
 class UpdateAddressCommand extends TServiceCommand
 {
@@ -32,70 +33,29 @@ class UpdateAddressCommand extends TServiceCommand
 
     public function __construct() {
         $this->addAuthorization(TPermissionsManager::updateDirectoryPermissionName);
-        $this->manager = new DirectoryManager($this->getUser()->getUserName());
+        $this->manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
     }
 
     protected function run()
     {
         $request = $this->getRequest();
-        $id = $request->id;
-        if ($request->editState == TEditState::Created) {
-            $address = new Address();
-        }
-        else {
-            $address = $this->getAddress($id);
-            if ($address === false) {
-                return;
-            }
-        }
-
-        $address->assignFromObject($request);
-        if (!$this->validateAddress($address)) {
+        if (empty($request)) {
+            $this->addErrorMessage('service-no-request');
             return;
         }
-
-        $entityName = TLanguage::text('dir-address-entity','address');
-
-        if ($request->editState == TEditState::Created) {
-            $id = $this->manager->addAddress($address);
-            if (empty($id)) {
-                $this->addErrorMessage('error-insert-failed',[$entityName]);
-                return;
-            }
+        $editState = isset($request->editState) ? $request->editState : TEditState::Updated;
+        if ($editState == TEditState::Created) {
+            $id = $this->manager->createAddressFromDto($request);
         }
         else {
-            $updateResult = $this->manager->updateAddress($address);
-            if (empty($updateResult)) {
-                $this->addErrorMessage('error-update-failed', [$entityName]);
-                return;
+            $id = $this->manager->updateAddressFromDto($request);
+        }
+
+        if (!empty($id)) {
+            $address = $this->manager->getAddress($id);
+            if ($address !== false) {
+                $this->setReturnValue($address);
             }
         }
-
-        $address = $this->getAddress($id);
-        if ($address === false) {
-            return;
-        }
-        $this->setReturnValue($address);
-
     }
-
-    private function getAddress($addressId)
-    {
-        $address = $this->manager->getAddressById($addressId, [Address::postalSubscriptionsProperty]);
-        if (empty($address)) {
-            $this->addErrorMessage('err-no-address', [$addressId]);
-            return false;
-        }
-        return $address;
-    }
-
-    private function validateAddress(Address $address)
-    {
-        $valid = true;
-        if (empty($address->addressname)) {
-            $this->addErrorMessage('valid-address-name');
-            $valid = false;
-        }
-        return $valid;
-    }
-}
+ }

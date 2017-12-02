@@ -15,6 +15,19 @@ use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
+/**
+ * Class AddPersonToAddressCommand
+ * @package Peanut\QnutDirectory\services
+ *
+ * Service contract
+ *	Request:
+ *		    interface IAddressPersonServiceRequest {
+ *		        personId: any;
+ *		        addressId: any;
+ *		    }
+ *
+ *	 Response: DirectoryPerson, see GetFamilyService.php
+ */
 class AddPersonToAddressCommand extends TServiceCommand
 {
     /**
@@ -24,7 +37,7 @@ class AddPersonToAddressCommand extends TServiceCommand
 
     public function __construct() {
         $this->addAuthorization(TPermissionsManager::updateDirectoryPermissionName);
-        $this->manager = new DirectoryManager($this->getUser()->getUserName());
+        $this->manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
     }
 
     protected function run()
@@ -34,27 +47,18 @@ class AddPersonToAddressCommand extends TServiceCommand
             $this->addErrorMessage('service-no-request');
             return;
         }
-        $personEntityName = TLanguage::text('dir-person-entity');
-        if (empty($request->personId)) {
-            $this->addErrorMessage('service-no-request-value',$personEntityName.' id');
-            return;
+        $requestValidation = new DirectoryServiceRequests($this->getMessages());
+        $personId = $requestValidation->getPersonIdRequest($request);
+        if ($personId !== false) {
+            $addressId = $requestValidation->getAddressIdRequest($request);
+            if ($addressId !== false) {
+                $this->manager->assignPersonAddress($personId,$addressId);
+                $person = $this->manager->getPerson($personId);
+                if (!empty($person)) {
+                    $this->addInfoMessage('add-person-address-success',[$person->fullname]);
+                    $this->setReturnValue($person);
+                }
+            }
         }
-        $addressEntityName = TLanguage::text('dir-address-entity');
-        if (empty($request->addressId)) {
-            $this->addErrorMessage('service-no-request-value',$addressEntityName.' id');
-            return;
-        }
-        $this->manager->assignPersonAddress($request->personId,$request->addressId);
-
-        $person = $this->manager->getPersonById($request->personId,
-            [   Person::affiliationsProperty,
-                Person::emailSubscriptionsProperty]);
-
-        if (empty($person)) {
-            $this->addErrorMessage('err-no-person',$request->personId);
-            return;
-        }
-        $this->addInfoMessage('add-person-address-success',[$person->fullname]);
-        $this->setReturnValue($person);
     }
 }

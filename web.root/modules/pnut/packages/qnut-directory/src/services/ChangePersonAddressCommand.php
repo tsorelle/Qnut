@@ -11,8 +11,22 @@ namespace Peanut\QnutDirectory\services;
 
 use Peanut\QnutDirectory\db\DirectoryManager;
 use Tops\services\TServiceCommand;
+use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
+/**
+ * Class ChangePersonAddressCommand
+ * @package Peanut\QnutDirectory\services
+ *
+ *  Service contract
+ *	Request:
+ *		    interface IAddressPersonServiceRequest {
+ *		        personId: any;
+ *		        addressId: any;
+ *		    }
+ *
+ *	 Response: IDirectoryFamily, see GetFamilyService.php
+ */
 class ChangePersonAddressCommand extends TServiceCommand
 {
     /**
@@ -22,12 +36,26 @@ class ChangePersonAddressCommand extends TServiceCommand
 
     public function __construct() {
         $this->addAuthorization(TPermissionsManager::updateDirectoryPermissionName);
-        $this->manager = new DirectoryManager($this->getUser()->getUserName());
+        $this->manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
     }
 
 
     protected function run()
     {
-        // TODO: Implement run() method.
+        $request = $this->getRequest();
+        if (empty($request)) {
+            $this->addErrorMessage('service-no-request');
+            return;
+        }
+        $requestValidation = new DirectoryServiceRequests($this->getMessages());
+        $personId = $requestValidation->getPersonIdRequest($request);
+        if ($personId !== false) {
+            $addressId = empty($request->addressId) ? null : $request->addressId;
+            $this->manager->assignPersonAddress($personId, $addressId);
+            $service = new GetFamilyService($this->getMessages(), $this->getUser()->getUserName());
+            $response = $service->getResponse();
+            $this->setReturnValue($response);
+        }
+
     }
 }
