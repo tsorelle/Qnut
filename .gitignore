@@ -14,5 +14,6 @@
 /web.root/index.php
 /web.root/web.root/modules/pnut/packages/peanut-riddler/
 /web.root/web.root/modules/pnut/packages/peanut-permissions/
+/web.root/modules/src/tops
 /doc/
 .idea/workspace.xml
