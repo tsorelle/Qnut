@@ -280,7 +280,7 @@ namespace QnutDirectory {
          * @param addressItem
          */
         public assignAddressToPerson = (addressItem : Peanut.INameValuePair) => {
-            // todo: Test case: move person
+            // todo: restore family on return?
 
             let me = this;
             let request = <IAddressPersonServiceRequest> {
@@ -455,7 +455,7 @@ namespace QnutDirectory {
         }
 
         public executeDeleteAddress() {
-            // todo: Test case: delete address
+            // todo: Test delete address, display last person on return?
 
             let me = this;
             jQuery("#confirm-delete-address-modal").modal('hide');
@@ -696,7 +696,7 @@ namespace QnutDirectory {
             me.addressForm.updateDirectoryAddress(address);
 
             if (address.editState == Peanut.editState.created && me.addressForm.relationId) {
-                // todo: Test case: new address for person
+                // todo: Test new address for person. Restore family on return?
                 let request = <INewAddressForPersonRequest> {
                     address: address,
                     personId: me.family.selectedPersonId
@@ -749,7 +749,7 @@ namespace QnutDirectory {
             me.personForm.updateDirectoryPerson(person);
 
             if (person.editState == Peanut.editState.created && me.personForm.relationId) {
-                // todo: Test case: new person for address
+                // todo: Test new person for address
                 let request = <INewPersonForAddressRequest> {
                     person: person,
                     addressId: me.family.address ? me.family.address.id : null
