@@ -44,7 +44,7 @@ class DirectoryServiceRequests
             $this->messages->addErrorMessage('service-no-request-value',[$personEntityName]);
             return false;
         }
-        return $request->personId;
+        return $request->person;
     }
 
     public function getPersonIdRequest($request) {

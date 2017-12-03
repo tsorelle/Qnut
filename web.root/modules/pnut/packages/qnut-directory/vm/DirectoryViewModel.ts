@@ -266,7 +266,7 @@ namespace QnutDirectory {
             } ;
 
             me.application.hideServiceMessages();
-            me.showActionWaiterBanner('update','dir-address-entity')
+            me.showActionWaiterBanner('update','dir-address-entity');
             me.application.showWaiter('Updating...');
             me.services.executeService('peanut.qnut-directory::AddPersonToAddress',request, me.handleAddPersonToAddressResponse)
                 .always(function() {
@@ -280,8 +280,6 @@ namespace QnutDirectory {
          * @param addressItem
          */
         public assignAddressToPerson = (addressItem : Peanut.INameValuePair) => {
-            // todo: restore family on return?
-
             let me = this;
             let request = <IAddressPersonServiceRequest> {
                 addressId: addressItem.Value,
@@ -357,6 +355,7 @@ namespace QnutDirectory {
         public createAddressForPerson() {
             let me = this;
             me.addressesList.reset();
+            me.addressForm.clear();
             me.addressForm.edit(me.family.selectedPersonId);
         }
         /**
@@ -455,8 +454,6 @@ namespace QnutDirectory {
         }
 
         public executeDeleteAddress() {
-            // todo: Test delete address, display last person on return?
-
             let me = this;
             jQuery("#confirm-delete-address-modal").modal('hide');
             let addressId = me.family.address ? me.family.address.id : 0;
@@ -465,7 +462,7 @@ namespace QnutDirectory {
             }
 
             let request = addressId;
-
+            let currentPerson = me.family.getSelected();
             me.application.hideServiceMessages();
             me.application.showWaiter('Deleting address...');
             me.services.executeService('peanut.qnut-directory::DeleteAddress',request,
@@ -484,7 +481,6 @@ namespace QnutDirectory {
         }
 
         public executeDeletePerson() {
-            // todo: test delete person
             let me = this;
             jQuery("#confirm-delete-person-modal").modal('hide');
 
@@ -494,7 +490,6 @@ namespace QnutDirectory {
             me.application.showWaiter('Delete person...');
             me.services.executeService('peanut.qnut-directory::DeletePerson',request,
                 (serviceResponse: Peanut.IServiceResponse) => {
-                    // TODO: ui issue, last person disappears if address deleted.
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let selected = me.family.removePerson(me.family.selectedPersonId);
                         me.buildPersonSelectList(selected);
@@ -696,7 +691,6 @@ namespace QnutDirectory {
             me.addressForm.updateDirectoryAddress(address);
 
             if (address.editState == Peanut.editState.created && me.addressForm.relationId) {
-                // todo: Test new address for person. Restore family on return?
                 let request = <INewAddressForPersonRequest> {
                     address: address,
                     personId: me.family.selectedPersonId
@@ -749,7 +743,6 @@ namespace QnutDirectory {
             me.personForm.updateDirectoryPerson(person);
 
             if (person.editState == Peanut.editState.created && me.personForm.relationId) {
-                // todo: Test new person for address
                 let request = <INewPersonForAddressRequest> {
                     person: person,
                     addressId: me.family.address ? me.family.address.id : null

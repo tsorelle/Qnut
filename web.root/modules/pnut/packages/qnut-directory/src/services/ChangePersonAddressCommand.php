@@ -53,6 +53,7 @@ class ChangePersonAddressCommand extends TServiceCommand
             $addressId = empty($request->addressId) ? null : $request->addressId;
             $this->manager->assignPersonAddress($personId, $addressId);
             $service = new GetFamilyService($this->getMessages(), $this->getUser()->getUserName());
+            $service->getPerson($personId);
             $response = $service->getResponse();
             $this->setReturnValue($response);
         }
