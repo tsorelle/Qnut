@@ -24,6 +24,9 @@ class DeleteMailboxCommand extends TServiceCommand
     protected function run()
     {
         $code = $this->getRequest();
+        if ($code === 'two-quakers-support') {
+            $this->addErrorMessage("Deletion of this mailbox is not allowed.");
+        }
         $manager = TPostOffice::GetMailboxManager();
         $mailbox = $manager->findByCode($code);
         if (!empty($mailbox)) {
