@@ -79,12 +79,12 @@ namespace Mailboxes {
                         }
                     }
                 }).fail(() => {
-                    let trace = me.services.getErrorInformation();
-                }).always(() => {
-                    if (doneFunction) {
-                        doneFunction();
-                    }
-                });
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                if (doneFunction) {
+                    doneFunction();
+                }
+            });
         };
 
 
@@ -132,6 +132,7 @@ namespace Mailboxes {
 
             if (message.fromName.trim() == '') {
                 me.fromNameError(': '+me.translate('form-error-your-name-blank')); //
+                valid=false;
             }
 
             if (message.subject.trim() == '') {

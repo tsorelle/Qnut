@@ -16,7 +16,7 @@ use Tops\sys\TLanguage;
 /**
  * Class GetMailboxCommand
  * @package Peanut\Mailboxes\services
- * 
+ *
  * Request  mailboxCode : string
  * Response
  * export interface IGetContactFormResponse {
@@ -46,7 +46,7 @@ class GetContactFormCommand extends TServiceCommand
         }
         else {
             $response->mailboxList = array();
-            $mailbox = TPostOffice::GetMailboxAddress($mailboxCode);
+            $mailbox = TPostOffice::GetMailbox($mailboxCode);
             if (empty($mailbox)) {
                 $this->addErrorMessage("Mailbox code '$mailboxCode' not found.");
                 return;

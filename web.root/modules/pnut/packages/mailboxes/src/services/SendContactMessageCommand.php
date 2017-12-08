@@ -9,8 +9,10 @@
 namespace Peanut\Mailboxes\services;
 
 
+use Tops\db\model\repository\MailboxesRepository;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
+use Tops\sys\TLanguage;
 
 /**
  * Class SendContactMessageCommand
@@ -31,8 +33,18 @@ class SendContactMessageCommand extends TServiceCommand
     protected function run()
     {
         $message = $this->getRequest();
-        $recipientAddress = "$message->fromName <$message->fromAddress>";
-        TPostOffice::SendMessageToUs($recipientAddress,$message->subject,$message->body,$message->mailboxCode);
-        $this->addInfoMessage('Message was sent');
+
+        $sender = TPostOffice::GetMailboxAddress('contact-form');
+        if ($sender === false ) {
+            $this->addErrorMessage('Contact form address not found.');
+        }
+
+        $fromAddress = "$message->fromName <$message->fromAddress>";
+        $header = TLanguage::text('mailbox-contact-header');
+        $body = $header."\n".
+            "$fromAddress\n\n"."---------------"."\n$message->body";
+
+        TPostOffice::SendMessageToUs($fromAddress,$message->subject,$body,'contact-form',$message->mailboxCode);
+        $this->addInfoMessage("mailbox--message-sent");
     }
 }
