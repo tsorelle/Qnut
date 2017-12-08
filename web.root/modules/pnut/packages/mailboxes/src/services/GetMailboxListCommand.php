@@ -42,7 +42,7 @@ class GetMailboxListCommand extends TServiceCommand
         $request = $this->getRequest();
         $allBoxes = empty($request) ? true : $request->filter == 'all';
         if ($allBoxes) {
-            $allBoxes = $this->getUser()->isAuthorized(TPermissionsManager::managePermissionsPermissionName);
+            $allBoxes = $this->getUser()->isAuthorized(TPermissionsManager::mailAdminPermissionName);
         }
         $manager = TPostOffice::GetMailboxManager();
         $response = new \stdClass();
