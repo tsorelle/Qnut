@@ -1,0 +1,57 @@
+<div id="mailingform-view-container" class="row" style="display: none">
+    <h2 data-bind="text:headerMessage"></h2>
+    <div class="col-md-12">
+        <form  data-bind="visible:formVisible">
+            <div class="form-group" data-bind="visible: mailingLists().length > 0,css: {'has-error': mailingListSelectError}">
+                <label class="control-label" for="mailingList" ><translate params="code:'mailing-label-list',translator:self"></translate></label>
+                <span class="error" data-bind="visible: mailingListSelectError, text: mailingListSelectError"></span>
+                <select class="form-control"  id="mailingList" data-bind="options: mailingLists,
+                       optionsText: 'name',
+                       value: selectedMailingList,
+                       optionsCaption: selectMailingListCaption"></select>
+            </div>
+
+            <div class="form-group" data-bind="css: {'has-error': subjectError}">
+                <label class="control-label" for="subject"><translate params="code:'label-subject',translator:self"></translate></label>
+                <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
+                <input type="text" class="form-control" id="subject" data-bind="textInput: messageSubject" />
+            </div>
+
+            <div class="form-group">
+                <label for="message-format" class="control-label"><translate params="code:'mailing-label-format',translator:self"></translate>:</label>
+                <select class="form-control" id="message-format"
+                        data-bind="options: messasageFormats, optionsText:'Name', value: selectedMessageFormat"></select>
+            </div>
+
+            <div class="form-group">
+                <label for="template" class="control-label"><translate params="code:'mailing-message-template',translator:self"></translate>:</label>
+                <select class="form-control" id="template"
+                        data-bind="options: messageTemplates, optionsCaption:templateSelectCaption, value: selectedMessageTemplate"></select>
+            </div>
+
+            <div class="form-group"  data-bind="css: {'has-error': bodyError() != ''}">
+                <label class="control-label" for="messagehtml"><translate params="code:'label-message',translator:self"></translate></label>
+                <span class="error" data-bind="visible: bodyError, text: bodyError"></span>
+                <!-- textarea rows="8" class="form-control" id="messagebody" data-bind="value: messageBody"></textarea -->
+                <div data-bind="visible:editorView()=='html'">
+                    <textarea rows="10"  class="form-control" id="messagehtml"></textarea>
+                    <p><a href="#" data-bind="click:showPlainText"><translate params="code:'mailing-show-text',translator:self"></translate></a></p>
+                </div>
+                <div data-bind="visible:editorView()=='text'">
+                    <textarea rows="10" data-bind="value:messageBody" class="form-control" id="messagetext"></textarea>
+                    <a href="#" data-bind="click:showEditor"><translate params="code:'mailing-show-html',translator:self"></translate></a>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <button class="btn primary" data-bind="click:sendMessage" ><translate params="code:'mailing-send-mailing',translator:self"></translate> <span class="fa fa-paper-plane-o" aria-hidden="true"></span> </button>
+            </div>
+        </form>
+        <modal-confirm params="id:'confirm-send-modal',headerText: confirmCaption, bodyText: confirmSendMessage, confirmClick: doSend"></modal-confirm>
+        <modal-confirm params="id:'confirm-resend-modal',headerText: confirmCaption, bodyText: confirmResendMessage, confirmClick: doSend"></modal-confirm>
+
+    </div>
+
+</div>
+<!-- end div container -->
