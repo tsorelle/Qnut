@@ -9,8 +9,9 @@
 namespace Peanut\QnutDirectory\services;
 
 
+use Peanut\QnutDirectory\db\EMailQueue;
 use Tops\services\TServiceCommand;
-use Tops\sys\TPermission;
+use Tops\sys\TConfiguration;
 use Tops\sys\TPermissionsManager;
 
 /**
@@ -22,7 +23,8 @@ use Tops\sys\TPermissionsManager;
  *      interface IEMailListSendRequest {
  *        listId: any;
  *        subject: string;
- *        body: string;
+ *        messageText: string;
+ *        contentType: string,
  *        template: string;
  *      }
  */
@@ -33,19 +35,19 @@ class SendMailingListMessageCommand extends TServiceCommand
         $this->addAuthorization(TPermissionsManager::sendMailingsPermissionName);
     }
 
-    private function sendTestMessage() {
+    private function sendTestMessage($request) {
         $email = $this->getUser()->getEmail();
-        // todo: complete implementation
-        $this->addInfoMessage('Test message send to '.$email);
-    }
-
-    private function sendToMessageList($listId) {
-        $messageCount = 0;
-
-        // todo: complete implementation
-        $this->addInfoMessage(
-            ($messageCount == 1 ? 'One message' : "$messageCount messages").' submitted for delivery'
-        );
+        if (empty($email)) {
+            $this->addErrorMessage("Cannot send test message. No email found");
+            return;
+        }
+        $count = EMailQueue::SendTestMessage($request,$this->getUser());
+        if ($count == 0) {
+            $this->addErrorMessage("Failed to send test message to $email");
+        }
+        else {
+            $this->addInfoMessage('Test message send to '.$email);
+        }
     }
 
     protected function run()
@@ -59,17 +61,26 @@ class SendMailingListMessageCommand extends TServiceCommand
             $this->addErrorMessage('Error, no subject');
             return;
         }
-        if (empty($request->body)){
+        if (empty($request->messageText)) {
             $this->addErrorMessage('Error no body');
             return;
         }
 
         if (empty($request->listId)) {
-            $this->sendTestMessage();
+            $this->sendTestMessage($request);
         }
         else {
-            $this->sendToMessageList($request->listId);
+            $queueResult = EMailQueue::QueueMessageList($request, $this->getUser()->getUserName());
+            $queueMailings = TConfiguration::getBoolean('queuemailings', 'mail', true);
+            if ($queueMailings) {
+                $count = $queueResult->count;
+                $action = 'submitted to message queue';
+            } else {
+                $count = EMailQueue::Send($queueResult->messageId);
+                $action = 'sent';
+            }
+            $plural = $count > 1 ? 's were' : ' was';
+            $this->addInfoMessage("$count message$plural $action");
         }
-
     }
 }

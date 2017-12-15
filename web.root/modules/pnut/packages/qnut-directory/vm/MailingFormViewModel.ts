@@ -19,8 +19,10 @@ namespace QnutDirectory {
     interface IEMailListSendRequest {
         listId: any;
         subject: string;
-        body: string;
-        template?: string;
+        template: string;
+        messageText: string;
+        contentType: string;
+        // test: boolean;
     }
 
     export class MailingFormViewModel extends Peanut.ViewModelBase {
@@ -53,8 +55,9 @@ namespace QnutDirectory {
         selectedMessageTemplate = ko.observable();
         headerMessage = ko.observable('');
         editorView = ko.observable('html');
+        // sendTest = ko.observable(false);
 
-        previousMessage = {'listId' : -1, 'body' : ''};
+        previousMessage = {'listId' : -1, 'messageText' : ''};
         currentModal = '';
 
         init(successFunction?: () => void) {
@@ -173,8 +176,9 @@ namespace QnutDirectory {
             let message = <IEMailListSendRequest> {
                 listId: list ? list.id : 0,
                 subject: me.messageSubject(),
-                body: me.messageBody(),
-                template: template ? template : ''
+                messageText: me.messageBody(),
+                template: template ? template : '',
+                contentType: me.selectedMessageFormat().Value,
             };
 
             let valid = true;
@@ -184,7 +188,7 @@ namespace QnutDirectory {
                 valid = false;
             }
 
-            if (message.body.trim() == '') {
+            if (message.messageText.trim() == '') {
                 me.bodyError(': '+me.translate('form-error-email-message-blank')); // Message text is required.);
                 valid = false;
             }
@@ -198,11 +202,16 @@ namespace QnutDirectory {
             let me = this;
             me.sendRequest = me.createMessage();
             if (me.sendRequest) {
-                let modalId = (
-                    me.previousMessage.listId == me.sendRequest.listId &&
-                        me.previousMessage.body == me.sendRequest.body
-                ) ? 'resend' : 'send';
-                me.showConfirmation(modalId);
+                if (me.sendRequest.listId) {
+                    let modalId = (
+                        me.previousMessage.listId == me.sendRequest.listId &&
+                        me.previousMessage.messageText == me.sendRequest.messageText
+                    ) ? 'resend' : 'send';
+                    me.showConfirmation(modalId);
+                }
+                else {
+                    me.doSend();
+                }
             }
         };
 
@@ -218,7 +227,9 @@ namespace QnutDirectory {
                 ,function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            me.previousMessage = me.sendRequest;
+                            if (me.sendRequest.listId) {
+                                me.previousMessage = me.sendRequest;
+                            }
                         }
                     }
                 }

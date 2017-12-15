@@ -9,8 +9,10 @@
 namespace Peanut\Mailboxes\services;
 
 
+use Tops\mail\IMailboxManager;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
+use Tops\sys\TObjectContainer;
 use Tops\sys\TPermissionsManager;
 
 class DeleteMailboxCommand extends TServiceCommand
@@ -24,11 +26,7 @@ class DeleteMailboxCommand extends TServiceCommand
     protected function run()
     {
         $code = $this->getRequest();
-        if (
-            $code === 'two-quakers-support'
-            || $code === 'bounce'
-            || $code === 'admin'
-        ) {
+        if ( in_array($code,TPostOffice::SystemMailboxes)) {
             $this->addErrorMessage("Deletion of this mailbox is not allowed.");
             return;
         }

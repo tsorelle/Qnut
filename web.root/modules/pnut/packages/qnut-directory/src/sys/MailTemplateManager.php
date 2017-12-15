@@ -10,6 +10,7 @@ namespace Peanut\QnutDirectory\sys;
 
 
 use Peanut\sys\PeanutSettings;
+use Tops\sys\TL;
 use Tops\sys\TLanguage;
 use Tops\sys\TPath;
 
@@ -18,6 +19,17 @@ class MailTemplateManager
     private static $instance;
 
     private $templateList;
+
+    private $tokenFormat = '[[%s]]';
+
+    public function replaceTokens($content, array $tokens) {
+        foreach ($tokens as $name=>$value) {
+            $token = sprintf($this->tokenFormat,$name);
+            $content = str_replace($token,$value,$content);
+        }
+        return $content;
+    }
+
 
 
     private function scanTemplateDirectory($path,$result=['html' => [],'text' => []]) {
@@ -60,4 +72,18 @@ class MailTemplateManager
         }
         return $this->templateList;
     }
+
+    public function getTemplateContent($templateFileName) {
+        $root = TPath::fromFileRoot('application/templates/mail', TPath::normalize_no_exception);
+        $templatePath = TLanguage::FindLangugeFile($root,$templateFileName,TLanguage::useSiteLanguage);
+        if (empty($templatePath)) {
+            $root = PeanutSettings::FromPeanutRoot('templates/mail', TPath::normalize_no_exception);
+            $templatePath = TLanguage::FindLangugeFile($root,$templateFileName,TLanguage::useSiteLanguage);
+            if (empty($templatePath)) {
+                return false;
+            }
+        }
+        return @file_get_contents($templatePath);
+    }
+
 }
