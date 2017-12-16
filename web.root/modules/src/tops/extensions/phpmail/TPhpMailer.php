@@ -42,7 +42,7 @@ class TPhpMailer implements IMailer
             $this->baseDir = TWebSite::ExpandUrl($baseDir);
         }
 
-        $this->mailer = new PHPMailer();
+        $this->mailer = new \Tops\extensions\phpmail\PHPMailer();
         if (empty($settings->sendmail)) {
             $this->enabled = false;
         }
@@ -121,6 +121,11 @@ class TPhpMailer implements IMailer
             }
         } else {
             $this->mailer->Body = $message->getMessageBody();
+        }
+
+        $returnAddress = $message->getReturnAddress();
+        if (!empty($returnAddress)) {
+            $this->mailer->addCustomHeader('Return-Path',$returnAddress);
         }
 
         $attachments = $message->getAttachments();

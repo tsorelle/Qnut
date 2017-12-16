@@ -33,6 +33,10 @@ namespace Tops\extensions\phpmail;
  */
 class PHPMailer
 {
+    // This class was modified to work with Tops
+    // 1) Changed namespace to Tops\extensions\phpmail
+    // 2)  Changed Exception to \Exception to avoid namespace collisions
+
     /**
      * Email priority.
      * Options: null (default), 1 = High, 3 = Normal, 5 = low.
