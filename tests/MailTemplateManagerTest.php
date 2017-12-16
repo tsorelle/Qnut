@@ -12,7 +12,8 @@ use PHPUnit\Framework\TestCase;
 class MailTemplateManagerTest extends TestCase
 {
     public function testGetTemplateList() {
-        $actual = MailTemplateManager::GetTemplateList();
+        $manager = new MailTemplateManager();
+        $actual = $manager->getTemplateFileList();
         $this->assertNotEmpty($actual);
     }
 }

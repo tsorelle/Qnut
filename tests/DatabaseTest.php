@@ -102,8 +102,9 @@ class DatabaseTest extends TestCase
         $actual = $repository->getRightValues(110);
         $this->assertNotEmpty($actual);
 
-        $actual = $repository->getAddresses(1);
-        $this->assertNotEmpty($actual);
+        // todo: confirm orphaned method?
+//        $actual = $repository->getAddresses(1);
+//        $this->assertNotEmpty($actual);
 
         $actual = $repository->getLeftValues(1);
         $this->assertNotEmpty($actual);

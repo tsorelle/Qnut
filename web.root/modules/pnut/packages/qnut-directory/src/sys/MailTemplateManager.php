@@ -62,7 +62,7 @@ class MailTemplateManager
     public function getTemplateFileList()
     {
         if (!isset($this->templateList)) {
-            $global = PeanutSettings::FromPeanutRoot('templates/mail', TPath::normalize_no_exception);
+            $global = PeanutSettings::FromPeanutRoot('mail/templates', TPath::normalize_no_exception);
             $local = TPath::fromFileRoot('application/templates/mail');
             $templates = $this->scanTemplateDirectory($local);
             $templates =  $this->scanTemplateDirectory($global, $templates);

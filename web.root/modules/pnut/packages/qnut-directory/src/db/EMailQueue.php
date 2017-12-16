@@ -15,6 +15,8 @@ use Peanut\QnutDirectory\db\model\repository\EmailMessagesRepository;
 use Peanut\QnutDirectory\sys\MailTemplateManager;
 use Tops\mail\TEmailAddress;
 use Tops\mail\TPostOffice;
+use Tops\services\MessageType;
+use Tops\services\TProcessManager;
 use Tops\sys\IUser;
 use Tops\sys\TConfiguration;
 use Tops\sys\TTemplateManager;
@@ -22,30 +24,40 @@ use Tops\sys\TWebSite;
 
 class EMailQueue
 {
-    public static function QueueMessageList($messageDto, $username) {
+    const processCode = 'email-queue-send';
+
+    /**
+     * @var TProcessManager
+     */
+    private $process;
+    public static function QueueMessageList($messageDto, $username,$instance=null) {
         $repository =  new EmailMessagesRepository();
         $message = EmailMessage::Create($messageDto, $username);
         return $repository->queueMessageList($message);
     }
 
-    public static function QueueSingleMessage($messageDto, $toAddress, $toName, $username) {
+    public static function QueueSingleMessage($messageDto, $toAddress, $toName, $username,$instance=null) {
         $repository =  new EmailMessagesRepository();
         $message = EmailMessage::Create($messageDto, $username);
         return $repository->queueMessage($message,$toAddress,$toName);
     }
 
-    public static function SendTestMessage($messageDto, IUser $user) {
+    public static function SendTestMessage($messageDto, IUser $user,$instance=null) {
+        if ($instance === null) {
+            $instance = new EMailQueue();
+        }
         $recipient = new EmailMessageRecipient();
         $recipient->id = $user->getId();
         $recipient->toName = $user->getDisplayName();
         $recipient->toAddress = $user->getEmail();
         $message = EmailMessage::Create($messageDto,$user->getUserName());
-        $instance = new EMailQueue();
         return $instance->sendMessage($recipient,$message);
     }
 
-    public static function Send($messageId) {
-        $instance = new EMailQueue();
+    public static function Send($messageId,$instance = null) {
+        if ($instance === null) {
+            $instance = new EMailQueue();
+        }
         return $instance->sendMessages(0,$messageId);
     }
 
@@ -53,6 +65,13 @@ class EMailQueue
         $instance = new EMailQueue();
         $sendLimit = TConfiguration::getValue('sendlimit', 'mail', 0);
         return $instance->sendMessages($sendLimit);
+    }
+
+    public static function Pause($reason='interrupt message processsing',$interval='1 hour') {
+        $process = TProcessManager::Get(self::processCode);
+        if ($process !== false) {
+            $process->pauseProcess($reason,$interval);
+        }
     }
 
     /**
@@ -84,9 +103,27 @@ class EMailQueue
         return false;
     }
 
-    private function log($message)
+    private function startProcess() {
+        $this->process = TProcessManager::CreateProcess(self::processCode,'Send email','Process outgoing email in queue');
+    }
+
+    private function log($message,$messageType=MessageType::Info, $event='process mail',$detail=null)
     {
-        // todo: implement log
+        if (isset($this->process)) {
+            $this->process->log($event,$message,$messageType,$detail);
+        }
+    }
+    
+    private function logError($message,$event='mail process error',$detail=null) {
+        if (isset($this->process)) {
+            $this->process->logError($event,$message,$detail);
+        }
+    }
+
+    private function logWarning($message,$event='mail process warning',$detail=null) {
+        if (isset($this->process)) {
+            $this->process->logWarning($event,$message,$detail);
+        }
     }
 
     /**
@@ -98,7 +135,7 @@ class EMailQueue
         if (!array_key_exists($template, $this->templates)) {
             $templateContent = (new MailTemplateManager())->getTemplateContent($template);
             if (empty($templateContent)) {
-                $this->log("No template content found for '$template'");
+                $this->logError("No template content found for '$template'");
             }
             $this->templates[$template] = $templateContent;
          }
@@ -128,7 +165,7 @@ class EMailQueue
     {
         $to = TEmailAddress::Create($recipient->toAddress, $recipient->toName);
         if (empty($to)) {
-            $this->log("Invalid email address, $recipient->toAddress");
+            $this->logWarning("Invalid email address, $recipient->toAddress");
             return 0;
         }
         $messageText = $this->mergeContent($recipient, $message->messageText,
@@ -144,9 +181,7 @@ class EMailQueue
         );
 
         if ($sendResult === false) {
-            if ($logging) {
-                $this->log("Mail server failed to send. Recipient id: $recipient->id, Message id: $message->id");
-            }
+            $this->log("Mail server failed to send. Recipient id: $recipient->id, Message id: $message->id");
             return -1; // try again later.
         }
         $sendResult = TPostOffice::SendMessage(
@@ -159,9 +194,7 @@ class EMailQueue
         );
 
         if ($sendResult === false) {
-            if ($logging) {
-                $this->log("Mail server failed to send. Recipient id: $recipient->id, Message id: $message->id");
-            }
+            $this->log("Mail server failed to send. Recipient id: $recipient->id, Message id: $message->id");
             return -1; // try again later.
         }
         return 1;
@@ -184,6 +217,7 @@ class EMailQueue
     public function sendMessages($sendLimit = 0, $messageId=0)
     {
         $sendCount = 0;
+        $this->startProcess();
         $repository = $this->getMessagesRepository();
         if ($messageId) {
             $message = $repository->get($messageId);
@@ -194,6 +228,9 @@ class EMailQueue
         }
         $recipients = $repository->getMessageRecipients($sendLimit,$messageId);
         foreach ($recipients as $recipient) {
+            if ($this->process->isPaused()) {
+                break;
+            }
             $result = $this->sendQueuedMessage($recipient);
             switch($result) {
                 case 1:
