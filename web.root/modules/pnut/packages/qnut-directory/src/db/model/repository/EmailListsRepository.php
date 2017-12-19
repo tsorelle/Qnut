@@ -25,6 +25,14 @@ class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
         return 'Peanut\QnutDirectory\db\model\entity\EmailList';
     }
 
+    public function getLookupList() {
+        $sql =
+            'SELECT e.id,e.`code`,e.`name`,e.description,e.mailBox,m.displaytext AS mailboxName,e.active '.
+            'FROM qnut_email_lists e JOIN tops_mailboxes m ON e.mailBox = m.mailboxcode ORDER BY e.`name`';
+        $stmt = $this->executeStatement($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
     protected function getFieldDefinitionList()
     {
         return array(
@@ -33,7 +41,6 @@ class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
         'name'=>PDO::PARAM_STR,
         'description'=>PDO::PARAM_STR,
         'mailBox'=>PDO::PARAM_STR,
-        'fromName'=>PDO::PARAM_STR,
         'createdby'=>PDO::PARAM_STR,
         'createdon'=>PDO::PARAM_STR,
         'changedby'=>PDO::PARAM_STR,

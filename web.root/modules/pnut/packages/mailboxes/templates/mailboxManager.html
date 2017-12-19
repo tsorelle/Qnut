@@ -1,0 +1,28 @@
+<div>
+<h2>manager component</h2>
+    <div id="mailbox-list">
+        <table  class="table table-bordered">
+            <thead>
+            <th style="width: 80px"></th>
+            <!-- th><translate params="code:'label-mailbox',translator:owner"></translate></th -->
+            <th><translate params="code:'label-name',translator:owner"></translate></th>
+            <th><translate params="code:'label-address',translator:owner"></translate></th>
+            <th><translate params="code:'label-description',translator:owner"></translate></th>
+            <th><translate params="code:'label-public',translator:owner"></translate></th>
+            <th>&nbsp;</th>
+            </thead>
+            <tbody  data-bind="foreach: mailboxes.list">
+            <td data-bind="text: mailboxcode"></td>
+            <td data-bind="text: displaytext"></td>
+            <td data-bind="text: address"></td>
+            <td data-bind="text: description"></td>
+            <td><span data-bind="visible:public !== '0'"><translate params="code:'label-yes',translator:$parent.owner"></translate></span> &nbsp;</td>
+            <td><a href="#"  data-bind="click: $parent.editMailbox" >
+                <translate params="code:'label-edit',translator:$parent.owner"></translate></a>
+                <a href="#" data-bind="click: $parent.confirmRemoveMailbox" >
+                    <translate params="code:'label-delete',translator:$parent.owner"></translate></a> </td>
+            </tbody>
+        </table>
+    </div>
+
+</div>

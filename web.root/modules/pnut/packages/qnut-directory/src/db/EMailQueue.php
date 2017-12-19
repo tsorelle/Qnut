@@ -9,8 +9,10 @@
 namespace Peanut\QnutDirectory\db;
 
 
+use Peanut\QnutDirectory\db\model\entity\EmailList;
 use Peanut\QnutDirectory\db\model\entity\EmailMessage;
 use Peanut\QnutDirectory\db\model\entity\EmailMessageRecipient;
+use Peanut\QnutDirectory\db\model\repository\EmailListsRepository;
 use Peanut\QnutDirectory\db\model\repository\EmailMessagesRepository;
 use Peanut\QnutDirectory\sys\MailTemplateManager;
 use Tops\mail\TEmailAddress;
@@ -161,6 +163,29 @@ class EMailQueue
         return $messageText;
     }
 
+    /**
+     * @var array EmailList[]
+     */
+    private $lists = [];
+    private function  getList($listId) {
+        if ($listId > 0) {
+            if (!isset($this->lists)) {
+                $this->lists = (new EmailListsRepository())->getAll(true);
+            }
+            /**
+             * @var $list EmailList
+             */
+            foreach ($this->lists as $list) {
+                if ($list->id == $listId) {
+                    return $list;
+                }
+            }
+        }
+        return false;
+    }
+
+
+
     public function sendMessage(EmailMessageRecipient $recipient, EmailMessage $message,$logging = true)
     {
         $to = TEmailAddress::Create($recipient->toAddress, $recipient->toName);
@@ -171,22 +196,18 @@ class EMailQueue
         $messageText = $this->mergeContent($recipient, $message->messageText,
             empty($message->template) ? '' : $message->template, $message->listId);
 
-        $sendResult = TPostOffice::SendMessage(
-            $to,
-            $message->sender,
-            $message->subject,
-            $messageText,
-            $message->contentType,
-            $message->replyAddress
-        );
-
-        if ($sendResult === false) {
-            $this->log("Mail server failed to send. Recipient id: $recipient->id, Message id: $message->id");
-            return -1; // try again later.
+        $alias = null;
+        if ($message->listId) {
+            $list = $this->getList($message->listId);
+            if ($list !== false) {
+                $alias = $list->name;
+            }
         }
+
         $sendResult = TPostOffice::SendMessage(
             $to,
             $message->sender,
+            $alias,
             $message->subject,
             $messageText,
             $message->contentType,
@@ -218,30 +239,38 @@ class EMailQueue
     {
         $sendCount = 0;
         $this->startProcess();
-        $repository = $this->getMessagesRepository();
-        if ($messageId) {
-            $message = $repository->get($messageId);
-            $this->messages = [$message];
-        }
-        else {
-            $this->messages = $repository->getQueuedMessages();
-        }
-        $recipients = $repository->getMessageRecipients($sendLimit,$messageId);
-        foreach ($recipients as $recipient) {
-            if ($this->process->isPaused()) {
-                break;
+        try {
+            $this->log("Sending ".
+                ($sendLimit ? $sendLimit : 'all').
+                " messages for message #$messageId");
+            $repository = $this->getMessagesRepository();
+            if ($messageId) {
+                $message = $repository->get($messageId);
+                $this->messages = [$message];
+            } else {
+                $this->messages = $repository->getQueuedMessages();
             }
-            $result = $this->sendQueuedMessage($recipient);
-            switch($result) {
-                case 1:
-                    $repository->undateQueue($recipient->id);
-                    $sendCount++;
+            $recipients = $repository->getMessageRecipients($sendLimit, $messageId);
+            foreach ($recipients as $recipient) {
+                if ($this->process->isPaused()) {
                     break;
-                case 0:
-                    $repository->unqueue($recipient->id);
-                    break;
-                // case -1: ignore and leave for next round.
+                }
+                $result = $this->sendQueuedMessage($recipient);
+                switch ($result) {
+                    case 1:
+                        $repository->undateQueue($recipient->id);
+                        $sendCount++;
+                        break;
+                    case 0:
+                        $repository->unqueue($recipient->id);
+                        break;
+                    // case -1: ignore and leave for next round.
+                }
             }
+            $this->log("Sent $sendCount messages for message #$messageId");
+        }
+        catch (\Exception $ex) {
+            $this->process->logException($ex);
         }
         return $sendCount;
     }

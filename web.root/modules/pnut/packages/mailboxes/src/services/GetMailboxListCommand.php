@@ -33,6 +33,7 @@ use Tops\sys\TPermissionsManager;
  *       mailboxcode:string ;
  *       address:string;
  *       'public': any;
+ *       active: any
  *    }
  */
 class GetMailboxListCommand extends TServiceCommand
@@ -46,7 +47,7 @@ class GetMailboxListCommand extends TServiceCommand
         }
         $manager = TPostOffice::GetMailboxManager();
         $response = new \stdClass();
-        $response->list = $manager->getMailboxes($allBoxes);
+        $response->list = $manager->getMailboxes(true);
         $response->translations = TLanguage::getTranslations(
           array(
               'form-error-email-invalid',

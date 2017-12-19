@@ -9,7 +9,6 @@ namespace Peanut\QnutDirectory\db\model\entity;
 class EmailList  extends \Tops\db\NamedEntity
 {
     public $mailBox;
-    public $fromName;
 
     public function assignFromObject($dto)
     {
@@ -17,9 +16,5 @@ class EmailList  extends \Tops\db\NamedEntity
         if (isset($dto->mailBox)) {
             $this->mailBox = $dto->mailBox;
         }
-        if (isset($dto->fromName)) {
-            $this->fromName = $dto->fromName;
-        }
-
     }
 }

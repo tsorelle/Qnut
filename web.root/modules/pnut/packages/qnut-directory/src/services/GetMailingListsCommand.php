@@ -9,6 +9,7 @@
 namespace Peanut\QnutDirectory\services;
 
 use Peanut\QnutDirectory\db\DirectoryManager;
+use Peanut\QnutDirectory\db\model\repository\EmailListsRepository;
 use Peanut\QnutDirectory\sys\MailTemplateManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
@@ -32,25 +33,52 @@ class GetMailingListsCommand extends TServiceCommand
     protected function run()
     {
         $result = new \stdClass();
-        $manager = new DirectoryManager($this->getMessages());
-        $result->emailLists = $manager->getEmailListLookup();
+        // $manager = new DirectoryManager($this->getMessages());
+        // $result->emailLists = $manager->getEmailListLookup();
+        $result->emailLists = (new EmailListsRepository())->getLookupList();
         $result->translations = TLanguage::getTranslations([
             'confirm-caption',
+            'dir-label-email-queue',
             'dir-label-please-select',
-            'label-subject',
+            'dir-label-posted',
+            'dir-label-queue-processing',
+            'dir-label-sender',
+            'label-active',
+            'label-cancel',
+            'label-count',
+            'label-code',
+            'label-edit',
+            'label-mailbox',
             'label-message',
-            'mail-header-send',
+            'label-name',
+            'label-of',
+            'label-refresh',
+            'label-remove',
+            'label-save',
+            'label-status',
+            'label-subject',
+            'label-until',
+            'label-update',
             'mail-header-select',
-            'mailing-send-mailing',
+            'mail-header-send',
+            'mailing-confirm-resend',
+            'mailing-confirm-send',
+            'mailing-heading-lists',
+            'mailing-control-heading',
+            'mailing-history-heading',
             'mailing-label-format',
             'mailing-label-list',
             'mailing-message-template',
-            'mailing-test-template',
+            'mailing-no-template',
+            'mailing-send-mailing',
             'mailing-show-html',
             'mailing-show-text',
-            'mailing-no-template',
-            'mailing-confirm-send',
-            'mailing-confirm-resend'
+            'mailing-test-template',
+            'process-command-continue',
+            'process-command-pause',
+            'process-status-active',
+            'process-status-paused',
+            'process-status-ready'
             ]);
 
 

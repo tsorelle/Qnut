@@ -16,6 +16,9 @@ use Tops\sys\TPath;
 
 class MailTemplateManager
 {
+    const pnutTemplateLocation = 'mail/templates';
+    const appTemplateLocation = 'application/templates/mail';
+
     private static $instance;
 
     private $templateList;
@@ -62,8 +65,8 @@ class MailTemplateManager
     public function getTemplateFileList()
     {
         if (!isset($this->templateList)) {
-            $global = PeanutSettings::FromPeanutRoot('mail/templates', TPath::normalize_no_exception);
-            $local = TPath::fromFileRoot('application/templates/mail');
+            $global = PeanutSettings::FromPeanutRoot(self::pnutTemplateLocation, TPath::normalize_no_exception);
+            $local = TPath::fromFileRoot(self::appTemplateLocation);
             $templates = $this->scanTemplateDirectory($local);
             $templates =  $this->scanTemplateDirectory($global, $templates);
             $this->sortTemplateList($templates,'html');
@@ -74,10 +77,10 @@ class MailTemplateManager
     }
 
     public function getTemplateContent($templateFileName) {
-        $root = TPath::fromFileRoot('application/templates/mail', TPath::normalize_no_exception);
+        $root = TPath::fromFileRoot(self::appTemplateLocation, TPath::normalize_no_exception);
         $templatePath = TLanguage::FindLangugeFile($root,$templateFileName,TLanguage::useSiteLanguage);
         if (empty($templatePath)) {
-            $root = PeanutSettings::FromPeanutRoot('templates/mail', TPath::normalize_no_exception);
+            $root = PeanutSettings::FromPeanutRoot(self::pnutTemplateLocation, TPath::normalize_no_exception);
             $templatePath = TLanguage::FindLangugeFile($root,$templateFileName,TLanguage::useSiteLanguage);
             if (empty($templatePath)) {
                 return false;

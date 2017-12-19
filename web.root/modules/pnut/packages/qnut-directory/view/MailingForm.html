@@ -1,57 +1,240 @@
 <div id="mailingform-view-container" class="row" style="display: none">
-    <h2 data-bind="text:headerMessage"></h2>
-    <div class="col-md-12">
-        <form  data-bind="visible:formVisible">
-            <div class="form-group" data-bind="visible: mailingLists().length > 0,css: {'has-error': mailingListSelectError}">
-                <label class="control-label" for="mailingList" ><translate params="code:'mailing-label-list',translator:self"></translate></label>
-                <span class="error" data-bind="visible: mailingListSelectError, text: mailingListSelectError"></span>
-                <select class="form-control"  id="mailingList" data-bind="options: mailingLists,
-                       optionsText: 'name',
-                       value: selectedMailingList,
-                       optionsCaption: selectMailingListCaption"></select>
-            </div>
-
-            <div class="form-group" data-bind="css: {'has-error': subjectError}">
-                <label class="control-label" for="subject"><translate params="code:'label-subject',translator:self"></translate></label>
-                <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
-                <input type="text" class="form-control" id="subject" data-bind="textInput: messageSubject" />
-            </div>
-
-            <div class="form-group">
-                <label for="message-format" class="control-label"><translate params="code:'mailing-label-format',translator:self"></translate>:</label>
-                <select class="form-control" id="message-format"
-                        data-bind="options: messasageFormats, optionsText:'Name', value: selectedMessageFormat"></select>
-            </div>
-
-            <div class="form-group">
-                <label for="template" class="control-label"><translate params="code:'mailing-message-template',translator:self"></translate>:</label>
-                <select class="form-control" id="template"
-                        data-bind="options: messageTemplates, optionsCaption:templateSelectCaption, value: selectedMessageTemplate"></select>
-            </div>
-
-            <div class="form-group"  data-bind="css: {'has-error': bodyError() != ''}">
-                <label class="control-label" for="messagehtml"><translate params="code:'label-message',translator:self"></translate></label>
-                <span class="error" data-bind="visible: bodyError, text: bodyError"></span>
-                <!-- textarea rows="8" class="form-control" id="messagebody" data-bind="value: messageBody"></textarea -->
-                <div data-bind="visible:editorView()=='html'">
-                    <textarea rows="10"  class="form-control" id="messagehtml"></textarea>
-                    <p><a href="#" data-bind="click:showPlainText"><translate params="code:'mailing-show-text',translator:self"></translate></a></p>
-                </div>
-                <div data-bind="visible:editorView()=='text'">
-                    <textarea rows="10" data-bind="value:messageBody" class="form-control" id="messagetext"></textarea>
-                    <a href="#" data-bind="click:showEditor"><translate params="code:'mailing-show-html',translator:self"></translate></a>
+    <ul class="nav nav-tabs">
+          <li  data-bind="css: { active: tab()=='message'}"><a href="#" data-bind="click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
+          <li  data-bind="css: { active: tab()=='queue'}"><a href="#" data-bind="click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
+          <li  data-bind="css: { active: tab()=='lists'}"><a href="#" data-bind="click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
+          <li  data-bind="css: { active: tab()=='mailboxes'}"><a href="#" data-bind="click:showMailboxes"><translate params="code:'heading-mailboxes',translator:self"></translate></a></li>
+    </ul>
+    <div data-bind="visible:tab()=='message'">
+        <div class="col-md-12">
+            <form  data-bind="visible:formVisible">
+                <div class="form-group" data-bind="visible: mailingListLookup().length > 0,css: {'has-error': mailingListSelectError}">
+                    <label class="control-label" for="mailingList" ><translate params="code:'mailing-label-list',translator:self"></translate></label>
+                    <span class="error" data-bind="visible: mailingListSelectError, text: mailingListSelectError"></span>
+                    <select class="form-control"  id="mailingList" data-bind="options: mailingListLookup,
+                           optionsText: 'name',
+                           value: selectedMailingList,
+                           optionsCaption: selectMailingListCaption"></select>
                 </div>
 
-            </div>
+                <div class="form-group" data-bind="css: {'has-error': subjectError}">
+                    <label class="control-label" for="subject"><translate params="code:'label-subject',translator:self"></translate></label>
+                    <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
+                    <input type="text" class="form-control" id="subject" data-bind="value: messageSubject" />
+                </div>
 
-            <div class="form-group">
-                <button class="btn primary" data-bind="click:sendMessage" ><translate params="code:'mailing-send-mailing',translator:self"></translate> <span class="fa fa-paper-plane-o" aria-hidden="true"></span> </button>
-            </div>
-        </form>
-        <modal-confirm params="id:'confirm-send-modal',headerText: confirmCaption, bodyText: confirmSendMessage, confirmClick: doSend"></modal-confirm>
-        <modal-confirm params="id:'confirm-resend-modal',headerText: confirmCaption, bodyText: confirmResendMessage, confirmClick: doSend"></modal-confirm>
+                <div class="form-group">
+                    <label for="message-format" class="control-label"><translate params="code:'mailing-label-format',translator:self"></translate>:</label>
+                    <select class="form-control" id="message-format"
+                            data-bind="options: messasageFormats, optionsText:'Name', value: selectedMessageFormat"></select>
+                </div>
 
+                <div class="form-group">
+                    <label for="template" class="control-label"><translate params="code:'mailing-message-template',translator:self"></translate>:</label>
+                    <select class="form-control" id="template"
+                            data-bind="options: messageTemplates, optionsCaption:templateSelectCaption, value: selectedMessageTemplate"></select>
+                </div>
+
+                <div class="form-group"  data-bind="css: {'has-error': bodyError() != ''}">
+                    <label class="control-label" for="messagehtml"><translate params="code:'label-message',translator:self"></translate></label>
+                    <span class="error" data-bind="visible: bodyError, text: bodyError"></span>
+                    <div data-bind="visible:editorView()=='html'">
+                        <textarea rows="10"  class="form-control" id="messagehtml"></textarea>
+                        <p><a href="#" data-bind="click:showPlainText"><translate params="code:'mailing-show-text',translator:self"></translate></a></p>
+                    </div>
+                    <div data-bind="visible:editorView()=='text'">
+                        <textarea rows="10" data-bind="value:messageBody" class="form-control" id="messagetext"></textarea>
+                        <a href="#" data-bind="click:showEditor"><translate params="code:'mailing-show-html',translator:self"></translate></a>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn primary" data-bind="click:sendMessage" ><translate params="code:'mailing-send-mailing',translator:self"></translate> <span class="fa fa-paper-plane-o" aria-hidden="true"></span> </button>
+                </div>
+            </form>
+        </div>
     </div>
+    <div data-bind="visible:tab()==='queue'">
+        <div class="row" id="queue-control-panel">
+            <div class="col-md-12">
+            <h4><translate params="code:'mailing-control-heading',translator:self"></translate></h4>
+            <div class="col-sm-5">
+                <p>
+                    <strong><translate params="code:'label-status',translator:self"></translate>: </strong>
+                    <span data-bind="visible:queueStatus()==='active'"><translate params="code:'process-status-active',translator:self"></translate></span>
+                    <span data-bind="visible:queueStatus()==='ready'" ><translate params="code:'process-status-ready',translator:self"></translate></span>
+                    <span data-bind="visible:queueStatus()==='paused'"><translate params="code:'process-status-paused',translator:self"></translate></span>
+                    <span data-bind="visible:queueStatus()==='paused'" > <translate params="code:'label-until',translator:self"></translate> <span data-bind="text:pausedUntil"></span></span>
+                </p>
+            </div>
+            <div class="col-sm-7">
+                <div style="float: right">
+                    <button class="btn btn-default" style="margin-right: 10px" data-bind="click:refreshQueue"><span class="fa fa-refresh" aria-hidden="true"></span> <translate params="code:'label-refresh',translator:self"></translate></button>
+                    <button class="btn btn-default" data-bind="visible:queueStatus()==='active',click:pauseQueue"><translate params="code:'process-command-pause',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
+                    <button class="btn btn-default" data-bind="visible:queueStatus()==='paused',click:restartQueue"><translate params="code:'process-command-continue',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="row" id="queue-history-panel">
+            <div class="col-md-12">
+                <h4><translate params="code:'mailing-history-heading',translator:self"></translate></h4>
+                <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><translate params="code:'dir-label-posted',translator:self"></translate></th>
+                            <th><translate params="code:'dir-label-sender',translator:self"></translate></th>
+                            <th><translate params="code:'label-subject',translator:self"></translate></th>
+                            <th><translate params="code:'label-count',translator:self"></translate></th>
+                            <th>&nbsp</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach:messageHistory">
+                        <tr data-bind="css: { success: active }">
+                            <td data-bind="text:timeSent"></td><td  data-bind="text:sender"></td><td  data-bind="text:subject"></td>
+                            <td><span  data-bind="text:sentCount"></span> <translate params="code:'label-of',translator:$parent.self"></translate> <span  data-bind="text:recipientCount"></span></td>
+                            <td><span  data-bind="visible:$parent.queueStatus()=='paused'">
+                                <a href="#" data-bind="visible:active,click:$parent.removeQueuedMessage" style="margin-right: 5px"><translate params="code:'label-remove',translator:$parent.self"></translate></a>
+                                <a href="#" data-bind="visible:active,click:$parent.editQueuedMessage"><translate params="code:'label-edit',translator:$parent.self"></translate></a>
+                            </span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-bind="visible:tab()==='lists'">
+        <div class="row" id="lists-panel">
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><translate params="code:'label-name',translator:self"></translate>    </th>
+                                <th><translate params="code:'label-code',translator:self"></translate>    </th>
+                                <th><translate params="code:'label-mailbox',translator:self"></translate></th>
+                                <th><translate params="code:'label-active',translator:self"></translate></th>
+                                <th>&nbsp</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach:mailingLists">
+                        <tr data-bind="css: { danger: active==0 }">
+                            <td data-bind="text:name"></td>
+                            <td data-bind="text:code"></td>
+                            <td data-bind="text:mailboxName"></td>
+                            <td>
+                               <span data-bind="visible:active == '1'">Yes</span>
+                               <span data-bind="visible:active !== '1'">No</span>
+                            </td>
+                            <td>
+                                <a href="#" data-bind="click:$parent.editEmailList"><translate params="code:'label-edit',translator:$parent.self"></translate></a>
+                            </td>
+
+
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-bind="visible:tab()==='mailboxes'">
+        <div class="row" id="mailbox-panel">
+            <div class="col-md-12">
+                <mailbox-manager params="owner:self"></mailbox-manager>
+            </div>
+        </div>
+    </div>
+
+    <modal-confirm params="id:'confirm-send-modal',headerText: confirmCaption, bodyText: confirmSendMessage, confirmClick: doSend"></modal-confirm>
+    <modal-confirm params="id:'confirm-resend-modal',headerText: confirmCaption, bodyText: confirmResendMessage, confirmClick: doSend"></modal-confirm>
+    <div class="modal" id="edit-message-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title"><translate params="code:'label-update',translator:self"></translate>&nbsp;<translate params="code:'dir-label-message',translator:self"></translate></h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <form>
+
+                            <div class="form-group" data-bind="css: {'has-error': messageEditForm.subjectError}">
+                                <label class="control-label" for="editsubject"><translate params="code:'label-subject',translator:self"></translate></label>
+                                <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
+                                <input type="text" class="form-control" id="editsubject" data-bind="value: messageEditForm.subject" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="edit-template" class="control-label"><translate params="code:'mailing-message-template',translator:self"></translate>:</label>
+                                <select class="form-control" id="edit-template"
+                                        data-bind="options: messageTemplates, optionsCaption:templateSelectCaption, value: messageEditForm.selectedTemplate"></select>
+                            </div>
+
+                            <div class="form-group"  data-bind="css: {'has-error': messageEditForm.bodyError() != ''}">
+                                <label class="control-label" for="edit-messagetext"><translate params="code:'label-message',translator:self"></translate></label>
+                                <span class="error" data-bind="visible: messageEditForm.bodyError, text: bodyError"></span>
+                                <textarea rows="10"  class="form-control" id="edit-messagetext" data-bind="value:messageEditForm.messageText"></textarea>
+                            </div>
+
+                        </form>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="click:updateQueuedMessage"><translate params="code:'label-save',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <div class="modal" id="edit-list-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title"><translate params="code:'label-update',translator:self"></translate>&nbsp;<translate params="code:'mailing-label-list',translator:self"></translate></h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <form>
+                            <div class="form-group">
+                                <input id="active-check" type="checkbox" data-bind="checked:listEditForm.active"/>
+                                <label for="active-check"  class="control-label">
+                                    <translate params="code:'label-active',translator:self"></translate> </label>
+                            </div>
+
+                            <div class="form-group" data-bind="css: {'has-error': listEditForm.codeError}">
+                                <label class="control-label" for="listcode"><translate params="code:'label-code',translator:self"></translate></label>
+                                <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
+                                <input type="text" class="form-control" id="listcode" data-bind="value: listEditForm.code" />
+                            </div>
+
+                            <div class="form-group" data-bind="css: {'has-error': listEditForm.nameErroe}">
+                                <label class="control-label" for="listname"><translate params="code:'label-name',translator:self"></translate></label>
+                                <span class="error" data-bind="visible: listEditForm.nameError, text: listEditForm.nameError"></span>
+                                <input type="text" class="form-control" id="listname" data-bind="value: listEditForm.name" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="listmailbox" class="control-label"><translate params="code:'label-mailbox',translator:self"></translate>:</label>
+                                <select class="form-control" id="listmailbox"
+                                        data-bind="options: mailboxList, optionsText: 'displaytext',  value: listEditForm.selectedMailbox"></select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="click:updateEmailList"><translate params="code:'label-save',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
 </div>
 <!-- end div container -->

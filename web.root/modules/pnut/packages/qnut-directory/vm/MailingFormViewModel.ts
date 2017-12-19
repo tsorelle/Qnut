@@ -3,15 +3,19 @@
 /// <reference path='../../../../typings/tinymce/tinymce.d.ts' />
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
 /// <reference path='../../../../pnut/js/ViewModelHelpers.ts' />
+/// <reference path='../../mailboxes/vm/mailboxes.d.ts' />
+/// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
 
 namespace QnutDirectory {
 
     import ILookupItem = Peanut.ILookupItem;
     import INameValuePair = Peanut.INameValuePair;
+    import IMailboxFormOwner = Mailboxes.IMailboxFormOwner;
+    import IMailBox = Mailboxes.IMailBox;
 
     interface IGetMailingListsResponse {
-        emailLists : Peanut.ILookupItem[];
+        emailLists : IEmailListItem[];
         translations : string[];
         templates : string[];
     }
@@ -22,10 +26,39 @@ namespace QnutDirectory {
         template: string;
         messageText: string;
         contentType: string;
-        // test: boolean;
     }
 
-    export class MailingFormViewModel extends Peanut.ViewModelBase {
+    interface IEmailListMessgeUpdate {
+        messageId: any;
+        subject: string;
+        template: string;
+        messageText: string;
+    }
+
+    interface IMessageHistoryItem {
+        messageId: any;
+        timeSent: string;
+        listName: string;
+        recipientCount: number;
+        sentCount: number;
+        sender: string;
+        subject: string;
+        active: boolean;
+    }
+
+    interface IGetMessageHistoryResponse {
+        status: string;
+        pausedUntil: string;
+        items: IMessageHistoryItem[];
+    }
+
+    interface IEmailListItem extends ILookupItem {
+        mailBox: string;
+        mailboxName: string;
+        active: number;
+    }
+
+    export class MailingFormViewModel extends Peanut.ViewModelBase implements IMailboxFormOwner{
         sendRequest : IEMailListSendRequest = null;
 
         // observables
@@ -38,8 +71,11 @@ namespace QnutDirectory {
         confirmCaption = ko.observable('');
         confirmSendMessage = ko.observable('');
         confirmResendMessage = ko.observable('');
+        mailboxes : Mailboxes.MailboxListObservable;
 
-        mailingLists = ko.observableArray<ILookupItem>([]);
+        mailingListLookup = ko.observableArray<ILookupItem>([]);
+        mailingLists = ko.observableArray<IEmailListItem>([]);
+        mailboxList : KnockoutObservableArray<IMailBox> = ko.observableArray([]);
         selectedMailingList = ko.observable<ILookupItem>(null);
         selectMailingListCaption = ko.observable('Select a mailing list');
         templateSelectCaption = ko.observable('No template');
@@ -53,9 +89,36 @@ namespace QnutDirectory {
         templateList : string[] = [];
         messageTemplates = ko.observableArray<string>([]);
         selectedMessageTemplate = ko.observable();
-        headerMessage = ko.observable('');
         editorView = ko.observable('html');
-        // sendTest = ko.observable(false);
+        tab=ko.observable('message');
+        queueStatus=ko.observable('active');
+        messageHistory = ko.observableArray<IMessageHistoryItem>([]);
+        pausedUntil = ko.observable('');
+        
+        messageEditForm = {
+            messageId: 0,
+            subject: ko.observable(''),
+            template: ko.observable(''),
+            messageText: ko.observable(''),
+            selectedTemplate: ko.observable(),
+            bodyError: ko.observable(''),
+            subjectError: ko.observable('')
+        };
+
+        listEditForm = {
+            listId: 0,
+            mailboxCode: '',
+            selectedMailbox: ko.observable<IMailBox>(null),
+            active: ko.observable(true),
+            code: ko.observable(''),
+            name: ko.observable(''),
+            description: ko.observable(''),
+            codeError: ko.observable(''),
+            nameError: ko.observable('')
+        };
+
+
+
 
         previousMessage = {'listId' : -1, 'messageText' : ''};
         currentModal = '';
@@ -65,17 +128,22 @@ namespace QnutDirectory {
             console.log('MailingForm Init');
             me.showLoadWaiter();
             me.application.loadResources([
-                '@lib:tinymce'
+                '@lib:tinymce',
+                '@lib:lodash',
+                '@pnut/ViewModelHelpers.js'
+                ,'@pkg/mailboxes/MailboxListObservable.js'
             ], () => {
+                me.mailboxes = new Mailboxes.MailboxListObservable(me);
                 tinymce.init({
                     selector: '#messagehtml',
                     toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
                     plugins: "image imagetools link",
-                    default_link_target: "_blank"
+                    default_link_target: "_blank",
+                    branding: false
 
                 });
 
-                me.application.registerComponents('@pnut/modal-confirm', () => {
+                me.application.registerComponents(['@pnut/modal-confirm', '@pkg/mailboxes/mailbox-manager'], () => {
                         me.getMailingLists(() => {
                             me.application.hideWaiter();
                             me.bindDefaultSection();
@@ -117,6 +185,10 @@ namespace QnutDirectory {
                             me.confirmCaption(me.translate('confirm-caption'));
                             me.confirmResendMessage(me.translate('mailing-confirm-resend'));
                             me.confirmSendMessage(me.translate('mailing-confirm-send'));
+                            let lookup = _.filter(response.emailLists, (item: IEmailListItem) => {
+                               return (item.active == 1);
+                            });
+                            me.mailingListLookup(lookup);
                             me.mailingLists(response.emailLists);
                             me.formVisible(true);
                             me.templateList = response.templates;
@@ -240,18 +312,164 @@ namespace QnutDirectory {
             });
         };
 
-        onMailingListSelected = (selected: ILookupItem) => {
-            let me = this;
-            // todo: replace translations
-            let title = 'Send a Message';
-            if (selected) {
-                me.headerMessage(me.translate('mail-header-send') + ':  ' + selected.name); // Send a message to
-            }
-            else {
-                me.headerMessage(me.translate('mail-header-select')); //'Send a message: (please select recipient)');
-            }
+        showMessageTab = () => {
+            this.tab('message');
+        };
+
+        getFakeResponse($status) {
+            let fakelist : IMessageHistoryItem[] = [
+                {
+                    active: true,
+                    listName: 'Friendsly notes',
+                    messageId: 1,
+                    recipientCount: 215,
+                    sentCount: 50,
+                    sender: 'James fuller',
+                    timeSent: '2017-12-20 14:13:19',
+                    subject: 'Friendly Notes December 2017',
+                },
+                {
+                    active: false,
+                    listName: 'Weekly Bulletin',
+                    messageId: 1,
+                    recipientCount: 287,
+                    sentCount: 100,
+                    sender: 'Terry SoRelle',
+                    timeSent: '2017-12-28 10:23:07',
+                    subject: 'Weekly Bulletin Jan 1, 2017'
+                }
+            ];
+
+            let response : IGetMessageHistoryResponse = {
+                items: fakelist,
+                status: $status,
+                pausedUntil: '12:13 pm'
+            };
+            return response;
         }
 
+        refreshQueue = () => {
+            let me = this;
+
+            me.showQueueTab(me.getFakeResponse('active'));
+        };
+
+        pauseQueue = () => {
+            let me = this;
+            me.showQueueTab(me.getFakeResponse('paused'));
+        };
+
+        restartQueue = () => {
+            let me = this;
+            me.showQueueTab(me.getFakeResponse('active'));
+        };
+
+        removeQueuedMessage = (item: IMessageHistoryItem) => {
+            let me = this;
+            alert('removeQueuedMessage');
+        };
+
+        editQueuedMessage = (item: IMessageHistoryItem) => {
+            let me = this;
+            me.messageEditForm.messageId = item.messageId;
+            me.messageEditForm.subject(item.subject);
+            me.messageEditForm.messageText('Edit message text here.');
+            me.messageEditForm.selectedTemplate(null);
+            jQuery('#edit-message-modal').modal('show');
+
+        };
+        
+        updateQueuedMessage = () => {
+            let me = this;
+            jQuery('#edit-message-modal').modal('hide');
+            let request = <IEmailListMessgeUpdate> {
+                messageId: me.messageEditForm.messageId,
+                subject: me.messageEditForm.subject(),
+                template: me.messageEditForm.selectedTemplate(),
+                messageText: me.messageEditForm.messageText()
+            };
+
+            let response = me.getFakeResponse(me.queueStatus());
+            me.application.showMessage("Update message");
+            //me.showQueueTab(response);
+        };
+
+        showQueueTab = (response: IGetMessageHistoryResponse) => {
+            let me = this;
+            me.queueStatus(response.status);
+            me.messageHistory(response.items);
+            me.pausedUntil(response.pausedUntil);
+            me.tab('queue');
+        };
+
+        showLists = () => {
+            let me = this;
+            me.tab('lists');
+        };
+
+        editEmailList = (item: IEmailListItem) => {
+            let me = this;
+            me.showEmailListForm(item);
+        };
+
+        newEmailList = () => {
+            let me = this;
+            let item = <IEmailListItem> {
+                id: 0,
+                name: '',
+                code: '',
+                active: 1,
+                description: '',
+                mailBox: '',
+                mailboxName: ''
+            };
+            me.showEmailListForm(item);
+        };
+
+        updateEmailList = () => {
+            let me = this;
+            jQuery('#edit-list-modal').modal('hide');
+        };
+
+        showEmailListForm = (item: IEmailListItem) => {
+            let me = this;
+            me.listEditForm.description(item.description);
+            me.listEditForm.code(item.code);
+            me.listEditForm.name(item.name);
+            me.listEditForm.listId = item.id;
+            me.listEditForm.active(item.active == 1);
+            me.listEditForm.mailboxCode = item.mailBox;
+            if (me.mailboxList().length == 0) {
+                me.mailboxes.subscribe(me.onMailboxListChanged)
+            }
+            me.mailboxes.getMailboxList(() => {
+                jQuery('#edit-list-modal').modal('show');
+            });
+        };
+
+        onMailboxListChanged = (mailboxes: IMailBox[]) => {
+            let me = this;
+            let filtered = _.filter(mailboxes,(box: IMailBox) => {
+                return box.active == 1;
+            });
+            me.mailboxList(filtered);
+            if (me.listEditForm.mailboxCode) {
+                let mailboxItem = _.find(me.mailboxList(), (mailbox:IMailBox) => {
+                    return mailbox.mailboxcode == me.listEditForm.mailboxCode;
+                });
+                me.listEditForm.selectedMailbox(mailboxItem);
+            }
+            else {
+                me.listEditForm.selectedMailbox(null);
+            }
+        };
+
+        showMailboxes = () => {
+            let me = this;
+            me.mailboxes.getMailboxList(() => {
+                me.tab('mailboxes');
+            });
+        }
 
     }
 }

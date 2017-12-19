@@ -1,4 +1,6 @@
 declare namespace Mailboxes {
+    import ITranslator = Peanut.ITranslator;
+
     export interface IMailBox {
         id:string;
         displaytext:string;
@@ -6,6 +8,11 @@ declare namespace Mailboxes {
         mailboxcode:string ;
         address:string;
         'public': any;
+        active: any;
+    }
+
+    export interface IMailboxFormOwner extends ITranslator {
+        mailboxList : KnockoutObservableArray<IMailBox>;
     }
 
     export interface IMailMessage {
