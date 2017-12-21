@@ -33,4 +33,9 @@ declare namespace Mailboxes {
         translations: string[];
     }
 
+    export interface IGetMailboxesResponse {
+        list: IMailBox[];
+        translations: string[];
+    }
+
 }

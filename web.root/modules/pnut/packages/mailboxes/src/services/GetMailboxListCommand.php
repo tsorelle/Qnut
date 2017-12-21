@@ -38,9 +38,43 @@ use Tops\sys\TPermissionsManager;
  */
 class GetMailboxListCommand extends TServiceCommand
 {
+    public static function getMailboxFormTranslationCodes() {
+        return
+        [
+            'form-error-email-invalid',
+            'label-address',
+            'label-cancel',
+            'label-cancel',
+            'label-code',
+            'label-delete',
+            'label-description',
+            'label-edit',
+            'label-email',
+            'label-mailbox',
+            'label-name',
+            'label-public',
+            'label-save-changes',
+            'label-yes',
+            'mailbox-error-code-blank',
+            'mailbox-error-description',
+            'mailbox-error-email-name',
+            'mailbox-label-add-new',
+            'mailbox-label-delete',
+            'mailbox-label-public',
+            'mailbox-entity',
+            'mailbox-entity-plural'
+        ];
+    }
+
     protected function run()
     {
         $request = $this->getRequest();
+        $allBoxes = true;
+        $getTranslations = true;
+        if (!empty($request)) {
+            $allBoxes = empty($request->filter) ? false : $request->filter;
+            $getTranslations = empty($request->translations) ? true : $request->translations;
+        }
         $allBoxes = empty($request) ? true : $request->filter == 'all';
         if ($allBoxes) {
             $allBoxes = $this->getUser()->isAuthorized(TPermissionsManager::mailAdminPermissionName);
@@ -48,31 +82,10 @@ class GetMailboxListCommand extends TServiceCommand
         $manager = TPostOffice::GetMailboxManager();
         $response = new \stdClass();
         $response->list = $manager->getMailboxes(true);
-        $response->translations = TLanguage::getTranslations(
-          array(
-              'form-error-email-invalid',
-              'label-address',
-              'label-cancel',
-              'label-cancel',
-              'label-code',
-              'label-delete',
-              'label-description',
-              'label-edit',
-              'label-email',
-              'label-mailbox',
-              'label-name',
-              'label-public',
-              'label-save-changes',
-              'label-yes',
-              'mailbox-error-code-blank',
-              'mailbox-error-description',
-              'mailbox-error-email-name',
-              'mailbox-label-delete',
-              'mailbox-label-public',
-              'mailbox-entity',
-              'mailbox-entity-plural'
-          )
-        );
+        $response->translations =
+            $getTranslations ?  TLanguage::getTranslations(
+                self::getMailboxFormTranslationCodes()
+            ) : [];
         $this->setReturnValue($response);
     }
 }

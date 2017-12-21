@@ -3,7 +3,7 @@
           <li  data-bind="css: { active: tab()=='message'}"><a href="#" data-bind="click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
           <li  data-bind="css: { active: tab()=='queue'}"><a href="#" data-bind="click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
           <li  data-bind="css: { active: tab()=='lists'}"><a href="#" data-bind="click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
-          <li  data-bind="css: { active: tab()=='mailboxes'}"><a href="#" data-bind="click:showMailboxes"><translate params="code:'heading-mailboxes',translator:self"></translate></a></li>
+          <li  data-bind="css: { active: tab()=='mailboxes'}"><a href="#" data-bind="click:showMailboxes"><translate params="code:'mailbox-entity-plural',case:'ucfirst',translator:self"></translate></a></li>
     </ul>
     <div data-bind="visible:tab()=='message'">
         <div class="col-md-12">

@@ -147,6 +147,6 @@ class TPhpMailer implements IMailer
 
     public function setSendEnabled($value)
     {
-        $this->enabled = false;
+        $this->enabled = $value;
     }
 }

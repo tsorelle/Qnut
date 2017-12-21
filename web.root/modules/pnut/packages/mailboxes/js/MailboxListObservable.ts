@@ -42,15 +42,23 @@ namespace Mailboxes {
             }
         }
 
-        getUpdatedMailboxList(doneFunction?: () => void) {
+        downloadMailboxList = (all = true, translations = false,doneFunction?: () => void) => {
             let me = this;
-            let request = null;
+            let request = {
+                filter: all ? 'all' : false,
+                translations: translations
+            };
             me.application.hideServiceMessages();
-            me.owner.showActionWaiterBanner('load','mailbox-entity-plural');
-            me.application.showWaiter(me.owner.translate('mailbox-wait-load') + '...');
+            let translated = (me.owner.translate('mailbox-entity-plural') !== 'mailbox-entity-plural');
+            if  (translated) {
+                me.owner.showActionWaiterBanner( 'load','mailbox-entity-plural');
+            }
+
             me.services.executeService('peanut.Mailboxes::GetMailboxList',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
-                    me.application.hideWaiter();
+                    if (translated) {
+                        me.application.hideWaiter();
+                    }
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IGetMailboxesResponse>serviceResponse.Value;
                         me.owner.addTranslations(response.translations);
@@ -58,28 +66,44 @@ namespace Mailboxes {
                     }
                 }
             ).fail(function () {
-                me.application.hideWaiter();
                 let trace = me.services.getErrorInformation();
             }).always(function() {
+                if (translated) {
+                    me.application.hideWaiter();
+                }
                 if (doneFunction) {
                     doneFunction();
                 }
             });
-        }
+        };
+
+        getUpdatedMailboxList =  (doneFunction?: () => void) => {
+            this.downloadMailboxList(true,false);
+        };
+
+        refreshList = (doneFunction?: () => void) => {
+            let me = this;
+            let list = me.list();
+            me.suspendSubscriptions();
+            me.list([]);
+            me.restoreSubscriptions();
+            me.list(list); // reassign to trigger subscriptions.
+            doneFunction();
+        };
 
         getMailboxList = (doneFunction?: () => void) => {
             let me = this;
-            let list = me.list();
-            if (list.length == 0) {
-                me.getUpdatedMailboxList(doneFunction);
+            if (me.list().length == 0) {
+                me.downloadMailboxList(true,false,doneFunction);
             }
             else {
-                me.suspendSubscriptions();
-                me.list([]);
-                me.restoreSubscriptions();
-                me.list(list); // reassign to trigger subscriptions.
-                doneFunction();
+                me.refreshList(doneFunction);
             }
+        };
+
+        getMailboxListWithTranslations = (doneFunction?: () => void) => {
+            this.downloadMailboxList(true,false,doneFunction);
+
         };
 
         setMailboxes = (mailboxes: IMailBox[]) =>  {
@@ -89,7 +113,6 @@ namespace Mailboxes {
             });
             me.list(list);
         };
-
 
     }
 

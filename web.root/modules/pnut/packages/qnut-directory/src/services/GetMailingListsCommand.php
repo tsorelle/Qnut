@@ -36,6 +36,7 @@ class GetMailingListsCommand extends TServiceCommand
         // $manager = new DirectoryManager($this->getMessages());
         // $result->emailLists = $manager->getEmailListLookup();
         $result->emailLists = (new EmailListsRepository())->getLookupList();
+
         $result->translations = TLanguage::getTranslations([
             'confirm-caption',
             'dir-label-email-queue',
@@ -43,28 +44,44 @@ class GetMailingListsCommand extends TServiceCommand
             'dir-label-posted',
             'dir-label-queue-processing',
             'dir-label-sender',
+            'form-error-email-invalid',
             'label-active',
+            'label-address',
             'label-cancel',
-            'label-count',
             'label-code',
+            'label-count',
+            'label-delete',
+            'label-description',
             'label-edit',
+            'label-email',
             'label-mailbox',
             'label-message',
             'label-name',
             'label-of',
+            'label-public',
             'label-refresh',
             'label-remove',
             'label-save',
+            'label-save-changes',
             'label-status',
             'label-subject',
             'label-until',
             'label-update',
+            'label-yes',
             'mail-header-select',
             'mail-header-send',
+            'mailbox-entity',
+            'mailbox-entity-plural',
+            'mailbox-error-code-blank',
+            'mailbox-error-description',
+            'mailbox-error-email-name',
+            'mailbox-label-add-new',
+            'mailbox-label-delete',
+            'mailbox-label-public',
             'mailing-confirm-resend',
             'mailing-confirm-send',
-            'mailing-heading-lists',
             'mailing-control-heading',
+            'mailing-heading-lists',
             'mailing-history-heading',
             'mailing-label-format',
             'mailing-label-list',
@@ -78,9 +95,9 @@ class GetMailingListsCommand extends TServiceCommand
             'process-command-pause',
             'process-status-active',
             'process-status-paused',
-            'process-status-ready'
-            ]);
-
+            'process-status-ready',
+            'wait-action-load'
+        ]);
 
         $result->templates = (new MailTemplateManager)->getTemplateFileList();
 
