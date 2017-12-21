@@ -38,6 +38,7 @@ class GetMailingListsCommand extends TServiceCommand
         $result->emailLists = (new EmailListsRepository())->getLookupList();
 
         $result->translations = TLanguage::getTranslations([
+            'add-new',
             'confirm-caption',
             'dir-label-email-queue',
             'dir-label-please-select',
@@ -45,7 +46,9 @@ class GetMailingListsCommand extends TServiceCommand
             'dir-label-queue-processing',
             'dir-label-sender',
             'form-error-email-invalid',
+            'form-error-name-blank',
             'label-active',
+            'label-add',
             'label-address',
             'label-cancel',
             'label-code',
@@ -57,6 +60,7 @@ class GetMailingListsCommand extends TServiceCommand
             'label-mailbox',
             'label-message',
             'label-name',
+            'label-new',
             'label-of',
             'label-public',
             'label-refresh',
@@ -85,6 +89,7 @@ class GetMailingListsCommand extends TServiceCommand
             'mailing-history-heading',
             'mailing-label-format',
             'mailing-label-list',
+            'mailing-list-entity',
             'mailing-message-template',
             'mailing-no-template',
             'mailing-send-mailing',

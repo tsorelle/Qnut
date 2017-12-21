@@ -108,6 +108,11 @@
     <div data-bind="visible:tab()==='lists'">
         <div class="row" id="lists-panel">
             <div class="col-md-12">
+                <p style="margin-top: 5px">
+                    <a href="#" data-bind="click:newEmailList">
+                        <translate params="code:'add-new',translator:self"></translate>&nbsp;<translate params="code:'mailing-list-entity',translator:self"></translate>
+                    </a>
+                </p>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -197,7 +202,10 @@
                 <form>
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title"><translate params="code:'label-update',translator:self"></translate>&nbsp;<translate params="code:'mailing-label-list',translator:self"></translate></h4>
+                        <h4 class="modal-title">
+                            <span data-bind="visible:listEditForm.listId"><translate params="code:'label-update',translator:self"></translate></span>
+                            <span data-bind="visible:!listEditForm.listId()"><translate params="code:'label-add',translator:self"></translate></span>
+                            &nbsp;<translate params="code:'mailing-label-list',translator:self"></translate></h4>
                     </div>
                     <div class="modal-body">
 
@@ -210,14 +218,20 @@
 
                             <div class="form-group" data-bind="css: {'has-error': listEditForm.codeError}">
                                 <label class="control-label" for="listcode"><translate params="code:'label-code',translator:self"></translate></label>
-                                <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
-                                <input type="text" class="form-control" id="listcode" data-bind="value: listEditForm.code" />
+                                <span class="error" data-bind="visible: listEditForm.codeError, text: listEditForm.codeError"></span>
+                                <input type="text" class="form-control" id="listcode" data-bind="visible:listEditForm.listId()==0,value: listEditForm.code" />
+                                <p data-bind="visible:listEditForm.listId,text:listEditForm.code"></p>
                             </div>
 
-                            <div class="form-group" data-bind="css: {'has-error': listEditForm.nameErroe}">
+                            <div class="form-group" data-bind="css: {'has-error': listEditForm.nameError}">
                                 <label class="control-label" for="listname"><translate params="code:'label-name',translator:self"></translate></label>
                                 <span class="error" data-bind="visible: listEditForm.nameError, text: listEditForm.nameError"></span>
                                 <input type="text" class="form-control" id="listname" data-bind="value: listEditForm.name" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label" for="listdescription"><translate params="code:'label-description',translator:self"></translate></label>
+                                <input type="text" class="form-control" id="listdescription" data-bind="value: listEditForm.description" />
                             </div>
 
                             <div class="form-group">

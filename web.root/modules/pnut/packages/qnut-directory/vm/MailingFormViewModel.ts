@@ -54,8 +54,8 @@ namespace QnutDirectory {
 
     interface IEmailListItem extends ILookupItem {
         mailBox: string;
-        mailboxName: string;
-        active: number;
+        mailboxName?: string;
+        active?: number;
     }
 
     export class MailingFormViewModel extends Peanut.ViewModelBase implements IMailboxFormOwner{
@@ -106,7 +106,7 @@ namespace QnutDirectory {
         };
 
         listEditForm = {
-            listId: 0,
+            listId: ko.observable(0),
             mailboxCode: '',
             selectedMailbox: ko.observable<IMailBox>(null),
             active: ko.observable(true),
@@ -126,6 +126,7 @@ namespace QnutDirectory {
         init(successFunction?: () => void) {
             let me = this;
             console.log('MailingForm Init');
+            me.tab.subscribe(me.onTabChange);
             me.showLoadWaiter();
             me.application.loadResources([
                 '@lib:tinymce',
@@ -185,11 +186,7 @@ namespace QnutDirectory {
                             me.confirmCaption(me.translate('confirm-caption'));
                             me.confirmResendMessage(me.translate('mailing-confirm-resend'));
                             me.confirmSendMessage(me.translate('mailing-confirm-send'));
-                            let lookup = _.filter(response.emailLists, (item: IEmailListItem) => {
-                               return (item.active == 1);
-                            });
-                            me.mailingListLookup(lookup);
-                            me.mailingLists(response.emailLists);
+                            me.assignEmailLists(response.emailLists);
                             me.formVisible(true);
                             me.templateList = response.templates;
                             me.messageTemplates(me.templateList['html']);
@@ -207,6 +204,16 @@ namespace QnutDirectory {
                 }
             });
         };
+
+        assignEmailLists = (emailLists : IEmailListItem[]) => {
+            let me = this;
+            let lookup = _.filter(emailLists, (item: IEmailListItem) => {
+                return (item.active == 1);
+            });
+            me.mailingListLookup(lookup);
+            me.mailingLists(emailLists);
+        }
+
 
         onFormatChange = (format: INameValuePair) => {
             let me=this;
@@ -350,22 +357,26 @@ namespace QnutDirectory {
 
         refreshQueue = () => {
             let me = this;
+            // todo: implement refreshQueue
 
             me.showQueueTab(me.getFakeResponse('active'));
         };
 
         pauseQueue = () => {
             let me = this;
+            // todo: implement pauseQueue
             me.showQueueTab(me.getFakeResponse('paused'));
         };
 
         restartQueue = () => {
             let me = this;
+            // todo: implement restartQueue
             me.showQueueTab(me.getFakeResponse('active'));
         };
 
         removeQueuedMessage = (item: IMessageHistoryItem) => {
             let me = this;
+            // todo: implement removeQueuedMessage
             alert('removeQueuedMessage');
         };
 
@@ -388,7 +399,7 @@ namespace QnutDirectory {
                 template: me.messageEditForm.selectedTemplate(),
                 messageText: me.messageEditForm.messageText()
             };
-
+            // todo: implement updateQueuedMessage
             let response = me.getFakeResponse(me.queueStatus());
             me.application.showMessage("Update message");
             //me.showQueueTab(response);
@@ -426,17 +437,59 @@ namespace QnutDirectory {
             me.showEmailListForm(item);
         };
 
+        valadateEmailList = (item: IEmailListItem) => {
+            let me = this;
+            if (item.name.trim() == '') {
+                me.listEditForm.nameError(me.translate('form-error-name-blank'));
+                return false;
+            }
+            if (item.code.trim() == '') {
+                me.listEditForm.codeError(me.translate('form-error-code-blank'));
+                return false;
+            }
+            if (item.description.trim() == '') {
+                item.description = item.name;
+            }
+            return true;
+        };
+
         updateEmailList = () => {
             let me = this;
-            jQuery('#edit-list-modal').modal('hide');
+            let request = <IEmailListItem> {
+                id:  me.listEditForm.listId(),
+                name: me.listEditForm.name(),
+                code: me.listEditForm.code(),
+                active: me.listEditForm.active() ? 1 : 0,
+                description: me.listEditForm.description(),
+                mailBox: me.listEditForm.selectedMailbox().mailboxcode,
+            };
+
+            if (me.valadateEmailList(request)) {
+                jQuery('#edit-list-modal').modal('hide');
+                me.showActionWaiterBanner('update','mailing-list-entity');
+                me.services.executeService('peanut.qnut-directory::UpdateMailingList', request,
+                    function (serviceResponse: Peanut.IServiceResponse) {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                                let response = <IEmailListItem[]>serviceResponse.Value;
+                                me.assignEmailLists(response);
+                            }
+                        }
+                    }).fail(() => {
+                        let trace = me.services.getErrorInformation();
+                    }).always(() => {
+                        me.application.hideWaiter();
+                    });
+            }
         };
 
         showEmailListForm = (item: IEmailListItem) => {
             let me = this;
+            me.application.hideServiceMessages();
             me.listEditForm.description(item.description);
             me.listEditForm.code(item.code);
             me.listEditForm.name(item.name);
-            me.listEditForm.listId = item.id;
+            me.listEditForm.listId(item.id);
             me.listEditForm.active(item.active == 1);
             me.listEditForm.mailboxCode = item.mailBox;
             if (me.mailboxList().length == 0) {
@@ -471,6 +524,9 @@ namespace QnutDirectory {
             });
         }
 
+        onTabChange = () => {
+            this.application.hideServiceMessages();
+        }
     }
 }
 
