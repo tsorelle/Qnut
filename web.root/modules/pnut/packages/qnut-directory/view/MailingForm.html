@@ -61,7 +61,7 @@
             <div class="col-sm-5">
                 <p>
                     <strong><translate params="code:'label-status',translator:self"></translate>: </strong>
-                    <span data-bind="visible:queueStatus()==='active'"><translate params="code:'process-status-active',translator:self"></translate></span>
+                    <span data-bind="visible:queueStatus()==='active'"><translate params="code:'status-active',translator:self"></translate></span>
                     <span data-bind="visible:queueStatus()==='ready'" ><translate params="code:'process-status-ready',translator:self"></translate></span>
                     <span data-bind="visible:queueStatus()==='paused'"><translate params="code:'process-status-paused',translator:self"></translate></span>
                     <span data-bind="visible:queueStatus()==='paused'" > <translate params="code:'label-until',translator:self"></translate> <span data-bind="text:pausedUntil"></span></span>
@@ -91,12 +91,12 @@
                         </tr>
                     </thead>
                     <tbody data-bind="foreach:messageHistory">
-                        <tr data-bind="css: { success: active }">
+                        <tr data-bind="css: {success:(recipientCount > sentCount)}">
                             <td data-bind="text:timeSent"></td><td  data-bind="text:sender"></td><td  data-bind="text:subject"></td>
                             <td><span  data-bind="text:sentCount"></span> <translate params="code:'label-of',translator:$parent.self"></translate> <span  data-bind="text:recipientCount"></span></td>
                             <td><span  data-bind="visible:$parent.queueStatus()=='paused'">
-                                <a href="#" data-bind="visible:active,click:$parent.removeQueuedMessage" style="margin-right: 5px"><translate params="code:'label-remove',translator:$parent.self"></translate></a>
-                                <a href="#" data-bind="visible:active,click:$parent.editQueuedMessage"><translate params="code:'label-edit',translator:$parent.self"></translate></a>
+                                <a href="#" data-bind="visible:(recipientCount > sentCount),click:$parent.removeQueuedMessage" style="margin-right: 5px"><translate params="code:'label-remove',translator:$parent.self"></translate></a>
+                                <a href="#" data-bind="visible:(recipientCount > sentCount),click:$parent.editQueuedMessage"><translate params="code:'label-edit',translator:$parent.self"></translate></a>
                             </span></td>
                         </tr>
                     </tbody>
@@ -173,12 +173,6 @@
                                 <input type="text" class="form-control" id="editsubject" data-bind="value: messageEditForm.subject" />
                             </div>
 
-                            <div class="form-group">
-                                <label for="edit-template" class="control-label"><translate params="code:'mailing-message-template',translator:self"></translate>:</label>
-                                <select class="form-control" id="edit-template"
-                                        data-bind="options: messageTemplates, optionsCaption:templateSelectCaption, value: messageEditForm.selectedTemplate"></select>
-                            </div>
-
                             <div class="form-group"  data-bind="css: {'has-error': messageEditForm.bodyError() != ''}">
                                 <label class="control-label" for="edit-messagetext"><translate params="code:'label-message',translator:self"></translate></label>
                                 <span class="error" data-bind="visible: messageEditForm.bodyError, text: bodyError"></span>
@@ -249,6 +243,6 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
-
+    <modal-confirm params="id:'confirm-remove-modal',headerText: messageRemoveHeader, bodyText: messageRemoveText, confirmClick: doRemoveMessage"></modal-confirm>
 </div>
 <!-- end div container -->

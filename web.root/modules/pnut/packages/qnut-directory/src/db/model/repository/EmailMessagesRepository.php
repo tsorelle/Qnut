@@ -16,6 +16,13 @@ use \Tops\db\TEntityRepository;
 
 class EmailMessagesRepository extends \Tops\db\TEntityRepository
 {
+    public function removeMessage($messageId)
+    {
+        $sql = 'DELETE FROM qnut_email_queue WHERE mailMessageId = ?';
+        $this->executeStatement($sql,[$messageId]);
+        $this->delete($messageId);
+    }
+
     protected function getTableName() {
         return 'qnut_email_messages';
     }
@@ -43,7 +50,6 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         'messageText'=>PDO::PARAM_STR,
         'contentType'=>PDO::PARAM_STR,
         'template'=>PDO::PARAM_STR,
-        'sentCount'=>PDO::PARAM_INT,
         'recipientCount'=>PDO::PARAM_INT,
         'postedDate'=>PDO::PARAM_STR,
         'postedBy'=>PDO::PARAM_STR,
@@ -98,6 +104,13 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
+    /*
+     * SELECT m.`id`,m.`contentType`,m.`listId`, m.recipientCount, (m.recipientCount - COUNT(q.id)) AS sent
+FROM  qnut_email_messages m
+RIGHT OUTER JOIN qnut_email_queue q ON q.mailMessageId = m.id
+WHERE m.id = 40;
+     */
+
     /**
      * @return EmailMessage[]
      */
@@ -107,6 +120,38 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         $stmt = $this->executeStatement($sql);
         $result = $stmt->fetchAll(PDO::FETCH_CLASS, $this->getClassName());
         return $result;
+    }
+
+    /**
+     * @return array
+     * 	of...
+     *     interface IMessageHistoryItem {
+     *         messageId: any;
+     *         timeSent: string;
+     *         listName: string;
+     *         recipientCount: number;
+     *         sentCount: number;
+     *         sender: string;
+     *         subject: string;
+     *     }
+     */
+    public function getMessageHistory() {
+        $sql =
+            'SELECT m.id AS messageId, m.subject, l.name AS listName, m.postedDate AS timeSent, m.postedBy AS sender,m.recipientCount, '.
+            '(m.recipientCount - COUNT(q.id)) AS sentCount '.
+            'FROM  qnut_email_messages m JOIN  qnut_email_lists l ON m.listId = l.id '.
+            'LEFT OUTER JOIN qnut_email_queue q ON q.mailMessageId = m.id '.
+            'GROUP BY m.id ORDER BY m.postedDate DESC ';
+
+        $stmt = $this->executeStatement($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function getActiveMessageCount() {
+        $sql = 'SELECT COUNT(DISTINCT m.id) AS ActiveCount FROM qnut_email_messages  m  JOIN qnut_email_queue q ON m.id = q.mailMessageId';
+        $stmt = $this->executeStatement($sql);
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        return $result->ActiveCount;
     }
 
     /**
@@ -143,21 +188,14 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
     public function unqueue($queueId) {
         $sql = 'UPDATE qnut_email_messages m '.
             'JOIN qnut_email_queue q ON q.mailMessageId = m.id '.
-            'SET m.recipientCount= m.recipientCount-1 '.
-            'WHERE q.id = ?';
+            'SET m.recipientCount= m.recipientCount-1 WHERE q.id = ?';
         $this->executeStatement($sql,[$queueId]);
         $sql = 'DELETE FROM qnut_email_queue WHERE id = ?';
         $stmt = $this->executeStatement($sql,[$queueId]);
         return $stmt->rowCount();
-
     }
 
     public function undateQueue($queueId) {
-        $sql = 'UPDATE qnut_email_messages m '.
-        'JOIN qnut_email_queue q ON q.mailMessageId = m.id '.
-        'SET m.sentCount= m.sentCount+1 '.
-        'WHERE q.id = ?';
-        $this->executeStatement($sql,[$queueId]);
         $sql = 'DELETE FROM qnut_email_queue WHERE id = ?';
         $stmt = $this->executeStatement($sql,[$queueId]);
         return $stmt->rowCount();

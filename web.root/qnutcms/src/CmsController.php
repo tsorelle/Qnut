@@ -37,6 +37,7 @@ class CmsController
     const settingsLocation = 'application/config';
 
     public static function Start($indexDir) {
+        date_default_timezone_set('America/Chicago');
         self::$instance = new CmsController();
         self::$instance->initialize($indexDir);
         return self::$instance;

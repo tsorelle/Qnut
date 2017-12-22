@@ -21,6 +21,7 @@ use Tops\services\MessageType;
 use Tops\services\TProcessManager;
 use Tops\sys\IUser;
 use Tops\sys\TConfiguration;
+use Tops\sys\TDates;
 use Tops\sys\TTemplateManager;
 use Tops\sys\TWebSite;
 
@@ -28,20 +29,26 @@ class EMailQueue
 {
     const processCode = 'email-queue-send';
 
+    private static $messagesRepository;
+    public static function getMessagesRepository(){
+        if (!isset(self::$messagesRepository)) {
+            self::$messagesRepository = new EmailMessagesRepository();
+        }
+        return self::$messagesRepository;
+    }
+
     /**
      * @var TProcessManager
      */
     private $process;
     public static function QueueMessageList($messageDto, $username,$instance=null) {
-        $repository =  new EmailMessagesRepository();
         $message = EmailMessage::Create($messageDto, $username);
-        return $repository->queueMessageList($message);
+        return (self::getMessagesRepository())->queueMessageList($message);
     }
 
     public static function QueueSingleMessage($messageDto, $toAddress, $toName, $username,$instance=null) {
-        $repository =  new EmailMessagesRepository();
         $message = EmailMessage::Create($messageDto, $username);
-        return $repository->queueMessage($message,$toAddress,$toName);
+        return (self::getMessagesRepository())->queueMessage($message,$toAddress,$toName);
     }
 
     public static function SendTestMessage($messageDto, IUser $user,$instance=null) {
@@ -72,27 +79,35 @@ class EMailQueue
     public static function Pause($reason='interrupt message processsing',$interval='1 hour') {
         $process = TProcessManager::Get(self::processCode);
         if ($process !== false) {
-            $process->pauseProcess($reason,$interval);
+            $paused = $process->pauseProcess($reason,$interval);
+            if ($paused) {
+                return TDates::reformatDateTime($paused,'g:i:s A');
+            }
         }
+        return false;
     }
 
-    /**
-     * @var EmailMessagesRepository
-     */
-    private $messagesRepository;
-
-    /**
-     * @return EmailMessagesRepository
-     */
-    private function getMessagesRepository()
+    public static function Restart()
     {
-        if (!isset($this->messagesRepository)) {
-            $this->messagesRepository = new EmailMessagesRepository();
+        $process = TProcessManager::Get(self::processCode);
+        if ($process !== false) {
+            return $process->startProcess();
         }
-        return $this->messagesRepository;
+        return false;
     }
 
-    /**
+    public static function isPaused($format='g:i:s A') {
+        $process = TProcessManager::Get(self::processCode);
+        if ($process !== false) {
+            $paused = $process->isPaused();
+            if ($paused !== false) {
+               return TDates::reformatDateTime($paused,$format);
+            }
+        }
+        return false;
+    }
+
+     /**
      * @var EmailMessage[];
      */
     private $messages;
@@ -243,7 +258,7 @@ class EMailQueue
             $this->log("Sending ".
                 ($sendLimit ? $sendLimit : 'all').
                 " messages for message #$messageId");
-            $repository = $this->getMessagesRepository();
+            $repository = self::getMessagesRepository();
             if ($messageId) {
                 $message = $repository->get($messageId);
                 $this->messages = [$message];
@@ -302,4 +317,34 @@ class EMailQueue
         }
         return $this->unsubscribeUrl;
     }
+
+    public static function GetStatus()
+    {
+        $response = new \stdClass();
+        $isPaused = EMailQueue::isPaused();
+        if ($isPaused) {
+            $response->status = 'paused';
+            $response->pausedUntil = $isPaused;
+        }
+        else {
+            $response->status = self::GetActiveStatus();
+            $response->pausedUntil  = '';
+        }
+        return $response;
+    }
+
+    public static function GetActiveStatus() {
+        $activeCount = (self::getMessagesRepository())->getActiveMessageCount();
+        return $activeCount ? 'active' : 'ready';
+    }
+
+    public static function GetMessageHistory() {
+        return (self::getMessagesRepository())->getMessageHistory();
+    }
+
+    public static function RemoveMessage($messageId)
+    {
+        (self::getMessagesRepository())->removeMessage($messageId);
+    }
+
 }

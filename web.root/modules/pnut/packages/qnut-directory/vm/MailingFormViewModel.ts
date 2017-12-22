@@ -6,6 +6,7 @@
 /// <reference path='../../mailboxes/vm/mailboxes.d.ts' />
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
+// todo: finish translations
 
 namespace QnutDirectory {
 
@@ -43,7 +44,6 @@ namespace QnutDirectory {
         sentCount: number;
         sender: string;
         subject: string;
-        active: boolean;
     }
 
     interface IGetMessageHistoryResponse {
@@ -94,13 +94,16 @@ namespace QnutDirectory {
         queueStatus=ko.observable('active');
         messageHistory = ko.observableArray<IMessageHistoryItem>([]);
         pausedUntil = ko.observable('');
+        messageRemoveText = ko.observable('');
+        messageRemoveHeader = ko.observable('');
+        messageRemoveId = 0;
         
         messageEditForm = {
             messageId: 0,
             subject: ko.observable(''),
             template: ko.observable(''),
             messageText: ko.observable(''),
-            selectedTemplate: ko.observable(),
+            // selectedTemplate: ko.observable(),
             bodyError: ko.observable(''),
             subjectError: ko.observable('')
         };
@@ -134,16 +137,9 @@ namespace QnutDirectory {
                 '@pnut/ViewModelHelpers.js'
                 ,'@pkg/mailboxes/MailboxListObservable.js'
             ], () => {
+                me.initEditor('#messagehtml');
+                // me.initEditor('#edit-messagetext');
                 me.mailboxes = new Mailboxes.MailboxListObservable(me);
-                tinymce.init({
-                    selector: '#messagehtml',
-                    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
-                    plugins: "image imagetools link",
-                    default_link_target: "_blank",
-                    branding: false
-
-                });
-
                 me.application.registerComponents(['@pnut/modal-confirm', '@pkg/mailboxes/mailbox-manager'], () => {
                         me.getMailingLists(() => {
                             me.application.hideWaiter();
@@ -154,6 +150,17 @@ namespace QnutDirectory {
                     });
             });
         }
+
+        initEditor = (selector: string) => {
+            tinymce.init({
+                selector: selector,
+                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
+                plugins: "image imagetools link",
+                default_link_target: "_blank",
+                branding: false
+            });
+
+        };
 
         showConfirmation = (modalId) => {
             let me = this;
@@ -323,70 +330,100 @@ namespace QnutDirectory {
             this.tab('message');
         };
 
-        getFakeResponse($status) {
-            let fakelist : IMessageHistoryItem[] = [
-                {
-                    active: true,
-                    listName: 'Friendsly notes',
-                    messageId: 1,
-                    recipientCount: 215,
-                    sentCount: 50,
-                    sender: 'James fuller',
-                    timeSent: '2017-12-20 14:13:19',
-                    subject: 'Friendly Notes December 2017',
-                },
-                {
-                    active: false,
-                    listName: 'Weekly Bulletin',
-                    messageId: 1,
-                    recipientCount: 287,
-                    sentCount: 100,
-                    sender: 'Terry SoRelle',
-                    timeSent: '2017-12-28 10:23:07',
-                    subject: 'Weekly Bulletin Jan 1, 2017'
-                }
-            ];
-
-            let response : IGetMessageHistoryResponse = {
-                items: fakelist,
-                status: $status,
-                pausedUntil: '12:13 pm'
-            };
-            return response;
-        }
-
         refreshQueue = () => {
             let me = this;
-            // todo: implement refreshQueue
+            me.application.showBannerWaiter('mailing-get-history');
+            me.services.executeService('peanut.qnut-directory::GetEmailListHistory', null,
+                function (serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.showQueueTab(response);
+                        }
+                    }
+                }).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                me.application.hideWaiter();
+            });
+        };
 
-            me.showQueueTab(me.getFakeResponse('active'));
+        controlQueue = (action: string) => {
+            let me = this;
+            me.application.showBannerWaiter('mailing-get-history');
+            me.services.executeService('peanut.qnut-directory::ControlMessageProcess', action,
+                function (serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.showQueueTab(response);
+                        }
+                    }
+                }).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                me.application.hideWaiter();
+            });
         };
 
         pauseQueue = () => {
-            let me = this;
-            // todo: implement pauseQueue
-            me.showQueueTab(me.getFakeResponse('paused'));
+            this.controlQueue('pause');
         };
 
         restartQueue = () => {
-            let me = this;
-            // todo: implement restartQueue
-            me.showQueueTab(me.getFakeResponse('active'));
+            this.controlQueue('start');
         };
 
         removeQueuedMessage = (item: IMessageHistoryItem) => {
             let me = this;
-            // todo: implement removeQueuedMessage
-            alert('removeQueuedMessage');
+            me.messageRemoveText(
+                me.translate('mailing-remove-queue').replace('%s',item.subject)
+            );
+            me.messageRemoveHeader(
+                me.translate('mailing-remove-header')
+            );
+            me.messageRemoveId = item.messageId;
+            jQuery("#confirm-remove-modal").modal('show');
+        };
+
+        doRemoveMessage = () => {
+            let me = this;
+            jQuery("#confirm-remove-modal").modal('hide');
+            me.application.showBannerWaiter('mailing-remove-message');
+            me.services.executeService('peanut.qnut-directory::RemoveQueuedMessage', me.messageRemoveId,
+                function (serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.showQueueTab(response);
+                        }
+                    }
+                }).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                me.application.hideWaiter();
+            });
+
         };
 
         editQueuedMessage = (item: IMessageHistoryItem) => {
             let me = this;
             me.messageEditForm.messageId = item.messageId;
             me.messageEditForm.subject(item.subject);
-            me.messageEditForm.messageText('Edit message text here.');
-            me.messageEditForm.selectedTemplate(null);
-            jQuery('#edit-message-modal').modal('show');
+            me.services.executeService('peanut.qnut-directory::GetQueuedMessageText', item.messageId,
+                function (serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let response = <string>serviceResponse.Value;
+                            me.messageEditForm.messageText(response);
+                            jQuery('#edit-message-modal').modal('show');
+                        }
+                    }
+                }).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+            });
+
 
         };
         
@@ -396,13 +433,23 @@ namespace QnutDirectory {
             let request = <IEmailListMessgeUpdate> {
                 messageId: me.messageEditForm.messageId,
                 subject: me.messageEditForm.subject(),
-                template: me.messageEditForm.selectedTemplate(),
+                // template: me.messageEditForm.selectedTemplate(),
                 messageText: me.messageEditForm.messageText()
             };
-            // todo: implement updateQueuedMessage
-            let response = me.getFakeResponse(me.queueStatus());
-            me.application.showMessage("Update message");
-            //me.showQueueTab(response);
+            me.application.showBannerWaiter('mailing-update-message');
+            me.services.executeService('peanut.qnut-directory::UpdateQueuedMessage', request,
+                function (serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.showQueueTab(response);
+                        }
+                    }
+                }).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                me.application.hideWaiter();
+            });
         };
 
         showQueueTab = (response: IGetMessageHistoryResponse) => {
@@ -522,7 +569,7 @@ namespace QnutDirectory {
             me.mailboxes.getMailboxList(() => {
                 me.tab('mailboxes');
             });
-        }
+        };
 
         onTabChange = () => {
             this.application.hideServiceMessages();

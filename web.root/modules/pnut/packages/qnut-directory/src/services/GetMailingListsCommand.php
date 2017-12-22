@@ -86,6 +86,7 @@ class GetMailingListsCommand extends TServiceCommand
             'mailing-confirm-send',
             'mailing-control-heading',
             'mailing-heading-lists',
+            'mailing-get-history',
             'mailing-history-heading',
             'mailing-label-format',
             'mailing-label-list',
@@ -98,10 +99,14 @@ class GetMailingListsCommand extends TServiceCommand
             'mailing-test-template',
             'process-command-continue',
             'process-command-pause',
-            'process-status-active',
+            'status-active',
             'process-status-paused',
             'process-status-ready',
-            'wait-action-load'
+            'wait-action-load',
+            'wait-sending-message',
+            'mailing-remove-queue',
+            'mailing-remove-header'
+
         ]);
 
         $result->templates = (new MailTemplateManager)->getTemplateFileList();

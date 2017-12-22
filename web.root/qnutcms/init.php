@@ -7,5 +7,5 @@
  */
 namespace Peanut\qnut\cms;
 
-
+date_default_timezone_set('America/Chicago');
 include __DIR__."/src/CmsController.php";

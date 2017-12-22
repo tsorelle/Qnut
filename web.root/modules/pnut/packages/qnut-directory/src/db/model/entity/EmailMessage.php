@@ -16,7 +16,6 @@ class EmailMessage
     public $messageText;
     public $contentType;
     public $template;
-    public $sentCount;
     public $recipientCount;
     public $postedDate;
     public $postedBy;
@@ -34,7 +33,6 @@ class EmailMessage
         $message->messageText  = $dto->messageText;
         $message->contentType  = $dto->contentType;
         $message->template     = empty($dto->template) ? '' : $dto->template;
-        $message->sentCount = 0;
         $message->recipientCount = 0;
         $message->active = 1;
         return $message;
