@@ -47,6 +47,13 @@ class CmsController
         return $this->contentFile;
     }
 
+    public static function StartSession($fileRoot) {
+        require_once($fileRoot.'/application/config/peanut-bootstrap.php');
+        $settings = \Peanut\Bootstrap::initialize();
+        session_start();
+        \Tops\sys\TSession::Initialize();
+    }
+
     public function initialize($indexDir)
     {
         global $_SERVER;
