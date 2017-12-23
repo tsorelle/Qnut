@@ -102,8 +102,7 @@ class GetMailingListsCommand extends TServiceCommand
             'status-active',
             'process-status-paused',
             'process-status-ready',
-            'wait-action-load',
-            'wait-sending-message',
+            'mailing-message-entity',
             'mailing-remove-queue',
             'mailing-remove-header'
 

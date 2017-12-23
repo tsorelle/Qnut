@@ -6,8 +6,6 @@
 /// <reference path='../../mailboxes/vm/mailboxes.d.ts' />
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
-// todo: finish translations
-
 namespace QnutDirectory {
 
     import ILookupItem = Peanut.ILookupItem;
@@ -307,7 +305,8 @@ namespace QnutDirectory {
             // alert('sending');
 
             me.application.hideServiceMessages();
-            me.application.showWaiter(me.translate('wait-sending-message')); //'Sending message...');
+            me.showActionWaiterBanner('send','mailing-message-entity');
+            // showWaiter(me.translate('wait-sending-message')); //'Sending message...');
 
             me.services.executeService('peanut.qnut-directory::SendMailingListMessage', me.sendRequest
                 ,function (serviceResponse: Peanut.IServiceResponse) {
@@ -389,7 +388,8 @@ namespace QnutDirectory {
         doRemoveMessage = () => {
             let me = this;
             jQuery("#confirm-remove-modal").modal('hide');
-            me.application.showBannerWaiter('mailing-remove-message');
+            me.showActionWaiterBanner('remove','mailing-message-entity');
+            // me.application.showBannerWaiter('wait-remove-message');
             me.services.executeService('peanut.qnut-directory::RemoveQueuedMessage', me.messageRemoveId,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -436,7 +436,7 @@ namespace QnutDirectory {
                 // template: me.messageEditForm.selectedTemplate(),
                 messageText: me.messageEditForm.messageText()
             };
-            me.application.showBannerWaiter('mailing-update-message');
+            me.showActionWaiterBanner('update','mailing-message-entity');
             me.services.executeService('peanut.qnut-directory::UpdateQueuedMessage', request,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {

@@ -11,6 +11,7 @@
 /// <reference path='../../../../pnut/js/searchListObservable.ts' />
 /// <reference path='../js/DirectoryEntities.ts' />
 
+//todo: update translations
 namespace QnutDirectory {
     import ILookupItem = Peanut.ILookupItem;
     import INameValuePair = Peanut.INameValuePair;
