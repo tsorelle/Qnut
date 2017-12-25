@@ -189,4 +189,9 @@ class CmsUser extends TAbstractUser
              TUser::profileKeyFullName => $this->displayname
         ];
     }
+
+    public function signIn($username, $password = null)
+    {
+        // TODO: Implement signIn() method.
+    }
 }

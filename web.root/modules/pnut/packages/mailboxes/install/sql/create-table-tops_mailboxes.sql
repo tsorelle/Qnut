@@ -13,7 +13,7 @@ CREATE TABLE `tops_mailboxes` (
   `public` TINYINT(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `boxIndex` (`mailboxcode`)
-) ENGINE=MYISAM AUTO_INCREMENT=164 DEFAULT CHARSET=latin1;
+) ENGINE=MYISAM;
 
 
 INSERT INTO tops_mailboxes (id, mailboxcode,  address,  displayText,  description,  createdby,  createdon,  changedby,  changedon,  active,  public)
