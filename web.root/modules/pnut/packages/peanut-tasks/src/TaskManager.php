@@ -64,7 +64,6 @@ class TaskManager
                 $runlist[] = $item;
             }
             else if ($last->type == TaskLogEntryType::EndSession) {
-                $t = TDates::CompareDates($last->time,$item->frequency);
                 if (TDates::CompareDates($last->time,$item->frequency) == TDates::After) {
                     $runlist[] = $item;
                 }
