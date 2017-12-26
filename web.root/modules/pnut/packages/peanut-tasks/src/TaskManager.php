@@ -16,6 +16,7 @@ use Tops\sys\TConfiguration;
 use Tops\sys\TDates;
 use Tops\sys\TSession;
 use Tops\sys\TStrings;
+use Tops\sys\TUser;
 
 class TaskManager
 {
@@ -48,27 +49,38 @@ class TaskManager
     }
 
     public function executeTasks() {
+        $user = TUser::getCurrent();
+        if (!$user->isAdmin()) {
+            exit($user->getUserName()." lacks administrator permission requiered to run tasks.");
+        }
         $securityToken = $this->initSession();
         $runDate = new \DateTime();
         $queue = $this->queueRepository->getCurrent();
+
         $runlist = array();
-        $this->addLogEntry('Start session','session',TaskLogEntryType::Info);
         foreach ($queue as $item) {
             $last = $this->logRepository->getLastEntry($item->taskname);
             if (empty($last)) {
                 $runlist[] = $item;
             }
             else if ($last->type == TaskLogEntryType::EndSession) {
-                if (TDates::CompareDates($last->time,$item->frequency) == TDates::Before) {
+                $t = TDates::CompareDates($last->time,$item->frequency);
+                if (TDates::CompareDates($last->time,$item->frequency) == TDates::After) {
                     $runlist[] = $item;
                 }
             }
         }
+        if (empty($runlist)) {
 
-        foreach ($runlist as $item) {
-            $this->runTask($item,$securityToken);
+            $this->addLogEntry('No tasks to run','session',TaskLogEntryType::Info);
         }
-        $this->addLogEntry('End session. '.sizeof($runlist).' tasks processed','session',TaskLogEntryType::Info);
+        else {
+            $this->addLogEntry('Start session','session',TaskLogEntryType::Info);
+            foreach ($runlist as $item) {
+                $this->runTask($item,$securityToken);
+            }
+            $this->addLogEntry('End session. '.sizeof($runlist).' tasks processed','session',TaskLogEntryType::Info);
+        }
     }
 
     private function addLogEntry($message,$taskname,$entryType=0) {

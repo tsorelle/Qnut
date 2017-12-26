@@ -442,7 +442,7 @@ CREATE TABLE IF NOT EXISTS  `tops_tasklog` (
 
 CREATE TABLE IF NOT EXISTS  `tops_taskqueue` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `frequency` varchar(32) NOT NULL DEFAULT 'P24H',
+  `frequency` varchar(32) NOT NULL DEFAULT '24 Hours',
   `taskname` varchar(128) DEFAULT NULL,
   `namespace` varchar(128) DEFAULT NULL,
   `startdate` datetime DEFAULT NULL,

@@ -18,9 +18,10 @@ class TaskQueueRepository extends \Tops\db\TEntityRepository
      */
     public function getCurrent() {
 
-        return $this->getEntityCollection(
+        $collection = $this->getEntityCollection(
             'startdate <= CURRENT_DATE AND (enddate IS NULL OR enddate >= CURRENT_DATE)',[]
         );
+        return empty($collection) ? [] : $collection;
 
     }
 

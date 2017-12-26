@@ -192,6 +192,10 @@ class CmsUser extends TAbstractUser
 
     public function signIn($username, $password = null)
     {
-        // TODO: Implement signIn() method.
+        $success = $this->loadByUserName($username);
+        if ($success) {
+            $this->setCurrent();
+        }
+        return $success;
     }
 }

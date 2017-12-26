@@ -27,7 +27,7 @@ class TaskLogRepository extends \Tops\db\TEntityRepository
      * @return TaskLogEntry
      */
     public function getLastEntry($taskname) {
-        return $this->getSingleEntity('taskname = ? ORDER BY time,id DESC LIMIT 1',[$taskname]);
+        return $this->getSingleEntity('taskname = ? ORDER BY `time` DESC LIMIT 1',[$taskname]);
     }
 
     protected function getTableName() {
@@ -39,7 +39,7 @@ class TaskLogRepository extends \Tops\db\TEntityRepository
     }
 
     protected function getClassName() {
-        return 'Peanut\PeanutTasks\entity\TaskLogEntry';
+        return 'Peanut\PeanutTasks\TaskLogEntry';
     }
 
     protected function getFieldDefinitionList()
