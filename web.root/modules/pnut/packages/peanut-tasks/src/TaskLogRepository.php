@@ -22,12 +22,36 @@ class TaskLogRepository extends \Tops\db\TEntityRepository
         return [];
     }
 
+
+    public function getLogEntries($offset=0,$limit=50) {
+        $sql= sprintf(
+            "SELECT id, taskname,`time`, ".
+            "    CASE `type`  ".
+            "        WHEN 0 THEN 'Message' ".
+            "        WHEN 1 THEN 'Error'".
+            "        WHEN 2 THEN 'Warning'".
+            "        WHEN 100 THEN 'Start'".
+            "        WHEN 200 THEN 'Failed'".
+            "        WHEN 999 THEN 'Completed'".
+            "    ELSE 'unknown' ".
+            "    END AS `type`, message ".
+            " FROM %s ".
+            " ORDER BY id DESC  ".
+            " LIMIT %d OFFSET %d ",
+                $this->getTableName(),
+                $limit,
+                $offset);
+
+        $stmt = $this->executeStatement($sql);
+        return $stmt->fetchAll(PDO::FETCH_CLASS,$this->getClassName());
+    }
+
     /**
      * @param $taskname
      * @return TaskLogEntry
      */
     public function getLastEntry($taskname) {
-        return $this->getSingleEntity('taskname = ? ORDER BY `time` DESC LIMIT 1',[$taskname]);
+        return $this->getSingleEntity('taskname = ? ORDER BY id DESC LIMIT 1',[$taskname]);
     }
 
     protected function getTableName() {

@@ -1,0 +1,174 @@
+<div id="scheduler-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
+<div id="scheduler-view-container" class="row" style="display: none">
+    <ul class="nav nav-tabs">
+          <li  data-bind="css: { active: tab()=='schedule'}"><a href="#" data-bind="click:showScheduleTab"><translate params="code:'tasks-label-schedule',translator:self"></translate></a></li>
+          <li  data-bind="css: { active: tab()=='log'}"><a href="#" data-bind="click:showLogsTab"><translate params="code:'tasks-label-log',translator:self"></translate></a></li>
+    </ul>
+    <div data-bind="visible:tab()==='schedule'">
+        <div class="row" id="tasks">
+            <div class="col-md-12">
+                <p>
+                    <a href="#" data-bind="click:newTask">New Task</a>
+                </p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th><translate params="code:'tasks-label-taskname', translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-inputs'   ,translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-frequency',translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-startdate',translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-enddate',translator:self"></translate></th>
+                            <th>&nbsp</th>
+                        </tr>
+                        </thead>
+                        <tbody data-bind="foreach:taskQueue">
+                        <!-- tr data-bind="css: {danger:(!active())}" -->
+                        <tr>
+                            <td data-bind="text:id"></td>
+                            <td data-bind="text:taskname"  ></td>
+                            <td data-bind="text:inputs"    ></td>
+                            <td data-bind="text:frequency" ></td>
+                            <td data-bind="text:startdate" ></td>
+                            <td data-bind="text:enddate"   ></td>
+                            <td><a href="#" data-bind="click:$parent.editTask"><translate params="code:'label-edit',translator:$parent.self"></translate></a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-bind="visible:tab()==='log'">
+        <div class="row" id="logentries">
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th><translate params="code:'tasks-label-logtime',translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-taskname'   ,translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-message-type',translator:self"></translate></th>
+                            <th><translate params="code:'tasks-label-message',translator:self"></translate></th>
+                        </tr>
+                        </thead>
+                        <tbody data-bind="foreach:taskLog">
+                        <!-- tr data-bind="css: {danger:(!active())}" -->
+                        <tr>
+                            <td data-bind="text:time"  ></td>
+                            <td data-bind="text:taskname"  ></td>
+                            <td data-bind="text:type"    ></td>
+                            <td data-bind="text:message" ></td>
+                        </tr>
+                        </tbody>
+
+                    </table>
+                    <div>
+                        <a href="#" data-bind="visible:prevEntries,click:getPrevLog" style="margin-right:10px"><translate params="code:'nav-previous',translator:self"></translate></a>
+                        <a href="#" data-bind="visible:moreEntries,click:getNextLog"><translate params="code:'nav-more',translator:self"></translate></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="edit-task-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" data-bind="visible:taskEditForm.id"><translate params="code:'tasks-form-header-edit',translator:self"></translate></h4>
+                        <h4 class="modal-title" data-bind="visible:!taskEditForm.id()"><translate params="code:'tasks-form-header-new',translator:self"></translate></h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input id="active-check" type="checkbox" data-bind="checked:taskEditForm.active"/>
+                                        <label for="active-check"  class="control-label">
+                                            <translate params="code:'label-active',translator:self"></translate> </label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div data-bind="visible:taskEditForm.updating">
+                                        Updating <span  class="fa fa-spinner fa-pulse"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group" data-bind="css: {'has-error': taskEditForm.taskNameError}">
+                                        <label class="control-label" for="edittaskName"><translate params="code:'tasks-label-taskname',translator:self"></translate></label>
+                                        <span class="error" data-bind="visible: taskEditForm.taskNameError, text: taskEditForm.taskNameError"></span>
+                                        <input type="text" class="form-control" id="edittaskName" data-bind="value: taskEditForm.taskname" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group" data-bind="css: {'has-error': taskEditForm.namespaceError}">
+                                        <label class="control-label" for="editnamespace"><translate params="code:'tasks-label-namespace',translator:self"></translate></label>
+                                        <span class="error" data-bind="visible: taskEditForm.namespaceError, text: taskEditForm.namespaceError"></span>
+                                        <input type="text" class="form-control" id="editnamespace" data-bind="value: taskEditForm.namespace" />
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label class="control-label" for="editinputs"><translate params="code:'tasks-label-inputs',translator:self"></translate></label>
+                                        <input type="text" class="form-control" id="editinputs" data-bind="value: taskEditForm.inputs" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="startdate-input" class="control-label"><translate params="code:'tasks-label-startdate',translator:self"></translate></label>
+                                        <input class="form-control datepicker" type="text" id="startdate-input" data-bind="value:taskEditForm.startdate"/>
+                                    </div>
+
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="enddate-input" class="control-label"><translate params="code:'tasks-label-enddate',translator:self"></translate></label>
+                                        <input class="form-control datepicker" type="text" id="enddate-input" data-bind="value:taskEditForm.enddate"/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group" data-bind="css: {'has-error': taskEditForm.frequencyError}">
+                                        <label class="control-label" for="editfrequency"><translate params="code:'tasks-label-frequency',translator:self"></translate></label>
+                                        <span class="error" data-bind="visible: taskEditForm.frequencyError, text: taskEditForm.frequencyError"></span>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="editfrequency" data-bind="value: taskEditForm.frequency"  style="width: 40%"/>
+                                            <select class="form-control"  id="frequencyUnit" style="width: 60%"
+                                                    data-bind="options: taskEditForm.frequencyUnitLookup,optionsText: 'Name',value: taskEditForm.selectedFrequencyUnit"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label class="control-label" for="edit-comments"><translate params="code:'tasks-label-comments',translator:self"></translate></label>
+                                        <textarea class="form-control" id="edit-comments" data-bind="value:taskEditForm.comments"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="click:updateTask"><translate params="code:'label-save',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
+
+</div>
+<!-- end div container -->

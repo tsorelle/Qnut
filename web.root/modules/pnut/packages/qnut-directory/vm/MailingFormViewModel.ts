@@ -217,7 +217,7 @@ namespace QnutDirectory {
             });
             me.mailingListLookup(lookup);
             me.mailingLists(emailLists);
-        }
+        };
 
 
         onFormatChange = (format: INameValuePair) => {

@@ -16,12 +16,14 @@ class TaskLogEntry
     public $type;
     public $message;
 
-    public static function Create($message,$taskname='system',$type=0) {
+    public static function Create($message, $taskname = 'system', $type = 0)
+    {
         $result = new TaskLogEntry();
-        $result->time =  (new \DateTime())->format('Y-m-d H:i:s');
+        $result->time = (new \DateTime())->format('Y-m-d H:i:s');
         $result->type = $type;
         $result->message = $message;
         $result->taskname = $taskname;
         return $result;
     }
+
 }

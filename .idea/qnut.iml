@@ -9,6 +9,8 @@
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/mailboxes/src" isTestSource="false" packagePrefix="Peanut\Mailboxes" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/peanut-tasks/src" isTestSource="false" packagePrefix="Peanut\PeanutTasks" />
       <excludeFolder url="file://$MODULE_DIR$/backup/tops-changed-2017-11-09" />
+      <excludeFolder url="file://$MODULE_DIR$/doc/examples" />
+      <excludeFolder url="file://$MODULE_DIR$/doc/examples/config" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/instantiator" />

@@ -46,10 +46,14 @@ class TaskQueueEntry
         if (isset($dto->namespace)) {
             $this->namespace = $dto->namespace;
         }
-        if (isset($dto->startdate)) {
+        if (empty($dto->startdate) || $dto->startdate == '0000-00-00') {
+            $this->startdate = null;
+        } else {
             $this->startdate = $dto->startdate;
         }
-        if (isset($dto->enddate)) {
+        if (empty($dto->enddate) || $dto->enddate == '0000-00-00') {
+            $this->enddate = null;
+        } else {
             $this->enddate = $dto->enddate;
         }
         if (isset($dto->inputs)) {
@@ -61,7 +65,6 @@ class TaskQueueEntry
         if (isset($dto->active)) {
             $this->active = $dto->active;
         }
-
     }
 
 
