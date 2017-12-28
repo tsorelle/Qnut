@@ -15,6 +15,7 @@
                         <thead>
                         <tr>
                             <th>ID</th>
+                            <th>&nbsp;</th>
                             <th><translate params="code:'tasks-label-taskname', translator:self"></translate></th>
                             <th><translate params="code:'tasks-label-inputs'   ,translator:self"></translate></th>
                             <th><translate params="code:'tasks-label-frequency',translator:self"></translate></th>
@@ -27,6 +28,7 @@
                         <!-- tr data-bind="css: {danger:(!active())}" -->
                         <tr>
                             <td data-bind="text:id"></td>
+                            <td><span class="fa fa-check" data-bind="visible:active==1" style="color:green" title="Active"></span></td>
                             <td data-bind="text:taskname"  ></td>
                             <td data-bind="text:inputs"    ></td>
                             <td data-bind="text:frequency" ></td>

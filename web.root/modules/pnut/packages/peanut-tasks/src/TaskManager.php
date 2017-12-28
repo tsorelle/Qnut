@@ -10,6 +10,7 @@ namespace Peanut\PeanutTasks;
 
 
 use Tops\db\EntityRepositoryFactory;
+use Tops\services\MessageType;
 use Tops\services\TServiceCommand;
 use Tops\services\TServiceResponse;
 use Tops\sys\TConfiguration;
@@ -48,29 +49,38 @@ class TaskManager
         return $_SESSION['tops']['security-token'];
     }
 
-    public function executeTasks() {
+    public function executeTasks($id=0) {
         $user = TUser::getCurrent();
         if (!$user->isAdmin()) {
             exit($user->getUserName()." lacks administrator permission requiered to run tasks.");
         }
         $securityToken = $this->initSession();
         $runDate = new \DateTime();
-        $queue = $this->queueRepository->getCurrent();
-
-        $runlist = array();
-        foreach ($queue as $item) {
-            $last = $this->logRepository->getLastEntry($item->taskname);
-            if (empty($last)) {
-                $runlist[] = $item;
+        if ($id) {
+            $item = $this->queueRepository->get($id);
+            if (empty($item)) {
+                $this->addLogEntry("Task $id not found.",'session',MessageType::Error);
+                return;
             }
-            else if ($last->type == TaskLogEntryType::EndSession) {
-                if (TDates::CompareDates($last->time,$item->frequency) == TDates::Before) {
+            $runlist = [$item];
+        }
+        else {
+            $queue = $this->queueRepository->getCurrent();
+            $runlist = array();
+            foreach ($queue as $item) {
+                $last = $this->logRepository->getLastEntry($item->taskname);
+                if (empty($last)) {
                     $runlist[] = $item;
+                }
+                else if ($last->type == TaskLogEntryType::EndSession) {
+                    if (TDates::CompareDates($last->time,$item->frequency) == TDates::Before) {
+                        $runlist[] = $item;
+                    }
                 }
             }
         }
-        if (empty($runlist)) {
 
+        if (empty($runlist)) {
             $this->addLogEntry('No tasks to run','session',TaskLogEntryType::Info);
         }
         else {
