@@ -6,15 +6,9 @@
 
 namespace Peanut\QnutDirectory\db\model\entity;
 
+use Tops\sys\TDataTransfer;
+
 class EmailList  extends \Tops\db\NamedEntity
 {
     public $mailBox;
-
-    public function assignFromObject($dto)
-    {
-        parent::assignFromObject($dto);
-        if (isset($dto->mailBox)) {
-            $this->mailBox = $dto->mailBox;
-        }
-    }
 }

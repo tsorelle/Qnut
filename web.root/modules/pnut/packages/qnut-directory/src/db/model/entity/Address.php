@@ -8,12 +8,12 @@ namespace Peanut\QnutDirectory\db\model\entity;
 
 use Tops\sys\TNameValuePair;
 
-class Address  extends \Tops\db\TimeStampedEntity
+class Address  extends \Tops\db\TEntity
 {
     const postalSubscriptionsProperty = 'postalsubscriptions';
     const residentsProperty = 'residents';
 
-    public $id;
+    // public $id;
     public $addressname;
     public $address1;
     public $address2;
@@ -28,70 +28,13 @@ class Address  extends \Tops\db\TimeStampedEntity
     public $listingtypeId;
     public $latitude;
     public $longitude;
-    public $active;
+    // public $active;
 
     /**
      * @var TNameValuePair[]
      */
     private $residents = [];
     public $postalSubscriptions = [];
-
-    public function assignFromObject($dto)
-    {
-        if (isset($dto->id)) {
-            $this->id = $dto->id;
-        }
-        if (isset($dto->addressname)) {
-            $this->addressname = $dto->addressname;
-        }
-        if (isset($dto->address1)) {
-            $this->address1 = $dto->address1;
-        }
-        if (isset($dto->address2)) {
-            $this->address2 = $dto->address2;
-        }
-        if (isset($dto->city)) {
-            $this->city = $dto->city;
-        }
-        if (isset($dto->state)) {
-            $this->state = $dto->state;
-        }
-        if (isset($dto->postalcode)) {
-            $this->postalcode = $dto->postalcode;
-        }
-        if (isset($dto->country)) {
-            $this->country = $dto->country;
-        }
-        if (isset($dto->phone)) {
-            $this->phone = $dto->phone;
-        }
-        if (isset($dto->notes)) {
-            $this->notes = $dto->notes;
-        }
-        if (isset($dto->addresstypeId)) {
-            $this->addresstypeId  = $dto->addresstypeId;
-        }
-        if (isset($dto->sortkey)) {
-            $this->sortkey = $dto->sortkey;
-        }
-        if (isset($dto->listingtypeId)) {
-            $this->listingtypeId = $dto->listingtypeId;
-        }
-        if (isset($dto->latitude)) {
-            $this->latitude = $dto->latitude;
-        }
-        if (isset($dto->longitude)) {
-            $this->longitude = $dto->longitude;
-        }
-        if (isset($dto->active)) {
-            $this->active = $dto->active;
-        }
-
-        if (isset($dto->postalSubscriptions)) {
-            $this->postalSubscriptions = $dto->postalSubscriptions;
-        }
-
-    }
 
     public function getResidents() {
         return isset($this->residents) ? $this->residents : [];

@@ -11,6 +11,8 @@ namespace Peanut\PeanutTasks;
 
 use PHPUnit\Runner\Exception;
 use Tops\db\TEntityRepository;
+use Tops\sys\TDataTransfer;
+use Tops\sys\TLanguage;
 use Tops\sys\TStrings;
 
 class TaskQueueEntry
@@ -25,48 +27,29 @@ class TaskQueueEntry
     public $comments;
     public $active;
 
-    public function assignFromObject($dto)
-    {
-        $errors = array();
-        if (isset($dto->id)) {
-            $this->id = $dto->id;
+    public function assignFromObject($dto) {
+        $frequencyError = false;
+        if (!empty($dto->frequency)) {
+            $interval = self::stringToInterval($dto->frequency);
+            if (empty($interval)) {
+                $frequencyError = TLanguage::formatText('validation-invalid-interval',[$dto->frequency]);
+                unset($dto->frequency);
+            }
         }
-        if (isset($dto->frequency)) {
-            $this->frequency = $dto->frequency;
+        $dt = new TDataTransfer($dto,$this,[
+            'startdate' => TDataTransfer::dataTypeDate,
+            'enddate' => TDataTransfer::dataTypeDate,
+        ]);
+        $dt->assignAll();
+        $dt->assignDefaultValues([
+            'active' => 1
+        ]);
+        $errors = $dt->checkRequiredValues(['taskname','frequency']);
+        if (!empty($frequencyError)) {
+            $errors['frequency'] = $frequencyError;
         }
-        else {
-            $errors[] = 'Frequency is required';
-        }
-        if (isset($dto->taskname)) {
-            $this->taskname = $dto->taskname;
-        }
-        else {
-            $errors[] = 'Task name is required';
-        }
-        if (isset($dto->namespace)) {
-            $this->namespace = $dto->namespace;
-        }
-        if (empty($dto->startdate) || $dto->startdate == '0000-00-00') {
-            $this->startdate = null;
-        } else {
-            $this->startdate = $dto->startdate;
-        }
-        if (empty($dto->enddate) || $dto->enddate == '0000-00-00') {
-            $this->enddate = null;
-        } else {
-            $this->enddate = $dto->enddate;
-        }
-        if (isset($dto->inputs)) {
-            $this->inputs = $dto->inputs;
-        }
-        if (isset($dto->comments)) {
-            $this->comments = $dto->comments;
-        }
-        if (isset($dto->active)) {
-            $this->active = $dto->active;
-        }
+        return $errors;
     }
-
 
     /**
      * @return bool|\DateInterval

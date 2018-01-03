@@ -1,0 +1,66 @@
+<div id="organizations-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
+<div id="organizations-view-container" class="row" style="display: none">
+    <div data-bind="visible:tab()==='list'">
+            <div class="row" id="search-form">
+            <div class="col-md-12">
+                <form>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search" data-bind="value: searchValue">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-default" data-bind="click:findOrganizations" ><translate params="code:'label-search',translator:self"></translate> <span class="fa fa-search" aria-hidden="true"></span> </button>
+                        </div>
+                    </div>
+                    <p>
+                        <a href="#" data-bind="click:newOrganization">New Organization</a>
+                    </p>
+                </form>
+            </div>
+
+            <div class="row" id="organizations" data-bind="visible:organizationsList().length > 0">
+                <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th><translate params="code:'label-code', translator:self"></translate></th>
+                                <th><translate params="code:'label-name', translator:self"></translate></th>
+                                <th><translate params="code:'organizations-label-type', translator:self"></translate></th>
+                                <th>&nbsp</th>
+                            </tr>
+                            </thead>
+                            <tbody data-bind="foreach:organizationsList">
+                            <tr>
+                                <td data-bind="text:code"  ></td>
+                                <td data-bind="text:name"  ></td>
+                                <td data-bind="text:orgtype"  ></td>
+                                <td><a href="#" data-bind="click:$parent.editOrganization"><translate params="code:'label-edit',translator:$parent.self"></translate></a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <div data-bind="visible:tab()==='view'">
+        <div class="row" id="orgview">
+            <div class="col-md-12">
+                <h1>view</h1>
+            </div>
+        </div>
+    </div>
+    <div data-bind="visible:tab()==='edit'">
+        <div class="row" id="orgform">
+            <div class="col-md-12">
+                <h1>edit</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<modal-confirm params="id:'confirm-save-modal',headerText: confirmSaveHeader, bodyText: confirmSaveText, confirmClick: saveOrganization"></modal-confirm>
+<modal-confirm params="id:'confirm-delete-modal',headerText: confirmDeleteHeader, bodyText: confirmDeleteText, confirmClick: deleteOrganization"></modal-confirm>
+<!-- end div container -->

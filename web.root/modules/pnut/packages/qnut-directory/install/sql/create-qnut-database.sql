@@ -268,21 +268,23 @@ CREATE TABLE IF NOT EXISTS  `qnut_membershiptypes` (
 
 /*Table structure for table `qnut_organizations` */
 
-CREATE TABLE IF NOT EXISTS  `qnut_organizations` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(32) NOT NULL,
-  `name` varchar(200) DEFAULT NULL,
-  `description` varchar(256) DEFAULT NULL,
-  `addressId` int(11) DEFAULT NULL,
-  `organizationType` int(11) DEFAULT NULL,
-  `createdby` varchar(50) NOT NULL DEFAULT 'system',
-  `createdon` datetime DEFAULT CURRENT_TIMESTAMP,
-  `changedby` varchar(50) DEFAULT NULL,
-  `changedon` datetime DEFAULT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
+CREATE TABLE IF NOT EXISTS `qnut_organizations` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(32) NOT NULL,
+  `name` VARCHAR(200) DEFAULT NULL,
+  `description` VARCHAR(256) DEFAULT NULL,
+  `addressId` INT(11) DEFAULT NULL,
+  `organizationType` INT(11) DEFAULT NULL,
+  `email` VARCHAR(128) DEFAULT NULL,
+  `fax` VARCHAR(128) DEFAULT NULL,
+  `createdby` VARCHAR(50) NOT NULL DEFAULT 'system',
+  `createdon` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `changedby` VARCHAR(50) DEFAULT NULL,
+  `changedon` DATETIME DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_organizations_code` (`code`)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
+) ENGINE=MYISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
 
 /*Table structure for table `qnut_organizationtypes` */
 

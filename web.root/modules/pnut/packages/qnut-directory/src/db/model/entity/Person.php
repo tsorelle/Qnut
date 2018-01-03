@@ -8,16 +8,18 @@
 namespace Peanut\QnutDirectory\db\model\entity;
 
 
+use Tops\db\TEntity;
 use Tops\db\TimeStampedEntity;
+use Tops\sys\TDataTransfer;
 use Tops\sys\TDates;
 
-class Person  extends TimeStampedEntity
+class Person  extends TEntity
 {
     const affiliationsProperty = 'affiliations';
     const emailSubscriptionsProperty = 'emailsubscriptions';
     const addressProperty = 'address';
 
-    public $id;
+    // public $id;
     public $fullname;
     public $addressId;
     public $email;
@@ -30,7 +32,7 @@ class Person  extends TimeStampedEntity
     public $listingtypeId;
     public $sortkey;
     public $notes;
-    public $active;
+    // public $active;
 
     /**
      * @var $address Address
@@ -39,57 +41,12 @@ class Person  extends TimeStampedEntity
     public $affiliations = [];
     public $emailSubscriptions = [];
 
-    public function assignFromObject($dto)
+    public function getDtoDataTypes()
     {
-        if (isset($dto->id)) {
-            $this->id = $dto->id;
-        }
-        if (isset($dto->fullname)) {
-            $this->fullname = $dto->fullname;
-        }
-        if (isset($dto->addressId)) {
-            $this->addressId = $dto->addressId;
-        }
-
-        if (isset($dto->email)) {
-            $this->email = $dto->email;
-        }
-        if (isset($dto->username)) {
-            $this->username = $dto->username;
-        }
-        if (isset($dto->phone)) {
-            $this->phone = $dto->phone;
-        }
-        if (isset($dto->phone2)) {
-            $this->phone2 = $dto->phone2;
-        }
-        if (isset($dto->dateofbirth)) {
-            $this->dateofbirth = TDates::formatMySqlDate($dto->dateofbirth);
-        }
-/*        if (isset($dto->junior)) {
-            $this->junior = $dto->junior;
-        }*/
-        if (isset($dto->deceased)) {
-            $this->deceased = TDates::formatMySqlDate($dto->deceased);
-        }
-        if (isset($dto->listingtypeId)) {
-            $this->listingtypeId = $dto->listingtypeId;
-        }
-        if (isset($dto->sortkey)) {
-            $this->sortkey = $dto->sortkey;
-        }
-        if (isset($dto->notes)) {
-            $this->notes = $dto->notes;
-        }
-        if (isset($dto->active)) {
-            $this->active = $dto->active;
-        }
-        if (isset($dto->affiliations)) {
-            $this->affiliations = $dto->affiliations;
-        }
-        if (isset($dto->emailSubscriptions)) {
-            $this->emailSubscriptions = $dto->emailSubscriptions;
-        }
+        $types = parent::getDtoDataTypes();
+        $types['dateofbirth'] = TDataTransfer::dataTypeDate;
+        $types['deceased'] = TDataTransfer::dataTypeDate;
+        return $types;
     }
 
     public function setAddress($address)
