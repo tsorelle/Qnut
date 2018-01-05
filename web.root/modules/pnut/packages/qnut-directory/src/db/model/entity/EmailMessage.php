@@ -19,6 +19,7 @@ class EmailMessage
     public $recipientCount;
     public $postedDate;
     public $postedBy;
+    public $active;
 
     public static function Create($dto,$username)
     {

@@ -9,9 +9,7 @@ namespace Peanut\QnutDirectory\db\model\entity;
 
 
 use Tops\db\TEntity;
-use Tops\db\TimeStampedEntity;
 use Tops\sys\TDataTransfer;
-use Tops\sys\TDates;
 
 class Person  extends TEntity
 {
@@ -19,7 +17,8 @@ class Person  extends TEntity
     const emailSubscriptionsProperty = 'emailsubscriptions';
     const addressProperty = 'address';
 
-    // public $id;
+    // public $id; // from TEntity
+    // public $active; // from TEntity
     public $fullname;
     public $addressId;
     public $email;
@@ -32,7 +31,6 @@ class Person  extends TEntity
     public $listingtypeId;
     public $sortkey;
     public $notes;
-    // public $active;
 
     /**
      * @var $address Address
@@ -73,5 +71,4 @@ class Person  extends TEntity
     public function setEmailSubscriptions(array $value) {
         $this->emailSubscriptions = $value;
     }
-
 }

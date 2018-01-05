@@ -414,7 +414,7 @@ CREATE TABLE `tops_processes` (
   `name` varchar(128) DEFAULT NULL,
   `description` varchar(128) DEFAULT NULL,
   `paused` datetime DEFAULT NULL,
-  `enabled` tinyint(4) DEFAULT '1',
+  `enabled` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
@@ -436,7 +436,7 @@ CREATE TABLE IF NOT EXISTS  `tops_tasklog` (
   `type` int(10) unsigned DEFAULT NULL,
   `message` varchar(256) DEFAULT NULL,
   `taskname` varchar(128) DEFAULT NULL,
-  `active` tinyint(4) DEFAULT '1',
+  `active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=116 DEFAULT CHARSET=latin1;
 
@@ -451,7 +451,7 @@ CREATE TABLE IF NOT EXISTS  `tops_taskqueue` (
   `enddate` date DEFAULT NULL,
   `inputs` varchar(512) DEFAULT NULL,
   `comments` text,
-  `active` tinyint(4) DEFAULT '1',
+  `active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=87 DEFAULT CHARSET=latin1;
 

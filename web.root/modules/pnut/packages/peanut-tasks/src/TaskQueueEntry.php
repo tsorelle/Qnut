@@ -9,11 +9,8 @@
 namespace Peanut\PeanutTasks;
 
 
-use PHPUnit\Runner\Exception;
-use Tops\db\TEntityRepository;
 use Tops\sys\TDataTransfer;
 use Tops\sys\TLanguage;
-use Tops\sys\TStrings;
 
 class TaskQueueEntry
 {
@@ -52,6 +49,7 @@ class TaskQueueEntry
     }
 
     /**
+     * @param bool $value
      * @return bool|\DateInterval
      */
     public function getFrequencyAsInterval($value = false) {
@@ -74,6 +72,7 @@ class TaskQueueEntry
     {
         $interval = self::stringToInterval($value);
         if ($interval === false) {
+            /** @noinspection PhpUnhandledExceptionInspection */
             throw new \Exception("Invalid frequency value '$value");
         }
         if ($interval === null) {

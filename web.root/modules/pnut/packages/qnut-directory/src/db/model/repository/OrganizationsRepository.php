@@ -13,6 +13,20 @@ use \Tops\db\TNamedEntitiesRepository;
 
 class OrganizationsRepository extends \Tops\db\TNamedEntitiesRepository
 {
+    public function getOrganizationsList($pageNumber=1,$pageSize=0,$showInactive=false)
+    {
+        $sql = 'SELECT o.id, o.name, o.code, t.name AS typeName FROM  qnut_organizations o '.
+                'JOIN qnut_organizationtypes t ON o.organizationType = t.id ';
+        if (!$showInactive) {
+            $sql .= 'WHERE o.active=1 ';
+        }
+        if ($pageSize>0) {
+            $sql .= sprintf('LIMIT %d OFFSET %d',$pageSize,($pageNumber-1) * $pageSize);
+        }
+        $stmt = $this->executeStatement($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
     protected function getTableName() {
         return 'qnut_organizations';
     }
@@ -35,6 +49,7 @@ class OrganizationsRepository extends \Tops\db\TNamedEntitiesRepository
             'description'=>PDO::PARAM_STR,
             'organizationType'=>PDO::PARAM_INT,
             'email'=>PDO::PARAM_STR,
+            'phone'=>PDO::PARAM_STR,
             'fax'=>PDO::PARAM_STR,
             'notes'=>PDO::PARAM_STR,
             'createdby'=>PDO::PARAM_STR,

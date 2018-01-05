@@ -1,65 +1,303 @@
 <div id="organizations-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="organizations-view-container" class="row" style="display: none">
     <div data-bind="visible:tab()==='list'">
-            <div class="row" id="search-form">
-            <div class="col-md-12">
-                <form>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group">
-                                <input type="text" class="form-control" placeholder="Search" data-bind="value: searchValue">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-default" data-bind="click:findOrganizations" ><translate params="code:'label-search',translator:self"></translate> <span class="fa fa-search" aria-hidden="true"></span> </button>
-                        </div>
-                    </div>
-                    <p>
-                        <a href="#" data-bind="click:newOrganization">New Organization</a>
-                    </p>
-                </form>
-            </div>
+        <div style="margin-bottom: 10px; margin-top: 5px">
+            <a href="#" data-bind="click: newOrganization"><translate params="code:'organizations-label-add-new',translator:self"></translate></a>
+        </div>
 
-            <div class="row" id="organizations" data-bind="visible:organizationsList().length > 0">
-                <div class="col-md-12">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th><translate params="code:'label-code', translator:self"></translate></th>
-                                <th><translate params="code:'label-name', translator:self"></translate></th>
-                                <th><translate params="code:'organizations-label-type', translator:self"></translate></th>
-                                <th>&nbsp</th>
-                            </tr>
-                            </thead>
-                            <tbody data-bind="foreach:organizationsList">
-                            <tr>
-                                <td data-bind="text:code"  ></td>
-                                <td data-bind="text:name"  ></td>
-                                <td data-bind="text:orgtype"  ></td>
-                                <td><a href="#" data-bind="click:$parent.editOrganization"><translate params="code:'label-edit',translator:$parent.self"></translate></a></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div id="organizations-table">
+            <table  class="table table-bordered">
+                <thead>
+                <tr>
+                <th><translate params="code:'label-name',translator:self"></translate></th>
+                <th><translate params="code:'label-code',translator:self"></translate></th>
+                <th><translate params="code:'dir-label-organizationtype',translator:self"></translate></th>
+                <th></th>
+                </tr>
+                </thead>
+                <tbody  data-bind="foreach: organizationsList">
+                <tr>
+                <td data-bind="text: name"></td>
+                <td data-bind="text: code"></td>
+                <td data-bind="text: typeName"></td>
+                <td><a href="#"  data-bind="click: $parent.viewOrganization" >
+                    <translate params="code:'label-details',translator:$parent.self"></translate></a>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <pager params='click:onPagerClick,page:currentPage,max:maxPages,owner:self'></pager>
     </div>
-
     <div data-bind="visible:tab()==='view'">
+        <div class="row" id="viewbuttons">
+            <div class="col-md-12">
+                <button class="btn btn-primary" data-bind="click:editOrganization"><translate params="code:'label-edit',translator:self"></translate> </button>
+                <button class="btn btn-default" data-bind="click:confirmDeleteOrganization"><translate params="code:'organization-remove',translator:self"></translate> </button>
+            </div>
+        </div>
         <div class="row" id="orgview">
             <div class="col-md-12">
-                <h1>view</h1>
+                <form>
+                    <div class="form-group">
+                        <label class="control-label" for="orgCode">
+                            <translate params="code:'label-code',translator:self"></translate></label>
+                        <span data-bind="text: organizationForm.code" ></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgName">
+                            <translate params="code:'label-name',translator:self"></translate></label>
+                        <span data-bind="text: organizationForm.name" ></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organization-type" class="control-label"><translate params="code:'dir-label-organization-type',translator:self"></translate></label>
+                        <span data-bind="text: organizationForm.typeName"> </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgDescription">
+                            <translate params="code:'label-description',translator:self"></translate></label>
+
+                        <span data-bind="text: organizationForm.description" ></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgEmail"><translate params="code:'label-email',translator:self"></translate></label>
+                        <span data-bind="text: organizationForm.email"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgPhone"><translate params="code:'label-phone',translator:self"></translate></label>
+                        <span data-bind="textInput: organizationForm.phone" ></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgFax"><translate params="code:'label-fax',translator:self"></translate></label>
+                        <span data-bind="text: organizationForm.fax"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate></label>
+                        <span data-bind="value:organizationForm.notes"></span>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        <div class="row" id="address-view-panel" data-bind="visible:organizationForm.addressId() > 0">
+            <div class="col-md-12">
+            <form>
+                <fieldset id="address-view-fields">
+                    <legend><translate params="code:'dir-entity-label-address',translator:self"></translate></legend>
+                    <div id='streetaddress-view'>
+                        <div>
+                            <strong><translate params="code:'dir-label-street-address',translator:self"></translate>: </strong>
+                        </div>
+                        <div>
+                            <span data-bind="text:addressForm.addressname"></span>
+                        </div>
+                        <div data-bind="visible:addressForm.address1">
+                            <span data-bind="text:addressForm.address1"></span>
+                        </div>
+                        <div data-bind="visible:addressForm.address2">
+                            <span data-bind="text:addressForm.address2"></span>
+                        </div>
+                        <div data-bind="visible:addressForm.cityLocation">
+                            <span data-bind="text:addressForm.cityLocation"></span>
+                        </div>
+                        <div data-bind="visible:addressForm.country">
+                            <span data-bind="text:addressForm.country"></span>
+                        </div>
+                    </div>
+                    <!--
+                    div data-bind="visible:addressForm.phone">
+                        <strong><translate params="code:'dir-label-household-phone',translator:self"></translate>: </strong>
+                        <span data-bind="text:addressForm.phone"></span>
+                    </div
+                    -->
+
+                    <div data-bind="visible:addressForm.postalSubscriptionsView().length > 0">
+                        <strong><translate params="code:'dir-label-subscriptions',translator:self"></translate>: </strong><br>
+                        <ul data-bind="foreach:addressForm.postalSubscriptionsView">
+                            <li data-bind="text:name"></li>
+                        </ul>
+                    </div>
+
+                    <div data-bind="visible:addressForm.notes">
+                        <strong><translate params="code:'label-notes',translator:self"></translate>:</strong><br>
+                        <span data-bind="text:addressForm.notes"><translate params="code:'label-notes',translator:self"></translate></span>
+                    </div>
+                    <div>
+                        <strong><translate params="code:'label-updated',translator:self"></translate>: </strong>
+                        <span data-bind="text:addressForm.lastUpdate"></span>
+                    </div>
+                    <div data-bind="visible:userCanEdit">
+                        <strong><translate params="code:'dir-entity-label-address',translator:self"></translate> Id: </strong>
+                        <span data-bind="text:addressForm.addressId"></span>
+                    </div>
+                </fieldset>
+            </form>
             </div>
         </div>
     </div>
-    <div data-bind="visible:tab()==='edit'">
+    <div  id="address-edit-panel"  data-bind="visible:tab()==='edit'">
         <div class="row" id="orgform">
             <div class="col-md-12">
-                <h1>edit</h1>
+                <form>
+                    <div class="form-group" data-bind="visible: organizationForm.id() === 0, css: {'has-error': organizationForm.codeError}">
+                        <label class="control-label" for="orgCode">
+                            <translate params="code:'label-code',translator:self"></translate></label>
+                        <span class="error" data-bind="visible: organizationForm.codeError">
+                                    : <translate params="code:'organization-error-code-blank',translator:self"></translate></span>
+                        <input type="text" class="form-control" id="orgCode" data-bind="textInput: organizationForm.code" />
+                    </div>
+
+                    <div class="form-group" data-bind="css: {'has-error': organizationForm.nameError}">
+                        <label class="control-label" for="orgName">
+                            <translate params="code:'label-name',translator:self"></translate></label>
+                        <span class="error" data-bind="visible: organizationForm.nameError">
+                                    : <translate params="code:'organization-error-email-name',translator:self"></translate></span>
+                        <input type="text" class="form-control" id="orgName" data-bind="textInput: organizationForm.Name" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organization-type" class="control-label"><translate params="code:'dir-label-organization-type',translator:self"></translate></label>
+                        <select class="form-control" id="organization-type"
+                                data-bind="options: organizationTypes,optionsText:'name',value: organizationForm.selectedOrganizationType">
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgDescription">
+                            <translate params="code:'label-description',translator:self"></translate></label>
+
+                        <input type="text" class="form-control" id="orgDescription" data-bind="textInput: organizationForm.description" />
+                    </div>
+
+                    <div class="form-group"  data-bind=" css: {'has-error': organizationForm.emailError}">
+                        <label class="control-label" for="orgEmail"><translate params="code:'label-email',translator:self"></translate></label>
+                        <span class="error" data-bind="visible: organizationForm.emailError">
+                                    :  <translate params="code:'form-error-email-invalid',translator:self"></translate></span>
+                        <input type="email" class="form-control" id="orgEmail" data-bind="textInput: organizationForm.email" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate></label>
+                        <textarea class="form-control" id="organization-notes-input" data-bind="value:organizationForm.notes"></textarea>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgPhone"><translate params="code:'label-phone',translator:self"></translate></label>
+                        <input type="text" class="form-control" id="orgPhone" data-bind="textInput: organizationForm.phone" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="orgFax"><translate params="code:'label-fax',translator:self"></translate></label>
+                        <input type="text" class="form-control" id="orgFax" data-bind="textInput: organizationForm.fax" />
+                    </div>
+
+
+                    <div>
+                        <button class="btn btn-default" data-bind="click:createAddress,visible:organizationForm.addressId() === null">Create address</button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
+        <div class="row" id="addressform" data-bind="visible:organizationForm.id() !== null">
+            <div class="col-md-12">
+                <fieldset id="address-form" >
+                    <legend ><translate params="code:'dir-entity-label-address',translator:self"></translate> </legend>
+                </fieldset>
+                <div class="alert alert-danger" role="alert" data-bind="visible:addressForm.hasErrors">
+                    <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
+                    <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
+                    <translate params="code:'form-error-message',translator:self"></translate>
+                </div>
+                <div class="form-group">
+                    <label for="address-type" class="control-label"><translate params="code:'dir-label-address-type',translator:self"></translate></label>
+                    <select class="form-control" id="address-type"
+                            data-bind="options: addressForm.addressTypes,optionsText:'name',value: addressForm.selectedAddressType">
+                    </select>
+                </div>
+                <div class="form-group" data-bind="css:{'has-error': addressForm.addressNameError}" >
+                    <label for="addressname-input" class="control-label"><translate params="code:'dir-label-address-name',translator:self"></translate><span data-bind="text:addressForm.addressNameError"></span></label>
+                    <input class="form-control" id="addressname-input" data-bind="value:addressForm.addressname"/>
+                </div>
+                <div class="form-group">
+                    <label for="address-sortkey-input" class="control-label"><translate params="code:'dir-label-sort-key',translator:self"></translate></label>
+
+                    <div class="input-group" style="">
+                        <input class="form-control" id="address-sortkey-input" data-bind="value:addressForm.sortkey"/>
+                        <span class="input-group-btn"><button class="btn btn-default" type="button" tabindex="-1" data-bind="click:addressForm.refreshSortKey">
+		                        <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address-input" class="control-label"><translate params="code:'dir-entity-label-address',translator:self"></translate></label>
+                    <input class="form-control" id="address-input" data-bind="value:addressForm.address1"/><br>
+                    <input class="form-control" id="address2-input" data-bind="value:addressForm.address2" title="Address line 2"/>
+                </div>
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="city-input" class="control-label"><translate params="code:'dir-label-city',translator:self"></translate></label>
+                            <input class="form-control" id="city-input" data-bind="value:addressForm.city"/>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="state-input" class="control-label"><translate params="code:'dir-label-state',translator:self"></translate></label>
+                            <input class="form-control" id="state-input" data-bind="value:addressForm.state"/>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="zip-input" class="control-label"><translate params="code:'dir-label-pocode',translator:self"></translate></label>
+                            <input class="form-control" id="zip-input" data-bind="value:addressForm.postalcode"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="country-input" class="control-label"><translate params="code:'dir-label-country',translator:self"></translate></label>
+                    <input class="form-control" id="country-input" data-bind="value:addressForm.country"/>
+                </div>
+                <div class="form-group">
+                    <label for="address-phone-input" class="control-label"><translate params="code:'dir-label-household-phone',translator:self"></translate></label>
+                    <input class="form-control" id="address-phone-input" data-bind="value:addressForm.phone"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label"><translate params="code:'dir-label-subscriptions',translator:self"></translate></label>
+                    <ul  style="list-style: none" data-bind="foreach:addressForm.postalSubscriptionList">
+                        <li>
+                            <input type="checkbox" data-bind="checked:subscribed" title="subscribe"/>
+                            <span data-bind="text:name"></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label for="addr-directory-listing-input" class="control-label"><translate params="code:'dir-label-directory-listing',translator:self"></translate>:</label>
+                    <select class="form-control" id="addr-directory-listing-input"
+                            data-bind="options: directoryListingTypes,optionsText:'name',value: addressForm.selectedDirectoryListingType"></select>
+                </div>
+
+                <div class="form-group">
+                    <label for="address-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate></label>
+                    <textarea class="form-control" id="address-notes-input" data-bind="value:addressForm.notes"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="editbuttons">
+            <div class="col-md-12">
+                    <button class="btn btn-primary" data-bind="click:confirmSaveOrganization"><translate params="code:'label-save',translator:self"></translate> </button>
+                    <button class="btn btn-default" data-bind="click:cancelOrganizationEdit"><translate params="code:'label-cancel',translator:self"></translate> </button>
+            </div>
+        </div>
+    </div> <!-- end address edit form -->
 </div>
 <modal-confirm params="id:'confirm-save-modal',headerText: confirmSaveHeader, bodyText: confirmSaveText, confirmClick: saveOrganization"></modal-confirm>
 <modal-confirm params="id:'confirm-delete-modal',headerText: confirmDeleteHeader, bodyText: confirmDeleteText, confirmClick: deleteOrganization"></modal-confirm>

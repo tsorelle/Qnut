@@ -6,9 +6,10 @@
 
 namespace Peanut\QnutDirectory\db\model\entity;
 
-use Tops\sys\TDataTransfer;
 
-class EmailList  extends \Tops\db\NamedEntity
+use Tops\db\NamedEntity;
+
+class EmailList  extends NamedEntity
 {
     public $mailBox;
 }

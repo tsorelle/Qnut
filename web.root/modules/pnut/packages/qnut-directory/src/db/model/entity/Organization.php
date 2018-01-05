@@ -6,9 +6,14 @@
 
 namespace Peanut\QnutDirectory\db\model\entity;
 
-class Organization  extends \Tops\db\NamedEntity
+use Tops\db\NamedEntity;
+
+class Organization  extends NamedEntity
 {
+    public $addressId;
     public $organizationType;
+    public $email;
+    public $phone;
     public $fax;
     public $notes;
 }

@@ -6,14 +6,16 @@
 
 namespace Peanut\QnutDirectory\db\model\entity;
 
+use Tops\db\TEntity;
 use Tops\sys\TNameValuePair;
 
-class Address  extends \Tops\db\TEntity
+class Address  extends TEntity
 {
     const postalSubscriptionsProperty = 'postalsubscriptions';
     const residentsProperty = 'residents';
 
-    // public $id;
+    // public $id; (from TEntity)
+    // public $active; (from TEntity)
     public $addressname;
     public $address1;
     public $address2;
@@ -28,7 +30,6 @@ class Address  extends \Tops\db\TEntity
     public $listingtypeId;
     public $latitude;
     public $longitude;
-    // public $active;
 
     /**
      * @var TNameValuePair[]
