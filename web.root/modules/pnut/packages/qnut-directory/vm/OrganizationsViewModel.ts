@@ -90,17 +90,18 @@ namespace QnutDirectory {
                         me.organizationsList(response.organizations);
                         me.maxPages(response.maxPages);
                         me.currentPage(1);
-                        // todo: me.addressForm.addressTypes(response.addressTypes);
-                        // todo: me.userCanEdit(response.canEdit);
-                        //  todo: me.directoryListingTypes(response.listingTypes);
-                        //  todo: me.addressForm.assignPostalSubscriptionList(response.postalLists);
+                        me.addressForm.addressTypes(response.addressTypes);
+                        me.userCanEdit(response.canEdit);
+                        me.directoryListingTypes(response.listingTypes);
+                        me.addressForm.assignPostalSubscriptionList(response.postalLists);
+                        me.organizationTypes(response.organizationTypes);
 
-                        //  todo: me.addTranslations(response.translations);
-                        //  todo: me.organizationTypes(response.organizationTypes);
-                        //  todo: me.confirmDeleteHeader(me.translate('organization-confirm-delete-header'));
-                        //  todo: me.confirmDeleteText(me.translate('organization-confirm-delete-text'));
-                        //  todo: me.confirmSaveHeader(me.translate('organization-confirm-save-header'));
-                        //  todo: me.confirmSaveText(me.translate('organization-confirm-save-text'));
+                        me.addTranslations(response.translations);
+                        me.confirmDeleteHeader(me.translate('organization-confirm-delete-header'));
+                        me.confirmDeleteText(me.translate('organization-confirm-delete-text'));
+                        me.confirmSaveHeader(me.translate('organization-confirm-save-header'));
+                        me.confirmSaveText(me.translate('organization-confirm-save-text'));
+
                     }
                     else {
                         me.userCanEdit(false);

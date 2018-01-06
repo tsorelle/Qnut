@@ -230,6 +230,11 @@ class DirectoryManager
         return $repository->getLookupList();
     }
 
+    public function getOrganizationTypeList() {
+        $repository = new LookupTableRepository('qnut_organizationtypes');
+        return $repository->getLookupList();
+    }
+
     public function getAddressTypeList()
     {
         $repository = new LookupTableRepository('qnut_addresstypes');
