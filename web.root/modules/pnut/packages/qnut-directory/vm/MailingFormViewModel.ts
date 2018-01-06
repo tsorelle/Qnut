@@ -48,6 +48,7 @@ namespace QnutDirectory {
         status: string;
         pausedUntil: string;
         items: IMessageHistoryItem[];
+        maxPages: number;
     }
 
     interface IEmailListItem extends ILookupItem {
@@ -70,6 +71,12 @@ namespace QnutDirectory {
         confirmSendMessage = ko.observable('');
         confirmResendMessage = ko.observable('');
         mailboxes : Mailboxes.MailboxListObservable;
+
+        private queuePageSize = 10;
+
+        currentQueuePage = ko.observable(1);
+        maxQueuePages = ko.observable(1);
+        refreshingQueue = ko.observable(false);
 
         mailingListLookup = ko.observableArray<ILookupItem>([]);
         mailingLists = ko.observableArray<IEmailListItem>([]);
@@ -138,7 +145,10 @@ namespace QnutDirectory {
                 me.initEditor('#messagehtml');
                 // me.initEditor('#edit-messagetext');
                 me.mailboxes = new Mailboxes.MailboxListObservable(me);
-                me.application.registerComponents(['@pnut/modal-confirm', '@pkg/mailboxes/mailbox-manager'], () => {
+                me.application.registerComponents([
+                    '@pnut/modal-confirm',
+                    '@pkg/mailboxes/mailbox-manager',
+                    '@pnut/pager'], () => {
                         me.getMailingLists(() => {
                             me.application.hideWaiter();
                             me.bindDefaultSection();
@@ -329,21 +339,40 @@ namespace QnutDirectory {
             this.tab('message');
         };
 
+        onQueuePaged = (moved: number) => {
+            this.getMessageQueue(this.currentQueuePage() + moved);
+        };
+
         refreshQueue = () => {
             let me = this;
-            me.application.showBannerWaiter('mailing-get-history');
-            me.services.executeService('peanut.qnut-directory::messaging.GetEmailListHistory', null,
+            me.getMessageQueue(1);
+        };
+
+        getMessageQueue = (pageNumber) => {
+            let me = this;
+            me.refreshingQueue(true);
+            if (pageNumber == 1) {
+                me.application.showBannerWaiter('mailing-get-history');
+            }
+            let request = {pageSize: me.queuePageSize, pageNumber: pageNumber};
+            me.services.executeService( 'peanut.qnut-directory::messaging.GetEmailListHistory',
+                request,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.currentQueuePage(pageNumber);
+                            me.maxQueuePages(response.maxPages);
                             me.showQueueTab(response);
                         }
                     }
                 }).fail(() => {
                 let trace = me.services.getErrorInformation();
             }).always(() => {
-                me.application.hideWaiter();
+                if (pageNumber == 1) {
+                    me.application.hideWaiter();
+                }
+                me.refreshingQueue(false);
             });
         };
 
@@ -355,6 +384,7 @@ namespace QnutDirectory {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.currentQueuePage(1);
                             me.showQueueTab(response);
                         }
                     }
@@ -395,6 +425,7 @@ namespace QnutDirectory {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.currentQueuePage(1);
                             me.showQueueTab(response);
                         }
                     }
@@ -442,6 +473,7 @@ namespace QnutDirectory {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetMessageHistoryResponse>serviceResponse.Value;
+                            me.currentQueuePage(1);
                             me.showQueueTab(response);
                         }
                     }

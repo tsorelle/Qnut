@@ -135,13 +135,17 @@ WHERE m.id = 40;
      *         subject: string;
      *     }
      */
-    public function getMessageHistory() {
+    public function getMessageHistory($pageNumber=0,$pageSize=0) {
         $sql =
             'SELECT m.id AS messageId, m.subject, l.name AS listName, m.postedDate AS timeSent, m.postedBy AS sender,m.recipientCount, '.
             '(m.recipientCount - COUNT(q.id)) AS sentCount '.
             'FROM  qnut_email_messages m JOIN  qnut_email_lists l ON m.listId = l.id '.
             'LEFT OUTER JOIN qnut_email_queue q ON q.mailMessageId = m.id '.
             'GROUP BY m.id ORDER BY m.postedDate DESC ';
+
+        if ($pageNumber > 0) {
+            $sql .= sprintf('LIMIT %d OFFSET %d',$pageSize,($pageNumber-1) * $pageSize);
+        }
 
         $stmt = $this->executeStatement($sql);
         return $stmt->fetchAll(PDO::FETCH_OBJ);

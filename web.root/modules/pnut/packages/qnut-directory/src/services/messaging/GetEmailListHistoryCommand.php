@@ -50,9 +50,25 @@ class GetEmailListHistoryCommand extends TServiceCommand
 
     protected function run()
     {
-        $repository = new EmailMessagesRepository();
+        $pageSize = 0;
+        $pageNumber = 0;
+        $includeInactive = false;
+        $request = $this->getRequest();
+        if (!empty($request)) {
+            if (!empty($request->pageSize)) {
+                $pageSize = $request->pageSize;
+            }
+            if (!empty($request->pageNumber)) {
+                $pageNumber = $request->pageNumber;
+            }
+        }
+
         $response = new \stdClass();
-        $response->items = $repository->getMessageHistory();
+
+        $repository = new EmailMessagesRepository();
+        $count = $repository->getCount();
+        $response->maxPages = $pageSize == 0 ? 0 : ceil($count / $pageSize);
+        $response->items = $repository->getMessageHistory($pageNumber,$pageSize);
         $isPaused = EMailQueue::isPaused();
         if ($isPaused) {
             $response->status = 'paused';
