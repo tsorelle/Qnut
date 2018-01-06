@@ -6,7 +6,7 @@
  * Time: 5:06 AM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
 
 use Peanut\QnutDirectory\db\DirectoryManager;

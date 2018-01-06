@@ -3,31 +3,30 @@
  * Created by PhpStorm.
  * User: Terry
  * Date: 11/30/2017
- * Time: 6:22 PM
+ * Time: 6:21 PM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
 
 use Peanut\QnutDirectory\db\DirectoryManager;
 use Tops\services\TServiceCommand;
-use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
 /**
- * Class ChangePersonAddressCommand
+ * Class AddPersonToAddressCommand
  * @package Peanut\QnutDirectory\services
  *
- *  Service contract
+ * Service contract
  *	Request:
  *		    interface IAddressPersonServiceRequest {
  *		        personId: any;
  *		        addressId: any;
  *		    }
  *
- *	 Response: IDirectoryFamily, see GetFamilyService.php
+ *	 Response: DirectoryPerson, see GetFamilyService.php
  */
-class ChangePersonAddressCommand extends TServiceCommand
+class AddPersonToAddressCommand extends TServiceCommand
 {
     /**
      * @var DirectoryManager
@@ -39,7 +38,6 @@ class ChangePersonAddressCommand extends TServiceCommand
         $this->manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
     }
 
-
     protected function run()
     {
         $request = $this->getRequest();
@@ -50,13 +48,15 @@ class ChangePersonAddressCommand extends TServiceCommand
         $requestValidation = new DirectoryServiceRequests($this->getMessages());
         $personId = $requestValidation->getPersonIdRequest($request);
         if ($personId !== false) {
-            $addressId = empty($request->addressId) ? null : $request->addressId;
-            $this->manager->assignPersonAddress($personId, $addressId);
-            $service = new GetFamilyService($this->getMessages(), $this->getUser()->getUserName());
-            $service->getPerson($personId);
-            $response = $service->getResponse();
-            $this->setReturnValue($response);
+            $addressId = $requestValidation->getAddressIdRequest($request);
+            if ($addressId !== false) {
+                $this->manager->assignPersonAddress($personId,$addressId);
+                $person = $this->manager->getPerson($personId);
+                if (!empty($person)) {
+                    $this->addInfoMessage('add-person-address-success',[$person->fullname]);
+                    $this->setReturnValue($person);
+                }
+            }
         }
-
     }
 }

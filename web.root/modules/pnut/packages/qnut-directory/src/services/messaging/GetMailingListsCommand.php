@@ -6,7 +6,7 @@
  * Time: 4:57 AM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\messaging;
 
 use Peanut\QnutDirectory\db\DirectoryManager;
 use Peanut\QnutDirectory\db\model\repository\EmailListsRepository;

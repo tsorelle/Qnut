@@ -6,12 +6,11 @@
  * Time: 6:19 PM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
 
 use Peanut\QnutDirectory\db\DirectoryManager;
 use Tops\services\TServiceCommand;
-use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
 /**

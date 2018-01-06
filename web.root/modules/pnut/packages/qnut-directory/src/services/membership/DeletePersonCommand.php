@@ -3,10 +3,10 @@
  * Created by PhpStorm.
  * User: Terry
  * Date: 11/30/2017
- * Time: 6:23 PM
+ * Time: 6:24 PM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
 
 use Peanut\QnutDirectory\db\DirectoryManager;
@@ -14,14 +14,14 @@ use Tops\services\TServiceCommand;
 use Tops\sys\TPermissionsManager;
 
 /**
- * Class DeleteAddressCommand
+ * Class DeletePersonCommand
  * @package Peanut\QnutDirectory\services
  *
- * Service contract
- *      Request: addressId int
- *      Response:  none
+ * Service contract:
+ *      Request: personId int
+ *      Response: none
  */
-class DeleteAddressCommand extends TServiceCommand
+class DeletePersonCommand extends TServiceCommand
 {
     /**
      * @var DirectoryManager
@@ -42,12 +42,12 @@ class DeleteAddressCommand extends TServiceCommand
             $this->addErrorMessage('error-no-id');
             return;
         }
-        $address = $this->manager->getAddressById($id);
-        if (empty($address)) {
+        $person = $this->manager->getPersonById($id);
+        if (empty($person)) {
             $this->addWarningMessage('service-warning-no-deletion',[$id]);
             return;
         }
-        $this->manager->removeAddress($id);
-        $this->addInfoMessage('service-dropped',[$address->addressname]);
+        $this->manager->removePerson($id);
+        $this->addInfoMessage('service-dropped',[$person->fullname]);
     }
 }

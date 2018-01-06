@@ -6,12 +6,8 @@
  * Time: 8:57 AM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
-
-use Peanut\QnutDirectory\db\DirectoryManager;
-use Peanut\QnutDirectory\db\model\entity\Address;
-use Peanut\QnutDirectory\db\model\entity\Person;
 use Tops\services\TServiceCommand;
 
 

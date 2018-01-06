@@ -26,7 +26,9 @@
                 </tbody>
             </table>
         </div>
-        <pager params='click:onPagerClick,page:currentPage,max:maxPages,owner:self'></pager>
+        <div>
+            <pager params='click:onPagerClick,page:currentPage,max:maxPages,waiter:refreshing,owner:self'></pager>
+        </div>
     </div>
     <div data-bind="visible:tab()==='view'">
         <div class="row" id="viewbuttons">

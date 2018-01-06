@@ -180,7 +180,7 @@ namespace QnutDirectory {
             me.application.hideServiceMessages();
 
 
-            me.services.executeService('peanut.qnut-directory::GetMailingLists', request,
+            me.services.executeService('peanut.qnut-directory::messaging.GetMailingLists', request,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -308,7 +308,7 @@ namespace QnutDirectory {
             me.showActionWaiterBanner('send','mailing-message-entity');
             // showWaiter(me.translate('wait-sending-message')); //'Sending message...');
 
-            me.services.executeService('peanut.qnut-directory::SendMailingListMessage', me.sendRequest
+            me.services.executeService('peanut.qnut-directory::messaging.SendMailingListMessage', me.sendRequest
                 ,function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -332,7 +332,7 @@ namespace QnutDirectory {
         refreshQueue = () => {
             let me = this;
             me.application.showBannerWaiter('mailing-get-history');
-            me.services.executeService('peanut.qnut-directory::GetEmailListHistory', null,
+            me.services.executeService('peanut.qnut-directory::messaging.GetEmailListHistory', null,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -350,7 +350,7 @@ namespace QnutDirectory {
         controlQueue = (action: string) => {
             let me = this;
             me.application.showBannerWaiter('mailing-get-history');
-            me.services.executeService('peanut.qnut-directory::ControlMessageProcess', action,
+            me.services.executeService('peanut.qnut-directory::messaging.ControlMessageProcess', action,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -390,7 +390,7 @@ namespace QnutDirectory {
             jQuery("#confirm-remove-modal").modal('hide');
             me.showActionWaiterBanner('remove','mailing-message-entity');
             // me.application.showBannerWaiter('wait-remove-message');
-            me.services.executeService('peanut.qnut-directory::RemoveQueuedMessage', me.messageRemoveId,
+            me.services.executeService('peanut.qnut-directory::messaging.RemoveQueuedMessage', me.messageRemoveId,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -410,7 +410,7 @@ namespace QnutDirectory {
             let me = this;
             me.messageEditForm.messageId = item.messageId;
             me.messageEditForm.subject(item.subject);
-            me.services.executeService('peanut.qnut-directory::GetQueuedMessageText', item.messageId,
+            me.services.executeService('peanut.qnut-directory::messaging.GetQueuedMessageText', item.messageId,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -437,7 +437,7 @@ namespace QnutDirectory {
                 messageText: me.messageEditForm.messageText()
             };
             me.showActionWaiterBanner('update','mailing-message-entity');
-            me.services.executeService('peanut.qnut-directory::UpdateQueuedMessage', request,
+            me.services.executeService('peanut.qnut-directory::messaging.UpdateQueuedMessage', request,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -514,7 +514,7 @@ namespace QnutDirectory {
             if (me.valadateEmailList(request)) {
                 jQuery('#edit-list-modal').modal('hide');
                 me.showActionWaiterBanner('update','mailing-list-entity');
-                me.services.executeService('peanut.qnut-directory::UpdateMailingList', request,
+                me.services.executeService('peanut.qnut-directory::messaging.UpdateMailingList', request,
                     function (serviceResponse: Peanut.IServiceResponse) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             if (serviceResponse.Result == Peanut.serviceResultSuccess) {

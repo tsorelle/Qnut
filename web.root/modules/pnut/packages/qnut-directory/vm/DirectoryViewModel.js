@@ -60,7 +60,7 @@ var QnutDirectory;
                 me.application.hideServiceMessages();
                 me.showActionWaiterBanner('update', 'dir-address-entity');
                 me.application.showWaiter('Updating...');
-                me.services.executeService('peanut.qnut-directory::AddPersonToAddress', request, me.handleAddPersonToAddressResponse)
+                me.services.executeService('peanut.qnut-directory::membership.AddPersonToAddress', request, me.handleAddPersonToAddressResponse)
                     .always(function () {
                     me.application.hideWaiter();
                 });
@@ -73,7 +73,7 @@ var QnutDirectory;
                 };
                 me.application.hideServiceMessages();
                 me.application.showWaiter('Updating...');
-                me.services.executeService('peanut.qnut-directory::ChangePersonAddress', request, me.handleChangePersonAddress)
+                me.services.executeService('peanut.qnut-directory::membership.ChangePersonAddress', request, me.handleChangePersonAddress)
                     .always(function () {
                     me.application.hideWaiter();
                 });
@@ -99,7 +99,7 @@ var QnutDirectory;
                 };
                 me.application.hideServiceMessages();
                 me.application.showWaiter('Locating family...');
-                me.services.executeService('peanut.qnut-directory::GetFamily', request, function (serviceResponse) {
+                me.services.executeService('peanut.qnut-directory::membership.GetFamily', request, function (serviceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         var family = serviceResponse.Value;
                         me.selectFamily(family);
@@ -186,7 +186,7 @@ var QnutDirectory;
                         personId: me.family.selectedPersonId
                     };
                     me.application.showWaiter("Adding new address for person ...");
-                    me.services.executeService('peanut.qnut-directory::NewAddressForPerson', request, me.handleChangePersonAddress)
+                    me.services.executeService('peanut.qnut-directory::membership.NewAddressForPerson', request, me.handleChangePersonAddress)
                         .always(function () {
                         me.application.hideWaiter();
                     });
@@ -194,7 +194,7 @@ var QnutDirectory;
                 else {
                     var updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
                     me.application.showWaiter(updateMessage);
-                    me.services.executeService('peanut.qnut-directory::UpdateAddress', address, function (serviceResponse) {
+                    me.services.executeService('peanut.qnut-directory::membership.UpdateAddress', address, function (serviceResponse) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             var address_1 = serviceResponse.Value;
                             var selected = me.family.setAddress(address_1);
@@ -297,7 +297,7 @@ var QnutDirectory;
             me.application.hideServiceMessages();
             var personId = Peanut.Helper.getRequestParam('pid');
             me.showLoadWaiter();
-            me.services.executeService('peanut.qnut-directory::InitializeDirectory', personId, function (serviceResponse) {
+            me.services.executeService('peanut.qnut-directory::membership.InitializeDirectory', personId, function (serviceResponse) {
                 if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                     var response = serviceResponse.Value;
                     me.userCanEdit(response.canEdit);
@@ -474,7 +474,7 @@ var QnutDirectory;
             var currentPerson = me.family.getSelected();
             me.application.hideServiceMessages();
             me.application.showWaiter('Deleting address...');
-            me.services.executeService('peanut.qnut-directory::DeleteAddress', request, function (serviceResponse) {
+            me.services.executeService('peanut.qnut-directory::membership.DeleteAddress', request, function (serviceResponse) {
                 if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                     me.family.clearAddress();
                     me.addressForm.empty();
@@ -491,7 +491,7 @@ var QnutDirectory;
             var request = me.family.selectedPersonId;
             me.application.hideServiceMessages();
             me.application.showWaiter('Delete person...');
-            me.services.executeService('peanut.qnut-directory::DeletePerson', request, function (serviceResponse) {
+            me.services.executeService('peanut.qnut-directory::membership.DeletePerson', request, function (serviceResponse) {
                 if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                     var selected = me.family.removePerson(me.family.selectedPersonId);
                     me.buildPersonSelectList(selected);
@@ -516,7 +516,7 @@ var QnutDirectory;
             };
             me.application.hideServiceMessages();
             me.application.showWaiter('Searching...');
-            me.services.executeService('peanut.qnut-directory::DirectorySearch', request, me.showAddressSearchResults)
+            me.services.executeService('peanut.qnut-directory::membership.DirectorySearch', request, me.showAddressSearchResults)
                 .always(function () {
                 me.application.hideWaiter();
             });
@@ -534,7 +534,7 @@ var QnutDirectory;
             }
             me.application.hideServiceMessages();
             me.application.showWaiter('Searching...');
-            me.services.executeService('peanut.qnut-directory::DirectorySearch', request, function (serviceResponse) {
+            me.services.executeService('peanut.qnut-directory::membership.DirectorySearch', request, function (serviceResponse) {
                 if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                     var list = serviceResponse.Value;
                     me.familiesList.setList(list);
@@ -568,7 +568,7 @@ var QnutDirectory;
             me.personsList.reset();
             me.application.hideServiceMessages();
             me.application.showWaiter('Searching...');
-            me.services.executeService('peanut.qnut-directory::DirectorySearch', request, me.showPersonSearchResults)
+            me.services.executeService('peanut.qnut-directory::membership.DirectorySearch', request, me.showPersonSearchResults)
                 .always(function () {
                 me.application.hideWaiter();
             });
@@ -601,7 +601,7 @@ var QnutDirectory;
                     addressId: me.family.address ? me.family.address.id : null
                 };
                 me.application.showWaiter("Adding new person to address ...");
-                me.services.executeService('peanut.qnut-directory::NewPersonForAddress', request, me.handleAddPersonToAddressResponse)
+                me.services.executeService('peanut.qnut-directory::membership.NewPersonForAddress', request, me.handleAddPersonToAddressResponse)
                     .always(function () {
                     me.application.hideWaiter();
                 });
@@ -609,7 +609,7 @@ var QnutDirectory;
             else {
                 var updateAction = person.editState == Peanut.editState.created ? 'add' : 'update';
                 me.showActionWaiterBanner(updateAction, 'dir-person-entity');
-                me.services.executeService('peanut.qnut-directory::UpdatePerson', person, me.handleUpdatePersonResponse)
+                me.services.executeService('peanut.qnut-directory::membership.UpdatePerson', person, me.handleUpdatePersonResponse)
                     .always(function () {
                     me.application.hideWaiter();
                 });

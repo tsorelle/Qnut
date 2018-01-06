@@ -6,7 +6,7 @@
  * Time: 10:57 AM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
 
 use Tops\services\IMessageContainer;

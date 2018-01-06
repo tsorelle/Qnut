@@ -6,7 +6,7 @@
  * Time: 6:29 AM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\membership;
 
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;

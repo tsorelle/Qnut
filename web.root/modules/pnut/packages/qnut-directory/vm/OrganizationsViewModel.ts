@@ -32,6 +32,7 @@ namespace QnutDirectory {
         confirmDeleteHeader = ko.observable('confirm delete');
         currentPage = ko.observable(1);
         maxPages = ko.observable(1);
+        refreshing = ko.observable(false);
 
         addressForm: addressObservable;
         organizationForm = {
@@ -114,6 +115,7 @@ namespace QnutDirectory {
         onPagerClick = (move: number) => {
             let pageNumber = this.currentPage() + move;
             let me = this;
+            me.refreshing(true);
             me.services.executeService('peanut.qnut-directory::organizations.GetOrganizations',
                 {pageSize: me.pageSize, pageNumber: pageNumber} ,
                 (serviceResponse: Peanut.IServiceResponse) => {
@@ -124,6 +126,9 @@ namespace QnutDirectory {
                 })
                 .fail(() => {
                     let trace = me.services.getErrorInformation();
+                })
+                .always(() => {
+                    me.refreshing(false)
                 });
         };
 

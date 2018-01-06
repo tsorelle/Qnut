@@ -6,7 +6,7 @@
  * Time: 3:01 PM
  */
 
-namespace Peanut\QnutDirectory\services;
+namespace Peanut\QnutDirectory\services\messaging;
 
 
 use Peanut\QnutDirectory\db\EMailQueue;

@@ -112,7 +112,15 @@ class TaskManager
             }
             $namespace .= "\\". TConfiguration::getValue('servicesNamespace', 'services','services');
         } else {
-            $namespace = TStrings::formatNamespace($namespace)."\\services";
+            $parts = explode('::',$namespace);
+            if (sizeof($parts) === 1) {
+                $namespace = "$namespace\\services";
+            }
+            else {
+                $subdir = array_pop($parts);
+                $namespace = $parts[0]."\\services\\$subdir";
+            }
+            // $namespace = TStrings::formatNamespace($namespace)."\\services";
         }
 
         // get subdirectories  e.g. where serviceId is 'subdirectory.serviceId'
