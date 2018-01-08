@@ -1,4 +1,5 @@
 namespace QnutDirectory {
+
     /**
      * Person DTO as returned from services
      */
@@ -78,6 +79,7 @@ namespace QnutDirectory {
         public hasErrors = ko.observable(false);
         public isAssigned = false;
         public relationId : any = null;
+
         protected owner: any;
 
         protected translator: Peanut.ITranslator;

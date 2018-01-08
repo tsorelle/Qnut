@@ -13,11 +13,9 @@
 /// <reference path='../js/PersonObservable.ts' />
 /// <reference path='../js/AddressObservable.ts' />
 
-//todo: update translations
 namespace QnutDirectory {
 
     /** Service Contracts  and related interfaces **/
-
     interface IDirectoryFamily {
         address : DirectoryAddress;
         persons: DirectoryPerson[];

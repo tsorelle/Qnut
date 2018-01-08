@@ -9,6 +9,7 @@
 namespace Peanut\QnutDirectory\db;
 
 use Peanut\QnutDirectory\db\model\entity\Address;
+use Peanut\QnutDirectory\db\model\entity\Organization;
 use Peanut\QnutDirectory\db\model\entity\Person;
 use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
 use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
@@ -117,7 +118,6 @@ class DirectoryManager
         return $this->organizationsRepository;
     }
 
-
     public function assignPersonAddress($personId,$addressId) {
         $this->getPersonsRepository()->assignPersonAddress($personId,$addressId);
     }
@@ -174,6 +174,13 @@ class DirectoryManager
         }
     }
 
+    /**
+     * @param $orgId
+     * @return bool|Organization
+     */
+    public function getOrganizationById($orgId) {
+        return $this->getOrganizationsRepository()->get($orgId);
+    }
 
     public function getAddressById($addressId,array $includes=[],array $residentIncludes=[])
     {

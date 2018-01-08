@@ -11,9 +11,16 @@ namespace Peanut\QnutDirectory\services\organizations;
 
 use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Tops\services\TServiceCommand;
+use Tops\sys\TPermissionsManager;
 
 class GetOrganizationsCommand extends TServiceCommand
 {
+
+    public function __construct()
+    {
+        $this->addAuthorization(TPermissionsManager::viewDirectoryPermissionName);
+    }
+
 
     protected function run()
     {

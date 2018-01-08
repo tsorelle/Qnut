@@ -31,61 +31,62 @@
         </div>
     </div>
     <div data-bind="visible:tab()==='view'">
-        <div class="row" id="viewbuttons">
-            <div class="col-md-12">
-                <button class="btn btn-primary" data-bind="click:editOrganization"><translate params="code:'label-edit',translator:self"></translate> </button>
-                <button class="btn btn-default" data-bind="click:confirmDeleteOrganization"><translate params="code:'organization-remove',translator:self"></translate> </button>
-            </div>
-        </div>
         <div class="row" id="orgview">
             <div class="col-md-12">
+                <h3 data-bind="text:organizationForm.name"></h3>
+
                 <form>
                     <div class="form-group">
                         <label class="control-label" for="orgCode">
-                            <translate params="code:'label-code',translator:self"></translate></label>
+                            <translate params="code:'label-code',translator:self"></translate></label>:
                         <span data-bind="text: organizationForm.code" ></span>
                     </div>
 
-                    <div class="form-group">
+                    <!-- div class="form-group">
                         <label class="control-label" for="orgName">
                             <translate params="code:'label-name',translator:self"></translate></label>
                         <span data-bind="text: organizationForm.name" ></span>
-                    </div>
+                    </div -->
 
                     <div class="form-group">
-                        <label for="organization-type" class="control-label"><translate params="code:'organizations-label-type',translator:self"></translate></label>
-                        <span data-bind="text: organizationForm.typeName"> </span>
+                        <label for="organization-type" class="control-label"><translate params="code:'organizations-label-type',translator:self"></translate></label>:
+                        <span data-bind="text: organizationForm.orgTypeName"> </span>
                     </div>
 
                     <div class="form-group">
                         <label class="control-label" for="orgDescription">
-                            <translate params="code:'label-description',translator:self"></translate></label>
+                            <translate params="code:'label-description',translator:self"></translate>:</label>
 
                         <span data-bind="text: organizationForm.description" ></span>
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label" for="orgEmail"><translate params="code:'label-email',translator:self"></translate></label>
+                        <label class="control-label" for="orgEmail"><translate params="code:'label-email',translator:self"></translate>:</label>
                         <span data-bind="text: organizationForm.email"></span>
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label" for="orgPhone"><translate params="code:'label-phone',translator:self"></translate></label>
+                        <label class="control-label" for="orgPhone"><translate params="code:'label-phone',translator:self"></translate>:</label>
                         <span data-bind="textInput: organizationForm.phone" ></span>
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label" for="orgFax"><translate params="code:'label-fax',translator:self"></translate></label>
+                        <label class="control-label" for="orgFax"><translate params="code:'label-fax',translator:self"></translate>:</label>
                         <span data-bind="text: organizationForm.fax"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate></label>
+                        <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate>:</label>
                         <span data-bind="value:organizationForm.notes"></span>
                     </div>
                 </form>
 
+                <div>
+                    <button class="btn btn-primary" data-bind="click:editOrganization"><translate params="code:'label-edit',translator:self"></translate> </button>
+                    <a href="#" data-bind="click:showList">Return to list</a><!-- todo: translate-->
+                </div>
             </div>
+
         </div>
         <div class="row" id="address-view-panel" data-bind="visible:organizationForm.addressId() > 0">
             <div class="col-md-12">
@@ -143,10 +144,18 @@
             </div>
         </div>
     </div>
-    <div  id="address-edit-panel"  data-bind="visible:tab()==='edit'">
+    <div  id="org-edit-panel"  data-bind="visible:tab()==='edit'">
+        <fieldset>
+            <legend>Organization</legend> <!-- todo:translate-->
         <div class="row" id="orgform">
             <div class="col-md-12">
                 <form>
+                    <div class="alert alert-danger" role="alert" data-bind="visible:formHasErrors">
+                        <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
+                        <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
+                        <translate params="code:'form-error-message',translator:self"></translate>
+                    </div>
+
                     <div class="form-group" data-bind="visible: organizationForm.id() === 0, css: {'has-error': organizationForm.codeError}">
                         <label class="control-label" for="orgCode">
                             <translate params="code:'label-code',translator:self"></translate></label>
@@ -158,22 +167,25 @@
                     <div class="form-group" data-bind="css: {'has-error': organizationForm.nameError}">
                         <label class="control-label" for="orgName">
                             <translate params="code:'label-name',translator:self"></translate></label>
-                        <span class="error" data-bind="visible: organizationForm.nameError"> <!-- todo: better transaltion? -->
+                        <span class="error" data-bind="visible: organizationForm.nameError">
                                     : <translate params="code:'organization-error-name',translator:self"></translate></span>
-                        <input type="text" class="form-control" id="orgName" data-bind="textInput: organizationForm.Name" />
+                        <input type="text" class="form-control" id="orgName" data-bind="textInput: organizationForm.name" />
                     </div>
 
-                    <div class="form-group">
-                        <label for="organization-type" class="control-label"><translate params="code:'organizations-label-type',translator:self"></translate></label>
+                    <div class="form-group" data-bind="css: {'has-error': organizationForm.orgTypeError}">
+                    <label class="control-label" for="organization-type">
+                        <translate params="code:'organizations-label-type',translator:self"></translate></label>
+                        <span class="error" data-bind="visible: organizationForm.orgTypeError">
+                                    : <translate params="code:'organization-error-type',translator:self"></translate></span>
                         <select class="form-control" id="organization-type"
-                                data-bind="options: organizationTypes,optionsText:'name',value: organizationForm.selectedOrganizationType">
+                                data-bind="options: organizationForm.organizationTypes,optionsText:'name',
+                                value: organizationForm.selectedOrganizationType, optionsCaption: organizationForm.typeListCaption">
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label class="control-label" for="orgDescription">
                             <translate params="code:'label-description',translator:self"></translate></label>
-
                         <input type="text" class="form-control" id="orgDescription" data-bind="textInput: organizationForm.description" />
                     </div>
 
@@ -182,11 +194,6 @@
                         <span class="error" data-bind="visible: organizationForm.emailError">
                                     :  <translate params="code:'form-error-email-invalid',translator:self"></translate></span>
                         <input type="email" class="form-control" id="orgEmail" data-bind="textInput: organizationForm.email" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate></label>
-                        <textarea class="form-control" id="organization-notes-input" data-bind="value:organizationForm.notes"></textarea>
                     </div>
 
 
@@ -200,23 +207,23 @@
                         <input type="text" class="form-control" id="orgFax" data-bind="textInput: organizationForm.fax" />
                     </div>
 
+                    <div class="form-group">
+                        <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate></label>
+                        <textarea class="form-control" id="organization-notes-input" data-bind="value:organizationForm.notes"></textarea>
+                    </div>
 
-                    <div>
-                        <button class="btn btn-default" data-bind="click:createAddress,visible:organizationForm.addressId() === null">Create address</button>
+                    <div class="form-group" data-bind="visible:organizationForm.addressId()===null">
+                        <label for="address" class="control-label"><translate params="code:'label-address',translator:self"></translate>:</label>
+                        <button id="address" class="btn btn-link" data-bind="click:createAddress">Create address...</button><!--todo:translate-->
                     </div>
                 </form>
             </div>
         </div>
-        <div class="row" id="addressform" data-bind="visible:organizationForm.id() !== null">
+        </fieldset>
+        <fieldset id="address-form"  data-bind="visible:organizationForm.addressId() !== null">
+            <legend ><translate params="code:'dir-entity-label-address',translator:self"></translate> </legend>
+        <div class="row" id="addressform" >
             <div class="col-md-12">
-                <fieldset id="address-form" >
-                    <legend ><translate params="code:'dir-entity-label-address',translator:self"></translate> </legend>
-                </fieldset>
-                <div class="alert alert-danger" role="alert" data-bind="visible:addressForm.hasErrors">
-                    <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
-                    <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
-                    <translate params="code:'form-error-message',translator:self"></translate>
-                </div>
                 <div class="form-group">
                     <label for="address-type" class="control-label"><translate params="code:'dir-label-address-type',translator:self"></translate></label>
                     <select class="form-control" id="address-type"
@@ -295,9 +302,12 @@
                 </div>
             </div>
         </div>
+        </fieldset>
+
         <div class="row" id="editbuttons">
             <div class="col-md-12">
                     <button class="btn btn-primary" data-bind="click:confirmSaveOrganization"><translate params="code:'label-save',translator:self"></translate> </button>
+                    <button class="btn btn-default" data-bind="click:confirmDeleteOrganization" style="margin-right:10px"><translate params="code:'organization-remove',translator:self"></translate> </button>
                     <button class="btn btn-default" data-bind="click:cancelOrganizationEdit"><translate params="code:'label-cancel',translator:self"></translate> </button>
             </div>
         </div>

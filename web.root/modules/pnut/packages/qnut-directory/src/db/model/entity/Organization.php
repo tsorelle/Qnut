@@ -16,4 +16,5 @@ class Organization  extends NamedEntity
     public $phone;
     public $fax;
     public $notes;
+
 }

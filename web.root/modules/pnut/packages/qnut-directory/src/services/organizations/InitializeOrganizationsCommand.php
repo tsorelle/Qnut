@@ -13,10 +13,16 @@ use Peanut\QnutDirectory\db\DirectoryManager;
 use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
+use Tops\sys\TPermissionsManager;
 use Tops\sys\TUser;
 
 class InitializeOrganizationsCommand extends TServiceCommand
 {
+    public function __construct()
+    {
+        $this->addAuthorization(TPermissionsManager::viewDirectoryPermissionName);
+    }
+
     protected function run()
     {
         $pageSize = 0;
@@ -89,6 +95,7 @@ class InitializeOrganizationsCommand extends TServiceCommand
                 'organization-confirm-save-header',
                 'organization-confirm-save-text',
                 'organization-error-name',
+                'organization-error-type',
                 'organizations-list-heading',
                 'organization-remove',
                 'organizations-label-add-new',
