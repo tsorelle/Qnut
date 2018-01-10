@@ -1,4 +1,5 @@
 /// <reference path="../../../../pnut/core/ViewModelBase.ts" />
+/// <reference path="../../../../pnut/core/KnockoutHelper.ts" />
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
 /// <reference path='../../../../typings/jqueryui/jqueryui.d.ts' />
 /// <reference path='../../../../typings/jqueryui/jqueryui.d.ts' />
@@ -8,6 +9,8 @@
 /// <reference path='../js/AddressObservable.ts' />
 
 namespace QnutDirectory {
+
+    import ITranslator = Peanut.ITranslator;
 
     interface IOrganization extends Peanut.INamedEntity {
         addressId : any;
@@ -68,19 +71,22 @@ namespace QnutDirectory {
         changedby = ko.observable('');
         changedon = ko.observable('');
 
-        codeError  = ko.observable(false);
+        codeError  = ko.observable('');
         nameError  = ko.observable(false);
         emailError = ko.observable(false);
         orgTypeError = ko.observable(false);
         hasErrors = ko.observable(false);
         organizationTypes = ko.observableArray<Peanut.ILookupItem>();
         typeListCaption = ko.observable('');
+        translator: ITranslator;
 
-
+        constructor(owner: ITranslator) {
+            this.translator = owner;
+        };
 
         clearErrors() {
             let me = this;
-            me.codeError(false);
+            me.codeError('');
             me.nameError(false);
             me.emailError(false);
             me.orgTypeError(false);
@@ -130,13 +136,14 @@ namespace QnutDirectory {
         validate() {
             let me = this;
             me.clearErrors();
+
             let valid = true;
             let org = <IOrganization> {
                 id          : me.id  (),
                 addressId   : me.addressId(),
-                code        : me.code() ? me.code() : me.code().trim(),
-                name        : me.name() ? me.name() : me.name().trim(),
-                email       : me.email()  ? me.email() : me.email().trim(),
+                code        : Peanut.KnockoutHelper.GetInputValue(me.code),
+                name        : Peanut.KnockoutHelper.GetInputValue(me.name),
+                email       : Peanut.KnockoutHelper.GetInputValue(me.email),
                 phone       : me.phone(),
                 fax         : me.fax (),
                 notes       : me.notes(),
@@ -152,7 +159,7 @@ namespace QnutDirectory {
 
             if (!org.code) {
                 valid = false;
-                me.codeError(true);
+                me.codeError(me.translator.translate('organization-code-error-blank'));
             }
 
             if (org.email) {
@@ -181,6 +188,7 @@ namespace QnutDirectory {
         confirmSaveText = ko.observable('confirm save');
         confirmSaveHeader = ko.observable('confirm save');
         confirmDeleteText = ko.observable('confirm delete');
+        useOrganizationNameForAddress = ko.observable(true);
 
         confirmDeleteHeader = ko.observable('confirm delete');
         currentPage = ko.observable(1);
@@ -188,10 +196,12 @@ namespace QnutDirectory {
         refreshing = ko.observable(false);
 
         addressForm: addressObservable;
-        organizationForm = new organizationObservable();
+        organizationForm = new organizationObservable(this);
 
         organizationsList = ko.observableArray<IOrganizationListItem>();
         formHasErrors = ko.observable(false);
+
+        updateRequest = null;
 
         init(successFunction?: () => void) {
             let me = this;
@@ -263,9 +273,11 @@ namespace QnutDirectory {
                         let response = <IGetOrganizationResponse>serviceResponse.Value;
                         me.organizationForm.assign(response.organization);
                         if (response.address) {
+                            me.useOrganizationNameForAddress((!response.address.addressname) || (response.address.addressname == response.organization.name));
                             me.addressForm.assign(response.address);
                         }
                         else {
+                            me.useOrganizationNameForAddress(true);
                             me.addressForm.clear();
                         }
                         me.tab('view');
@@ -299,6 +311,8 @@ namespace QnutDirectory {
         newOrganization = () => {
             let me = this;
             me.organizationForm.clearForm();
+            me.organizationForm.id(0);
+            me.useOrganizationNameForAddress(true);
             me.tab('edit');
         };
 
@@ -322,19 +336,71 @@ namespace QnutDirectory {
             me.organizationForm.addressId(0);
         };
 
+        removeAddress = () => {
+            let me = this;
+            me.organizationForm.addressId(null);
+        };
+
         confirmDeleteOrganization = () => {
             let me = this;
         };
 
+        validateAddress() {
+            let me = this;
+            if (me.organizationForm.addressId() === null) {
+                return null;
+            }
+            if (!me.addressForm.validate()) {
+                return false;
+            }
+            let address =  new DirectoryAddress();
+            me.addressForm.updateDirectoryAddress(address);
+            address.editState = me.organizationForm.addressId() === 0 ? Peanut.editState.created : Peanut.editState.updated;
+            return address;
+        };
+
         confirmSaveOrganization = () => {
             let me = this;
+            me.updateRequest = null;
+            me.formHasErrors(false);
+            let org = me.organizationForm.validate();
+            if (me.useOrganizationNameForAddress()) {
+                if (!me.organizationForm.name()) {
+                    me.formHasErrors(true);
+                    return;
+                }
+                me.addressForm.addressname(me.organizationForm.name());
+            }
+            let address = me.validateAddress();
+            if (org === false || address === false) {
+                me.formHasErrors(true);
+                return;
+            }
+            me.formHasErrors(false);
+            me.updateRequest = {
+                organization: org,
+                address: address
+            };
+            if (me.organizationForm.addressId() !== null) {
+                me.updateRequest.address =  new DirectoryAddress();
+                me.addressForm.updateDirectoryAddress(me.updateRequest.address);
+                me.updateRequest.address.editState = me.organizationForm.addressId() === 0 ? Peanut.editState.created : Peanut.editState.updated;
+            }
+
+            jQuery('#confirm-save-modal').modal('show');
         };
         saveOrganization = () => {
             let me = this;
+
+            jQuery('#confirm-save-modal').modal('hide');
+            me.tab('view');
+            alert('Save organization ' + me.updateRequest.organization.name);
         };
         cancelOrganizationEdit = () => {
             let me = this;
-            me.tab('view');
+            me.tab(
+                this.organizationForm.id() === 0 ? 'list' : 'view'
+            );
         };
         deleteOrganization = () => {
             let me = this;

@@ -48,9 +48,6 @@ class InitializeOrganizationsCommand extends TServiceCommand
         $user = TUser::getCurrent();
 
         $response->canEdit = $user->isAuthorized('administer directory');
-
-        // $response->organizations = $manager->getOrganizationsList(DirectoryManager::listDefaultFirst);
-
         $response->listingTypes = $manager->getDirectoryListingTypeList();
         $response->addressTypes = $manager->getAddressTypeList();
         $response->affiliationRoles = $manager->getAffiliationRolesList();
@@ -64,6 +61,7 @@ class InitializeOrganizationsCommand extends TServiceCommand
                 'dir-label-country',
                 'dir-label-directory-listing',
                 'dir-label-organization',
+                'dir-label-organization',
                 'dir-label-organization-type',
                 'dir-label-pocode',
                 'dir-label-sort-key',
@@ -71,10 +69,13 @@ class InitializeOrganizationsCommand extends TServiceCommand
                 'dir-label-street-address',
                 'dir-label-subscriptions',
                 'form-error-email-invalid',
+                'form-error-name-blank',
                 'form-error-message',
                 'label-address',
                 'label-cancel',
                 'label-code',
+                'label-create-address',
+                'label-delete',
                 'label-description',
                 'label-details',
                 'label-edit',
@@ -88,18 +89,21 @@ class InitializeOrganizationsCommand extends TServiceCommand
                 'label-page',
                 'label-phone',
                 'label-previous',
+                'label-remove-address',
+                'label-return-list',
                 'label-save',
                 'label-updated',
+                'organization-code-error-blank',
                 'organization-confirm-delete-header',
                 'organization-confirm-delete-text',
                 'organization-confirm-save-header',
                 'organization-confirm-save-text',
                 'organization-error-name',
                 'organization-error-type',
-                'organizations-list-heading',
                 'organization-remove',
                 'organizations-label-add-new',
                 'organizations-label-type',
+                'organizations-list-heading',
                 'validation-code-blank'
             ]
         );

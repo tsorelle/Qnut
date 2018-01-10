@@ -82,8 +82,8 @@
                 </form>
 
                 <div>
-                    <button class="btn btn-primary" data-bind="click:editOrganization"><translate params="code:'label-edit',translator:self"></translate> </button>
-                    <a href="#" data-bind="click:showList">Return to list</a><!-- todo: translate-->
+                    <button class="btn btn-primary" data-bind="click:editOrganization" style="margin-right: 10px"><translate params="code:'label-edit',translator:self"></translate> </button>
+                    <a href="#" data-bind="click:showList"><translate params="code:'label-return-list',translator:self"></translate></a>
                 </div>
             </div>
 
@@ -146,21 +146,15 @@
     </div>
     <div  id="org-edit-panel"  data-bind="visible:tab()==='edit'">
         <fieldset>
-            <legend>Organization</legend> <!-- todo:translate-->
+            <legend><translate params="code:'dir-label-organization',translator:self"></translate></legend>
         <div class="row" id="orgform">
             <div class="col-md-12">
                 <form>
-                    <div class="alert alert-danger" role="alert" data-bind="visible:formHasErrors">
-                        <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
-                        <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
-                        <translate params="code:'form-error-message',translator:self"></translate>
-                    </div>
-
                     <div class="form-group" data-bind="visible: organizationForm.id() === 0, css: {'has-error': organizationForm.codeError}">
                         <label class="control-label" for="orgCode">
                             <translate params="code:'label-code',translator:self"></translate></label>
                         <span class="error" data-bind="visible: organizationForm.codeError">
-                                    : <translate params="code:'validation-code-blank',translator:self"></translate></span>
+                            :</span> <span  class="error"  data-bind="text:organizationForm.codeError" ></span>
                         <input type="text" class="form-control" id="orgCode" data-bind="textInput: organizationForm.code" />
                     </div>
 
@@ -214,7 +208,7 @@
 
                     <div class="form-group" data-bind="visible:organizationForm.addressId()===null">
                         <label for="address" class="control-label"><translate params="code:'label-address',translator:self"></translate>:</label>
-                        <button id="address" class="btn btn-link" data-bind="click:createAddress">Create address...</button><!--todo:translate-->
+                        <button id="address" class="btn btn-link" data-bind="click:createAddress"><translate params="code:'label-create-address',translator:self"></translate>...</button>
                     </div>
                 </form>
             </div>
@@ -224,6 +218,7 @@
             <legend ><translate params="code:'dir-entity-label-address',translator:self"></translate> </legend>
         <div class="row" id="addressform" >
             <div class="col-md-12">
+
                 <div class="form-group">
                     <label for="address-type" class="control-label"><translate params="code:'dir-label-address-type',translator:self"></translate></label>
                     <select class="form-control" id="address-type"
@@ -232,15 +227,9 @@
                 </div>
                 <div class="form-group" data-bind="css:{'has-error': addressForm.addressNameError}" >
                     <label for="addressname-input" class="control-label"><translate params="code:'dir-label-address-name',translator:self"></translate><span data-bind="text:addressForm.addressNameError"></span></label>
-                    <input class="form-control" id="addressname-input" data-bind="value:addressForm.addressname"/>
-                </div>
-                <div class="form-group">
-                    <label for="address-sortkey-input" class="control-label"><translate params="code:'dir-label-sort-key',translator:self"></translate></label>
-
-                    <div class="input-group" style="">
-                        <input class="form-control" id="address-sortkey-input" data-bind="value:addressForm.sortkey"/>
-                        <span class="input-group-btn"><button class="btn btn-default" type="button" tabindex="-1" data-bind="click:addressForm.refreshSortKey">
-		                        <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
+                    <input class="form-control" id="addressname-input" data-bind="value:addressForm.addressname,visible:!useOrganizationNameForAddress()"/>
+                    <div class="checkbox">
+                        <label><input type="checkbox" data-bind="checked:useOrganizationNameForAddress">Use organization name</label>
                     </div>
                 </div>
 
@@ -302,17 +291,26 @@
                 </div>
             </div>
         </div>
+            <div class="form-group" >
+                <button id="address2" class="btn btn-link" data-bind="click:removeAddress"><translate params="code:'label-remove-address',translator:self"></translate></button>
+            </div>
         </fieldset>
 
-        <div class="row" id="editbuttons">
+        <div class="row" id="editbuttons" style="margin-bottom: 10px">
+            <div class="alert alert-danger" role="alert" data-bind="visible:formHasErrors">
+                <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
+                <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
+                <translate params="code:'form-error-message',translator:self"></translate>
+            </div>
+
             <div class="col-md-12">
                     <button class="btn btn-primary" data-bind="click:confirmSaveOrganization"><translate params="code:'label-save',translator:self"></translate> </button>
-                    <button class="btn btn-default" data-bind="click:confirmDeleteOrganization" style="margin-right:10px"><translate params="code:'organization-remove',translator:self"></translate> </button>
+                    <button class="btn btn-default" data-bind="click:confirmDeleteOrganization" style="margin-right:10px"><translate params="code:'label-delete',translator:self"></translate> </button>
                     <button class="btn btn-default" data-bind="click:cancelOrganizationEdit"><translate params="code:'label-cancel',translator:self"></translate> </button>
             </div>
         </div>
     </div> <!-- end address edit form -->
+    <modal-confirm params="id:'confirm-save-modal',headerText: confirmSaveHeader, bodyText: confirmSaveText, confirmClick: saveOrganization"></modal-confirm>
+    <modal-confirm params="id:'confirm-delete-modal',headerText: confirmDeleteHeader, bodyText: confirmDeleteText, confirmClick: deleteOrganization"></modal-confirm>
 </div>
-<modal-confirm params="id:'confirm-save-modal',headerText: confirmSaveHeader, bodyText: confirmSaveText, confirmClick: saveOrganization"></modal-confirm>
-<modal-confirm params="id:'confirm-delete-modal',headerText: confirmDeleteHeader, bodyText: confirmDeleteText, confirmClick: deleteOrganization"></modal-confirm>
 <!-- end div container -->

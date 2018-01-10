@@ -143,6 +143,7 @@ namespace QnutDirectory {
             let me = this;
             me.viewState(state);
         }
+
     }
 
     export interface ISubscriptionListItem extends Peanut.ILookupItem  {
