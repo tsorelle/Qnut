@@ -67,7 +67,7 @@
 
                     <div class="form-group">
                         <label class="control-label" for="orgPhone"><translate params="code:'label-phone',translator:self"></translate>:</label>
-                        <span data-bind="textInput: organizationForm.phone" ></span>
+                        <span data-bind="text: organizationForm.phone" ></span>
                     </div>
 
                     <div class="form-group">
@@ -77,14 +77,10 @@
 
                     <div class="form-group">
                         <label for="organization-notes-input" class="control-label"><translate params="code:'label-notes',translator:self"></translate>:</label>
-                        <span data-bind="value:organizationForm.notes"></span>
+                        <span data-bind="text:organizationForm.notes"></span>
                     </div>
                 </form>
 
-                <div>
-                    <button class="btn btn-primary" data-bind="click:editOrganization" style="margin-right: 10px"><translate params="code:'label-edit',translator:self"></translate> </button>
-                    <a href="#" data-bind="click:showList"><translate params="code:'label-return-list',translator:self"></translate></a>
-                </div>
             </div>
 
         </div>
@@ -142,6 +138,10 @@
                 </fieldset>
             </form>
             </div>
+        </div>
+        <div style="margin-top: 6px">
+            <button class="btn btn-primary" data-bind="click:editOrganization" style="margin-right: 10px"><translate params="code:'label-edit',translator:self"></translate> </button>
+            <a href="#" data-bind="click:showList"><translate params="code:'label-return-list',translator:self"></translate></a>
         </div>
     </div>
     <div  id="org-edit-panel"  data-bind="visible:tab()==='edit'">

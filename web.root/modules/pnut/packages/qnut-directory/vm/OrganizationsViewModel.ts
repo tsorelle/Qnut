@@ -10,8 +10,6 @@
 
 namespace QnutDirectory {
 
-    import ITranslator = Peanut.ITranslator;
-
     interface IOrganization extends Peanut.INamedEntity {
         addressId : any;
         organizationType : any ;
@@ -78,9 +76,9 @@ namespace QnutDirectory {
         hasErrors = ko.observable(false);
         organizationTypes = ko.observableArray<Peanut.ILookupItem>();
         typeListCaption = ko.observable('');
-        translator: ITranslator;
+        translator: Peanut.ITranslator;
 
-        constructor(owner: ITranslator) {
+        constructor(owner: Peanut.ITranslator) {
             this.translator = owner;
         };
 
@@ -163,7 +161,7 @@ namespace QnutDirectory {
             }
 
             if (org.email) {
-                valid = (!Peanut.Helper.ValidateEmail(org.email));
+                valid = Peanut.Helper.ValidateEmail(org.email);
                 if (!valid) {
                     me.emailError(true);
                 }
@@ -265,21 +263,27 @@ namespace QnutDirectory {
             });
         }
 
+        private handleGetOrganizationResponse(response: IGetOrganizationResponse) {
+            let me = this;
+            me.organizationForm.assign(response.organization);
+            if (response.address) {
+                me.useOrganizationNameForAddress((!response.address.addressname) || (response.address.addressname == response.organization.name));
+                me.addressForm.assign(response.address);
+            }
+            else {
+                me.useOrganizationNameForAddress(true);
+                me.addressForm.clear();
+            }
+
+        }
+
         private getOrganization(id: any) {
             let me = this;
             me.services.executeService('peanut.qnut-directory::organizations.GetOrganization', id,
                 (serviceResponse: Peanut.IServiceResponse) => {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IGetOrganizationResponse>serviceResponse.Value;
-                        me.organizationForm.assign(response.organization);
-                        if (response.address) {
-                            me.useOrganizationNameForAddress((!response.address.addressname) || (response.address.addressname == response.organization.name));
-                            me.addressForm.assign(response.address);
-                        }
-                        else {
-                            me.useOrganizationNameForAddress(true);
-                            me.addressForm.clear();
-                        }
+                        me.handleGetOrganizationResponse(response);
                         me.tab('view');
                     }
                 })
@@ -381,6 +385,7 @@ namespace QnutDirectory {
             if (me.organizationForm.addressId() !== null) {
                 me.updateRequest.address =  new DirectoryAddress();
                 me.addressForm.updateDirectoryAddress(me.updateRequest.address);
+                me.updateRequest.address.id = me.organizationForm.addressId();
                 me.updateRequest.address.editState = me.organizationForm.addressId() === 0 ? Peanut.editState.created : Peanut.editState.updated;
             }
 
@@ -400,6 +405,7 @@ namespace QnutDirectory {
                         me.organizationsList(response.organizations);
                         me.maxPages(response.maxpages);
                         me.currentPage(1);
+                        me.handleGetOrganizationResponse(<IGetOrganizationResponse>serviceResponse.Value);
                         me.tab('view');
                     }
                     else  {

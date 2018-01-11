@@ -189,6 +189,10 @@ class DirectoryManager
         return $this->getOrganizationsRepository()->get($orgId);
     }
 
+    public function getOrganizationByCode($code) {
+        return $this->getOrganizationsRepository()->getEntityByCode($code);
+    }
+
     public function getAddressById($addressId,array $includes=[],array $residentIncludes=[])
     {
         /**
@@ -418,6 +422,11 @@ class DirectoryManager
         return empty($id) ? false: $id;
     }
 
+    /**
+     * @param $dto
+     * @param null | \stdClass $address
+     * @return int
+     */
     public function updateOrganization($dto,$address=null) {
         if (empty($dto->code)) {
             return self::errorNoCode;
@@ -440,8 +449,19 @@ class DirectoryManager
             return self::errorDuplicateCode;
         }
 
+        if ($address !== null) {
+            if ($address->id === 0) {
+                $dto->addressId = $this->createAddressFromDto($address);
+            }
+            else {
+                $this->updateAddressFromDto($address);
+            }
+        }
+
+        $organization->assignFromObject($dto);
+        $orgRepository->update($dto,$this->username);
+
         return self::noError;
-        // todo:: implement updateOrganization
 
     }
 

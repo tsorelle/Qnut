@@ -11,6 +11,7 @@ namespace Peanut\QnutDirectory\services\organizations;
 
 use Peanut\PeanutTasks\TaskQueueEntry;
 use Peanut\QnutDirectory\db\DirectoryManager;
+use Peanut\QnutDirectory\db\model\entity\Address;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
@@ -62,6 +63,8 @@ use Tops\sys\TPermissionsManager;
  *      Success Response:
  *          {
  *              maxPages: number
+ *              organization: IOrganization
+ *              address: IAddress
  *              organizations: Array of
  *                  interface IOrganizationListItem {
  *                      id: any,
@@ -104,19 +107,29 @@ class UpdateOrganizationCommand extends TServiceCommand
                 empty($request->address) ? null : $request->address
             );
 
-        if ($errorCode == DirectoryManager::errorDuplicateCode) {
-            $response = new \stdClass();
-            $response->errortype = 'duplicate-code';
-            $response->errormessage = TLanguage::text('organization-code-error');
+        $response = new \stdClass();
+        if ($errorCode) {
+            switch($errorCode) {
+                case DirectoryManager::errorDuplicateCode :
+                    $response->errortype = 'duplicate-code';
+                    $response->errormessage = TLanguage::text('organization-code-error');
+                    break;
+            }
             $this->setReturnValue($response);
             return;
         }
 
-        // TODO: Implement run() method. UpdateOrganization
-
         $response = $manager->getOrganizationsList($pageNumber,$pageSize);
+        $response->organization = $manager->getOrganizationByCode($request->organization->code);
+        if (empty($response->organization->addressId)) {
+            $response->address = null;
+        }
+        else {
+            $response->address = $manager->getAddressById($response->organization->addressId, [Address::postalSubscriptionsProperty]);
+            if (empty($response->address)) {
+                $response->organization->addressId = null; // address may have been deleted
+            }
+        }
         $this->setReturnValue($response);
-
-
     }
 }
