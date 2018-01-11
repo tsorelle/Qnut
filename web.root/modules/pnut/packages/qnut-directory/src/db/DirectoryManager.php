@@ -33,6 +33,13 @@ class DirectoryManager
 
     const affiliationCollection = 'affiliations';
 
+    const noError = 0;
+    const errorNoCode = 1;
+    const errorNoId = 2;
+    const errorDuplicateCode = 3;
+    const errorEntityNoFound = 4;
+    const errorUnknownFailure = 5;
+
     /**
      * @var IMessageContainer $messages
      */
@@ -248,7 +255,7 @@ class DirectoryManager
         return $repository->getLookupList();
     }
 
-    public function getOrganizationsList($defaultFirst = false)
+    public function getOrganizationsLookupList($defaultFirst = false)
     {
         // clear cache for testing only. Comment out for production.
         // TVariables::Clear();
@@ -271,6 +278,17 @@ class DirectoryManager
 
         }
         return $result;
+    }
+
+    public function getOrganizationsList($pageNumber=1,$pageSize=0,$showInactive=false) {
+        $repository = $this->getOrganizationsRepository();
+        $response = new \stdClass();
+        $response->organizations = $repository->getOrganizationsList($pageNumber,$pageSize,$showInactive);
+        if ($pageNumber === 1) {
+            $count = $repository->getCount($showInactive);
+            $response->maxpages = $pageSize == 0 ? 0 : ceil($count / $pageSize);
+        }
+        return $response;
     }
 
     public function getAffiliationRolesList()
@@ -398,6 +416,33 @@ class DirectoryManager
         }
         $id = $this->addAddress($address);
         return empty($id) ? false: $id;
+    }
+
+    public function updateOrganization($dto,$address=null) {
+        if (empty($dto->code)) {
+            return self::errorNoCode;
+        }
+        $orgEntity = TLanguage::text('organization-entity');
+        $orgRepository = $this->getOrganizationsRepository();
+        $organization = $orgRepository->getEntityByCode($dto->code);
+        $isNew = empty($dto->id);
+        if (empty($organization)) {
+            if ($isNew) {
+                $organization = new Organization();
+            }
+            else {
+                $this->messages->addErrorMessage('error-entity-code-not-found',[$orgEntity,$dto->code]);
+                return self::errorEntityNoFound;
+            }
+        }
+        else if ($isNew) {
+            $this->messages->AddErrorMessage('form-error-code-blank');
+            return self::errorDuplicateCode;
+        }
+
+        return self::noError;
+        // todo:: implement updateOrganization
+
     }
 
 

@@ -56,7 +56,7 @@ class InitializeDirectoryCommand extends TServiceCommand
 
         $result->canEdit = $user->isAuthorized('administer directory');
 
-        $result->organizations = $manager->getOrganizationsList(DirectoryManager::listDefaultFirst);
+        $result->organizations = $manager->getOrganizationsLookupList(DirectoryManager::listDefaultFirst);
 
         $result->listingTypes = $manager->getDirectoryListingTypeList();
         $result->addressTypes = $manager->getAddressTypeList();

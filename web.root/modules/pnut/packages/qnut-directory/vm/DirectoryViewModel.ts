@@ -700,8 +700,11 @@ namespace QnutDirectory {
                     });
             }
             else {
-                let updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
-                me.application.showWaiter(updateMessage);
+                me.showActionWaiterBanner(
+                    address.editState == Peanut.editState.created ? 'add' : 'update','address-entity'
+                );
+                // let updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
+                // me.application.showWaiter(updateMessage);
                 me.services.executeService('peanut.qnut-directory::membership.UpdateAddress',address,
                     (serviceResponse: Peanut.IServiceResponse) => {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {

@@ -192,8 +192,7 @@ var QnutDirectory;
                     });
                 }
                 else {
-                    var updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
-                    me.application.showWaiter(updateMessage);
+                    me.showActionWaiterBanner(address.editState == Peanut.editState.created ? 'add' : 'update', 'address-entity');
                     me.services.executeService('peanut.qnut-directory::membership.UpdateAddress', address, function (serviceResponse) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             var address_1 = serviceResponse.Value;

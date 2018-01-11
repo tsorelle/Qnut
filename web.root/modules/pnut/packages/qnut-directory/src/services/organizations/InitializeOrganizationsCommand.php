@@ -10,7 +10,6 @@ namespace Peanut\QnutDirectory\services\organizations;
 
 
 use Peanut\QnutDirectory\db\DirectoryManager;
-use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
@@ -27,7 +26,6 @@ class InitializeOrganizationsCommand extends TServiceCommand
     {
         $pageSize = 0;
         $pageNumber = 1;
-        $includeInactive = false;
         $request = $this->getRequest();
         if (!empty($request)) {
             if (!empty($request->pageSize)) {
@@ -36,15 +34,13 @@ class InitializeOrganizationsCommand extends TServiceCommand
             if (!empty($request->pageNumber)) {
                 $pageNumber = $request->pageNumber;
             }
-            $includeInactive = empty($request->includeInactive);
         }
         $response = new \stdClass();
-        $repository = new OrganizationsRepository();
-        $response->organizations = $repository->getOrganizationsList($pageNumber,$pageSize);
-        $count = $repository->getCount($includeInactive);
-        $response->maxPages = $pageSize == 0 ? 0 : ceil($count / $pageSize);
-
         $manager = new DirectoryManager($this->getMessages());
+        $list = $manager->getOrganizationsList($pageNumber,$pageSize);
+        $response->organizations = $list->organizations;
+        $response->maxPages = $list->maxpages;
+
         $user = TUser::getCurrent();
 
         $response->canEdit = $user->isAuthorized('administer directory');
@@ -110,8 +106,6 @@ class InitializeOrganizationsCommand extends TServiceCommand
 
         $response->translations['dir-entity-label-addresses'] = ucfirst(TLanguage::text('dir-address-entity-plural'));
         $response->translations['dir-entity-label-address']   = ucfirst(TLanguage::text('dir-address-entity'));
-
-
 
         $this->setReturnValue($response);
     }

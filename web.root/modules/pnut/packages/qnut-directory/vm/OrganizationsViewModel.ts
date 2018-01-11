@@ -341,10 +341,6 @@ namespace QnutDirectory {
             me.organizationForm.addressId(null);
         };
 
-        confirmDeleteOrganization = () => {
-            let me = this;
-        };
-
         validateAddress() {
             let me = this;
             if (me.organizationForm.addressId() === null) {
@@ -378,6 +374,7 @@ namespace QnutDirectory {
             }
             me.formHasErrors(false);
             me.updateRequest = {
+                pageSize: me.pageSize,
                 organization: org,
                 address: address
             };
@@ -389,12 +386,41 @@ namespace QnutDirectory {
 
             jQuery('#confirm-save-modal').modal('show');
         };
+
         saveOrganization = () => {
             let me = this;
-
             jQuery('#confirm-save-modal').modal('hide');
-            me.tab('view');
-            alert('Save organization ' + me.updateRequest.organization.name);
+            me.showActionWaiterBanner(
+                me.updateRequest.organizationId == 0 ? 'add' : 'update','organization-entity'
+            );
+            me.services.executeService('peanut.qnut-directory::organizations.UpdateOrganization',me.updateRequest,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let response = <IGetOrganizationsResponse>serviceResponse.Value;
+                        me.organizationsList(response.organizations);
+                        me.maxPages(response.maxpages);
+                        me.currentPage(1);
+                        me.tab('view');
+                    }
+                    else  {
+                        let response = serviceResponse.Value || {};
+                        if (response.errortype) {
+                            switch (response.errortype) {
+                                case 'duplicate-code' :
+                                    me.organizationForm.codeError(response.errormessage);
+                                    me.formHasErrors(true);
+                                    break;
+                            }
+                        }
+                    }
+                }
+            ).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                me.updateRequest = null;
+                me.application.hideWaiter();
+            });
+
         };
         cancelOrganizationEdit = () => {
             let me = this;
@@ -402,8 +428,34 @@ namespace QnutDirectory {
                 this.organizationForm.id() === 0 ? 'list' : 'view'
             );
         };
+
+        confirmDeleteOrganization = () => {
+            let me = this;
+            jQuery('#confirm-delete-modal').modal('show');
+        };
+
         deleteOrganization = () => {
             let me = this;
+            me.showActionWaiterBanner('delete','organization-entity');
+            me.services.executeService('peanut.qnut-directory::organizations.DeleteOrganization',
+                {
+                    id: me.organizationForm.id(),
+                    pageSize: me.pageSize,
+                },
+
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        me.organizationsList(<IOrganizationListItem[]>serviceResponse.Value);
+                        me.currentPage(1);
+                        jQuery('#confirm-delete-modal').modal('hide');
+                        me.tab('view');
+                    }
+                }
+            ).fail(() => {
+                let trace = me.services.getErrorInformation();
+            }).always(() => {
+                me.application.hideWaiter();
+            });
         };
     }
 }
