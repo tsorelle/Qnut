@@ -7,6 +7,7 @@
 namespace Peanut\QnutDirectory\db\model\entity;
 
 use Tops\db\NamedEntity;
+use Tops\db\TimeStampedEntity;
 
 class Organization  extends NamedEntity
 {

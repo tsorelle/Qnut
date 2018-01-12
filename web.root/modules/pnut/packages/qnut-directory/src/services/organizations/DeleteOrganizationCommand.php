@@ -9,6 +9,7 @@
 namespace Peanut\QnutDirectory\services\organizations;
 
 
+use Peanut\QnutDirectory\db\DirectoryManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TPermissionsManager;
 
@@ -49,13 +50,15 @@ class DeleteOrganizationCommand extends TServiceCommand
             $this->addErrorMessage('service-no-request');
             return;
         }
-        $pageSize = 0;
-        $pageNumber = 1;
-        $includeInactive = false;
-        if (!empty($request->pageSize)) {
-            $pageSize = $request->pageSize;
+        if (empty($request->id)) {
+            $this->addErrorMessage('error-no-id');
+            return;
         }
+        $pageSize = empty($request->pageSize) ? 0 : $request->pageSize;
 
-        // TODO: Implement run() method.  Delete Org
+        $manager = new DirectoryManager($this->getMessages(),$this->getUser()->getUserName());
+        $manager->removeOrganization($request->id);
+        $response = $manager->getOrganizationsList(1,$pageSize);
+        $this->setReturnValue($response);
     }
 }

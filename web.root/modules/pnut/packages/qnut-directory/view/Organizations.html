@@ -1,5 +1,6 @@
 <div id="organizations-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="organizations-view-container" class="row" style="display: none">
+    <div class="col-md-12">
     <div data-bind="visible:tab()==='list'">
         <div style="margin-bottom: 10px; margin-top: 5px">
             <a href="#" data-bind="click: newOrganization"><translate params="code:'organizations-label-add-new',translator:self"></translate></a>
@@ -312,5 +313,6 @@
     </div> <!-- end address edit form -->
     <modal-confirm params="id:'confirm-save-modal',headerText: confirmSaveHeader, bodyText: confirmSaveText, confirmClick: saveOrganization"></modal-confirm>
     <modal-confirm params="id:'confirm-delete-modal',headerText: confirmDeleteHeader, bodyText: confirmDeleteText, confirmClick: deleteOrganization"></modal-confirm>
+    </div>
 </div>
 <!-- end div container -->

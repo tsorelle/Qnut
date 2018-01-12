@@ -238,7 +238,7 @@ namespace QnutDirectory {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = serviceResponse.Value;
                         me.organizationsList(response.organizations);
-                        me.maxPages(response.maxPages);
+                        me.maxPages(response.maxpages);
                         me.currentPage(1);
                         me.addressForm.addressTypes(response.addressTypes);
                         me.userCanEdit(response.canEdit);
@@ -251,7 +251,7 @@ namespace QnutDirectory {
                         me.confirmDeleteText(me.translate('organization-confirm-delete-text'));
                         me.confirmSaveHeader(me.translate('organization-confirm-save-header'));
                         me.confirmSaveText(me.translate('organization-confirm-save-text'));
-                        me.organizationForm.typeListCaption('organization-select-type');
+                        me.organizationForm.typeListCaption(me.translate('organization-select-caption'));
                     }
                     else {
                         me.userCanEdit(false);
@@ -447,14 +447,17 @@ namespace QnutDirectory {
                 {
                     id: me.organizationForm.id(),
                     pageSize: me.pageSize,
-                },
-
-                (serviceResponse: Peanut.IServiceResponse) => {
+                },(serviceResponse: Peanut.IServiceResponse) => {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        me.organizationsList(<IOrganizationListItem[]>serviceResponse.Value);
+                        let response = <IGetOrganizationsResponse>serviceResponse.Value;
+                        me.organizationForm.clearForm();
+                        me.addressForm.clear();
+                        me.organizationsList(response.organizations);
+                        me.maxPages(response.maxpages);
                         me.currentPage(1);
+
                         jQuery('#confirm-delete-modal').modal('hide');
-                        me.tab('view');
+                        me.tab('list');
                     }
                 }
             ).fail(() => {

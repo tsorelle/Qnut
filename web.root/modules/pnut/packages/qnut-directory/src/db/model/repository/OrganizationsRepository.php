@@ -20,11 +20,18 @@ class OrganizationsRepository extends \Tops\db\TNamedEntitiesRepository
         if (!$showInactive) {
             $sql .= 'WHERE o.active=1 ';
         }
+        $sql .= ' ORDER BY o.name';
         if ($pageSize>0) {
-            $sql .= sprintf('LIMIT %d OFFSET %d',$pageSize,($pageNumber-1) * $pageSize);
+            $sql .= sprintf(' LIMIT %d OFFSET %d ',$pageSize,($pageNumber-1) * $pageSize);
         }
         $stmt = $this->executeStatement($sql);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function deleteOrganization($organizationId) {
+        $sql = 'DELETE FROM qnut_person_affiliations WHERE organizationId = ?';
+        $this->executeStatement($sql,[$organizationId]);
+        $this->delete($organizationId);
     }
 
     protected function getTableName() {

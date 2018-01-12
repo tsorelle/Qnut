@@ -459,11 +459,19 @@ class DirectoryManager
         }
 
         $organization->assignFromObject($dto);
-        $orgRepository->update($dto,$this->username);
+        if ($isNew) {
+            $orgRepository->insert($organization,$this->username);
+        }
+        else {
+            $orgRepository->update($dto,$this->username);
+        }
 
         return self::noError;
 
     }
 
 
+    public function removeOrganization($organizationId) {
+        $this->getOrganizationsRepository()->deleteOrganization($organizationId);
+    }
 }
