@@ -1,11 +1,15 @@
-<div id="mailingform-view-container" class="row" style="display: none">
-    <ul class="nav nav-tabs">
-          <li  data-bind="css: { active: tab()=='message'}"><a href="#" data-bind="click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
-          <li  data-bind="css: { active: tab()=='queue'}"><a href="#" data-bind="click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
-          <li  data-bind="css: { active: tab()=='lists'}"><a href="#" data-bind="click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
-          <li  data-bind="css: { active: tab()=='mailboxes'}"><a href="#" data-bind="click:showMailboxes"><translate params="code:'mailbox-entity-plural',case:'ucfirst',translator:self"></translate></a></li>
-    </ul>
-    <div data-bind="visible:tab()=='message'">
+<div id="mailingform-view-container" style="display: none">
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs">
+                  <li class="nav-item"  data-bind="css: { active: tab()=='message'}"><a class="nav-link" href="#" data-bind="css: {active: tab()=='message'},click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
+                  <li class="nav-item"  data-bind="css: { active: tab()=='queue'}"><a class="nav-link" href="#" data-bind="css: { active: tab()=='queue'},click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
+                  <li class="nav-item"  data-bind="css: { active: tab()=='lists'}"><a class="nav-link" href="#" data-bind="css: { active: tab()=='lists'},click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
+                  <li class="nav-item"  data-bind="css: { active: tab()=='mailboxes'}"><a class="nav-link" href="#" data-bind="css: { active: tab()=='mailboxes'},click:showMailboxes"><translate params="code:'mailbox-entity-plural',case:'ucfirst',translator:self"></translate></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row" data-bind="visible:tab()=='message'">
         <div class="col-md-12">
             <form  data-bind="visible:formVisible">
                 <div class="form-group" data-bind="visible: mailingListLookup().length > 0,css: {'has-error': mailingListSelectError}">
@@ -54,33 +58,35 @@
             </form>
         </div>
     </div>
-    <div data-bind="visible:tab()==='queue'">
-        <div class="row" id="queue-control-panel">
-            <div class="col-md-12">
+    <div class="row"  data-bind="visible:tab()==='queue'">
+        <div class="col-md-12">
             <h4><translate params="code:'mailing-control-heading',translator:self"></translate></h4>
-            <div class="col-sm-5">
-                <p>
-                    <strong><translate params="code:'label-status',translator:self"></translate>: </strong>
-                    <span data-bind="visible:queueStatus()==='active'"><translate params="code:'status-active',translator:self"></translate></span>
-                    <span data-bind="visible:queueStatus()==='ready'" ><translate params="code:'process-status-ready',translator:self"></translate></span>
-                    <span data-bind="visible:queueStatus()==='paused'"><translate params="code:'process-status-paused',translator:self"></translate></span>
-                    <span data-bind="visible:queueStatus()==='paused'" > <translate params="code:'label-until',translator:self"></translate> <span data-bind="text:pausedUntil"></span></span>
-                </p>
-            </div>
-            <div class="col-sm-7">
-                <div style="float: right">
-                    <button class="btn btn-default" style="margin-right: 10px" data-bind="click:refreshQueue"><span class="fa fa-refresh" aria-hidden="true"></span> <translate params="code:'label-refresh',translator:self"></translate></button>
-                    <button class="btn btn-default" data-bind="visible:queueStatus()==='active',click:pauseQueue"><translate params="code:'process-command-pause',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
-                    <button class="btn btn-default" data-bind="visible:queueStatus()==='paused',click:restartQueue"><translate params="code:'process-command-continue',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
+            <div class="row">
+                <div class="col-sm-5">
+                    <p>
+                        <strong><translate params="code:'label-status',translator:self"></translate>: </strong>
+                        <span data-bind="visible:queueStatus()==='active'"><translate params="code:'status-active',translator:self"></translate></span>
+                        <span data-bind="visible:queueStatus()==='ready'" ><translate params="code:'process-status-ready',translator:self"></translate></span>
+                        <span data-bind="visible:queueStatus()==='paused'"><translate params="code:'process-status-paused',translator:self"></translate></span>
+                        <span data-bind="visible:queueStatus()==='paused'" > <translate params="code:'label-until',translator:self"></translate> <span data-bind="text:pausedUntil"></span></span>
+                    </p>
+                </div>
+                <div class="col-sm-7">
+                    <div style="float: right">
+                        <button class="btn btn-default btn-secondary" style="margin-right: 10px" data-bind="click:refreshQueue"><span class="fa fa-refresh" aria-hidden="true"></span> <translate params="code:'label-refresh',translator:self"></translate></button>
+                        <button class="btn btn-default btn-secondary" data-bind="visible:queueStatus()==='active',click:pauseQueue"><translate params="code:'process-command-pause',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
+                        <button class="btn btn-default btn-secondary" data-bind="visible:queueStatus()==='paused',click:restartQueue"><translate params="code:'process-command-continue',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
+                    </div>
                 </div>
             </div>
-            </div>
+        </div>
+        <div class="row" id="queue-control-panel">
         </div>
         <div class="row" id="queue-history-panel">
             <div class="col-md-12">
                 <h4><translate params="code:'mailing-history-heading',translator:self"></translate></h4>
-                <div class="table-responsive">
-                <table class="table">
+                <div data-bind="css: {'table-responsive':bootstrapVersion() < 4}">
+                    <table class="table" data-bind="css: {'table-responsive':bootstrapVersion() > 3}">
                     <thead>
                         <tr>
                             <th><translate params="code:'dir-label-posted',translator:self"></translate></th>
@@ -108,16 +114,15 @@
             </div>
         </div>
     </div>
-    <div data-bind="visible:tab()==='lists'">
-        <div class="row" id="lists-panel">
+    <div class="row"  data-bind="visible:tab()==='lists'">
             <div class="col-md-12">
                 <p style="margin-top: 5px">
                     <a href="#" data-bind="click:newEmailList">
                         <translate params="code:'add-new',translator:self"></translate>&nbsp;<translate params="code:'mailing-list-entity',translator:self"></translate>
                     </a>
                 </p>
-                <div class="table-responsive">
-                    <table class="table">
+                <div data-bind="css: {'table-responsive':bootstrapVersion() < 4}">
+                    <table class="table" data-bind="css: {'table-responsive':bootstrapVersion() > 3}">
                         <thead>
                             <tr>
                                 <th><translate params="code:'label-name',translator:self"></translate>    </th>
@@ -146,13 +151,10 @@
                     </table>
                 </div>
             </div>
-        </div>
     </div>
-    <div data-bind="visible:tab()==='mailboxes'">
-        <div class="row" id="mailbox-panel">
-            <div class="col-md-12">
-                <mailbox-manager params="owner:self"></mailbox-manager>
-            </div>
+    <div  class="row" data-bind="visible:tab()==='mailboxes'">
+        <div class="col-md-12">
+            <mailbox-manager params="owner:self"></mailbox-manager>
         </div>
     </div>
 
@@ -163,8 +165,9 @@
             <div class="modal-content">
                 <form>
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <button  data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title"><translate params="code:'label-update',translator:self"></translate>&nbsp;<translate params="code:'dir-label-message',translator:self"></translate></h4>
+                        <button  data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
 
@@ -187,7 +190,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bind="click:updateQueuedMessage"><translate params="code:'label-save',translator:self"></translate> </button>
-                        <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                        <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                     </div>
                 </form>
             </div><!-- /.modal-content -->
@@ -198,19 +201,21 @@
             <div class="modal-content">
                 <form>
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <button data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title">
                             <span data-bind="visible:listEditForm.listId"><translate params="code:'label-update',translator:self"></translate></span>
                             <span data-bind="visible:!listEditForm.listId()"><translate params="code:'label-add',translator:self"></translate></span>
                             &nbsp;<translate params="code:'mailing-label-list',translator:self"></translate></h4>
+                        <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
 
                         <form>
                             <div class="form-group">
                                 <input id="active-check" type="checkbox" data-bind="checked:listEditForm.active"/>
-                                <label for="active-check"  class="control-label">
-                                    <translate params="code:'label-active',translator:self"></translate> </label>
+                                <label for="active-check"  class="control-label" style="font-weight: normal">
+                                    <translate params="code:'label-active',translator:self"></translate>
+                                </label>
                             </div>
 
                             <div class="form-group" data-bind="css: {'has-error': listEditForm.codeError}">
@@ -240,7 +245,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bind="click:updateEmailList"><translate params="code:'label-save',translator:self"></translate> </button>
-                        <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                        <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                     </div>
                 </form>
             </div><!-- /.modal-content -->

@@ -264,7 +264,7 @@ namespace QnutDirectory {
             } ;
 
             me.application.hideServiceMessages();
-            me.showActionWaiterBanner('update','dir-address-entity');
+            me.showActionWaiter('update','dir-address-entity');
             me.application.showWaiter('Updating...');
             me.services.executeService('peanut.qnut-directory::membership.AddPersonToAddress',request, me.handleAddPersonToAddressResponse)
                 .always(function() {
@@ -700,7 +700,7 @@ namespace QnutDirectory {
                     });
             }
             else {
-                me.showActionWaiterBanner(
+                me.showActionWaiter(
                     address.editState == Peanut.editState.created ? 'add' : 'update','address-entity'
                 );
                 // let updateMessage = address.editState == Peanut.editState.created ? 'Adding address ...' : 'Updating address...';
@@ -756,7 +756,7 @@ namespace QnutDirectory {
             }
             else {
                 let updateAction = person.editState == Peanut.editState.created ? 'add' : 'update';
-                me.showActionWaiterBanner(updateAction,'dir-person-entity');
+                me.showActionWaiter(updateAction,'dir-person-entity');
                 me.services.executeService('peanut.qnut-directory::membership.UpdatePerson',person, me.handleUpdatePersonResponse)
                     .always(function() {
                         me.application.hideWaiter();

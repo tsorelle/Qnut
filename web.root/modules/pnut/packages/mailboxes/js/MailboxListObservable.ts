@@ -51,7 +51,7 @@ namespace Mailboxes {
             me.application.hideServiceMessages();
             let translated = (me.owner.translate('mailbox-entity-plural') !== 'mailbox-entity-plural');
             if  (translated) {
-                me.owner.showActionWaiterBanner( 'load','mailbox-entity-plural');
+                me.owner.showActionWaiter( 'load','mailbox-entity-plural');
             }
 
             me.services.executeService('peanut.Mailboxes::GetMailboxList',request,

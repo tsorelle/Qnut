@@ -1,75 +1,76 @@
 <div id="scheduler-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
-<div id="scheduler-view-container" class="row" style="display: none">
-    <ul class="nav nav-tabs">
-          <li  data-bind="css: { active: tab()=='schedule'}"><a href="#" data-bind="click:showScheduleTab"><translate params="code:'tasks-label-schedule',translator:self"></translate></a></li>
-          <li  data-bind="css: { active: tab()=='log'}"><a href="#" data-bind="click:showLogsTab"><translate params="code:'tasks-label-log',translator:self"></translate></a></li>
-    </ul>
+<div id="scheduler-view-container" style="display: none">
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs">
+                  <li  class="nav-item" data-bind="css: { active: tab()=='schedule'}"><a href="#" class="nav-link" data-bind="css: { active: tab()=='schedule'},click:showScheduleTab"><translate params="code:'tasks-label-schedule',translator:self"></translate></a></li>
+                  <li  class="nav-item" data-bind="css: { active: tab()=='log'}"><a href="#" class="nav-link" data-bind="css: { active: tab()=='log'},click:showLogsTab"><translate params="code:'tasks-label-log',translator:self"></translate></a></li>
+            </ul>
+        </div>
+    </div>
     <div data-bind="visible:tab()==='schedule'">
-        <div class="row" id="tasks">
-            <div class="col-md-12">
-                <p>
-                    <a href="#" data-bind="click:newTask">New Task</a>
-                </p>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>&nbsp;</th>
-                            <th><translate params="code:'tasks-label-taskname', translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-inputs'   ,translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-frequency',translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-startdate',translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-enddate',translator:self"></translate></th>
-                            <th>&nbsp</th>
-                        </tr>
-                        </thead>
-                        <tbody data-bind="foreach:taskQueue">
-                        <!-- tr data-bind="css: {danger:(!active())}" -->
-                        <tr>
-                            <td data-bind="text:id"></td>
-                            <td><span class="fa fa-check" data-bind="visible:active==1" style="color:green" title="Active"></span></td>
-                            <td data-bind="text:taskname"  ></td>
-                            <td data-bind="text:inputs"    ></td>
-                            <td data-bind="text:frequency" ></td>
-                            <td data-bind="text:startdate" ></td>
-                            <td data-bind="text:enddate"   ></td>
-                            <td><a href="#" data-bind="click:$parent.editTask"><translate params="code:'label-edit',translator:$parent.self"></translate></a></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="col-md-12">
+            <p>
+                <a href="#" data-bind="click:newTask">New Task</a>
+            </p>
+
+            <div data-bind="css: {'table-responsive':bootstrapVersion() < 4}">
+                <table class="table" data-bind="css: {'table-responsive':bootstrapVersion() > 3}">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>&nbsp;</th>
+                        <th><translate params="code:'tasks-label-taskname', translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-inputs'   ,translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-frequency',translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-startdate',translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-enddate',translator:self"></translate></th>
+                        <th>&nbsp</th>
+                    </tr>
+                    </thead>
+                    <tbody data-bind="foreach:taskQueue">
+                    <!-- tr data-bind="css: {danger:(!active())}" -->
+                    <tr>
+                        <td data-bind="text:id"></td>
+                        <td><span class="fa fa-check" data-bind="visible:active==1" style="color:green" title="Active"></span></td>
+                        <td data-bind="text:taskname"  ></td>
+                        <td data-bind="text:inputs"    ></td>
+                        <td data-bind="text:frequency" ></td>
+                        <td data-bind="text:startdate" ></td>
+                        <td data-bind="text:enddate"   ></td>
+                        <td><a href="#" data-bind="click:$parent.editTask"><translate params="code:'label-edit',translator:$parent.self"></translate></a></td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div data-bind="visible:tab()==='log'">
-        <div class="row" id="logentries">
-            <div class="col-md-12">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th><translate params="code:'tasks-label-logtime',translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-taskname'   ,translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-message-type',translator:self"></translate></th>
-                            <th><translate params="code:'tasks-label-message',translator:self"></translate></th>
-                        </tr>
-                        </thead>
-                        <tbody data-bind="foreach:taskLog">
-                        <!-- tr data-bind="css: {danger:(!active())}" -->
-                        <tr>
-                            <td data-bind="text:time"  ></td>
-                            <td data-bind="text:taskname"  ></td>
-                            <td data-bind="text:type"    ></td>
-                            <td data-bind="text:message" ></td>
-                        </tr>
-                        </tbody>
+    <div class="row" data-bind="visible:tab()==='log'">
+        <div class="col-md-12">
+            <div data-bind="css: {'table-responsive':bootstrapVersion() < 4}">
+                <table class="table" data-bind="css: {'table-responsive':bootstrapVersion() > 3}">
+                    <thead>
+                    <tr>
+                        <th><translate params="code:'tasks-label-logtime',translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-taskname'   ,translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-message-type',translator:self"></translate></th>
+                        <th><translate params="code:'tasks-label-message',translator:self"></translate></th>
+                    </tr>
+                    </thead>
+                    <tbody data-bind="foreach:taskLog">
+                    <!-- tr data-bind="css: {danger:(!active())}" -->
+                    <tr>
+                        <td data-bind="text:time"  ></td>
+                        <td data-bind="text:taskname"  ></td>
+                        <td data-bind="text:type"    ></td>
+                        <td data-bind="text:message" ></td>
+                    </tr>
+                    </tbody>
 
-                    </table>
-                    <div>
-                        <a href="#" data-bind="visible:prevEntries,click:getPrevLog" style="margin-right:10px"><translate params="code:'nav-previous',translator:self"></translate></a>
-                        <a href="#" data-bind="visible:moreEntries,click:getNextLog"><translate params="code:'nav-more',translator:self"></translate></a>
-                    </div>
+                </table>
+                <div>
+                    <a href="#" data-bind="visible:prevEntries,click:getPrevLog" style="margin-right:10px"><translate params="code:'nav-previous',translator:self"></translate></a>
+                    <a href="#" data-bind="visible:moreEntries,click:getNextLog"><translate params="code:'nav-more',translator:self"></translate></a>
                 </div>
             </div>
         </div>
@@ -79,9 +80,10 @@
             <div class="modal-content">
                 <form>
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <button  data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" data-bind="visible:taskEditForm.id"><translate params="code:'tasks-form-header-edit',translator:self"></translate></h4>
                         <h4 class="modal-title" data-bind="visible:!taskEditForm.id()"><translate params="code:'tasks-form-header-new',translator:self"></translate></h4>
+                        <button  data-bind="visible:bootstrapVersion() === 4"type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
                         <form>
@@ -163,14 +165,11 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bind="click:updateTask"><translate params="code:'label-save',translator:self"></translate> </button>
-                        <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                        <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                     </div>
                 </form>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
-
-
-
 </div>
 <!-- end div container -->

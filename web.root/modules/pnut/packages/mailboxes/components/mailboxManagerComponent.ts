@@ -27,6 +27,7 @@ namespace Mailboxes {
         test = ko.observable('test');
 
         owner : () => ViewModelBase;
+        bootstrapVersion : KnockoutObservable<number>;
 
         // include constructor if any params used
         constructor(params: any) {
@@ -44,6 +45,7 @@ namespace Mailboxes {
             me.test('hello');
             let ownerVm = params.owner();
             me.application = ownerVm.getApplication();
+            me.bootstrapVersion = ownerVm.bootstrapVersion;
             me.services = ownerVm.getServices();
             me.mailboxes = (<any>ownerVm).mailboxes;
             me.mailboxes.subscribe(this.onListChanged)

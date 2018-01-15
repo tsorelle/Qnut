@@ -11,10 +11,10 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <button class="btn btn-default" data-bind="click:findFamiliesByPersonName" ><translate params="code:'dir-entity-label-persons',translator:self"></translate> <span class="fa fa-search" aria-hidden="true"></span> </button>
-                            <button class="btn btn-default" data-bind="click:findFamiliesByAddressName"><translate params="code:'dir-entity-label-addresses',translator:self"></translate>  <span class="fa fa-search" aria-hidden="true"></span></button>
+                            <button class="btn btn-default btn-secondary" data-bind="click:findFamiliesByPersonName" ><translate params="code:'dir-entity-label-persons',translator:self"></translate> <span class="fa fa-search" aria-hidden="true"></span> </button>
+                            <button class="btn btn-default btn-secondary" data-bind="click:findFamiliesByAddressName"><translate params="code:'dir-entity-label-addresses',translator:self"></translate>  <span class="fa fa-search" aria-hidden="true"></span></button>
                             <div class="btn-group" data-bind="visible:userCanEdit">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <button type="button" class="btn btn-default btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <translate params="code:'label-new',translator:self"></translate> <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
@@ -89,12 +89,12 @@
                         <fieldset id="person-view-fields">
                             <legend data-bind="text:personFormHeader"></legend>
                             <div id="person-view-buttons" data-bind="visible:showPersonViewButtons">
-                                <button class="btn btn-default" data-bind="click:editPerson"><translate params="code:'label-edit',translator:self"></translate> </button>
-                                <button class="btn btn-default" data-bind="click:movePerson">
+                                <button class="btn btn-default btn-secondary" data-bind="click:editPerson"><translate params="code:'label-edit',translator:self"></translate> </button>
+                                <button class="btn btn-default btn-secondary" data-bind="click:movePerson">
                                     <span data-bind="visible:family.hasAddress"><translate params="code:'dir-button-label-move',translator:self"></translate></span>
                                     <span data-bind="visible:!family.hasAddress()"><translate params="code:'dir-button-label-get-address',translator:self"></translate></span>
                                 </button>
-                                <button class="btn btn-default" data-bind="click:deletePerson"><translate params="code:'label-delete',translator:self"></translate> </button>
+                                <button class="btn btn-default btn-secondary" data-bind="click:deletePerson"><translate params="code:'label-delete',translator:self"></translate> </button>
                             </div>
 
                             <div data-bind="visible:personForm.email">
@@ -163,7 +163,7 @@
                     <fieldset id="person-form" >
                         <div id="person-edit-buttons">
                             <button class="btn btn-primary" data-bind="click:savePerson"><translate params="code:'label-save',translator:self"></translate></button>
-                            <button class="btn btn-default" data-bind="click:cancelPersonEdit"><translate params="code:'label-cancel',translator:self"></translate></button>
+                            <button class="btn btn-default btn-secondary" data-bind="click:cancelPersonEdit"><translate params="code:'label-cancel',translator:self"></translate></button>
                         </div>
                         <legend data-bind="text:personFormHeader"></legend>
                         <div class="alert alert-danger" role="alert" data-bind="visible:personForm.hasErrors">
@@ -180,7 +180,7 @@
                             <div class="input-group" style="">
                                 <input class="form-control" id="sortkey-input"
                                        data-bind="value:personForm.sortkey"/>
-                                <span class="input-group-btn"><button class="btn btn-default" type="button" tabindex="-1" data-bind="click:personForm.refreshSortKey">
+                                <span class="input-group-btn"><button class="btn btn-default btn-secondary" type="button" tabindex="-1" data-bind="click:personForm.refreshSortKey">
 		                            <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
                             </div>
 
@@ -204,7 +204,7 @@
                                 <input class="form-control datepicker" type="text" id="dob-input" data-bind="value:personForm.dateOfBirth"/>
                                 <span class="input-group-btn" data-bind="visible:personForm.dateOfBirth()==''">
                                 <div class="dropdown">
-                                    <button class="btn btn-default dropdown-toggle" tabindex="" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    <button class="btn btn-default btn-secondary dropdown-toggle" tabindex="" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                         Age?
                                         <span class="caret"></span>
                                     </button>
@@ -276,9 +276,9 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <button class="btn btn-default" data-bind="click:findPersons" title="Search"><span class="fa fa-search"></span> </button>
-                                    <button class="btn btn-default" data-bind="click:createPersonForAddress" title="Create new person for address."><span class="fa fa-plus"></span></button>
-                                    <button class="btn btn-default" data-bind="click:cancelPersonSearch" title="Cancel"><span class="fa fa-remove"></span></button>
+                                    <button class="btn btn-default btn-secondary" data-bind="click:findPersons" title="Search"><span class="fa fa-search"></span> </button>
+                                    <button class="btn btn-default btn-secondary" data-bind="click:createPersonForAddress" title="Create new person for address."><span class="fa fa-plus"></span></button>
+                                    <button class="btn btn-default btn-secondary" data-bind="click:cancelPersonSearch" title="Cancel"><span class="fa fa-remove"></span></button>
                                 </div>
                             </div>
                             <div id="findPersonResults"  class="row found well" data-bind="visible:personsList.selectionCount">
@@ -327,16 +327,16 @@
                             <legend><translate params="code:'dir-entity-label-address',translator:self"></translate></legend>
                             <div id="address-view-buttons">
                                 <div id="address-persons-list" class="btn-group" data-bind="visible:family.personCount()>1">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" class="btn btn-default btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <translate params="code:'dir-label-residents',translator:self"></translate> <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu" data-bind="foreach:addressPersonsList">
                                         <li><a href="#" data-bind="click:$parent.selectPerson"><span data-bind="text: Name"></span></a></li>
                                     </ul>
                                 </div>
-                                <button class="btn btn-default" data-bind="click:editAddress,visible:showEditButton">Edit</button>
-                                <button class="btn btn-default" data-bind="click:findPersonForAddress, visible:showAddPersonButton">Add person</button>
-                                <button class="btn btn-default" data-bind="click:deleteAddress, visible:userCanEdit">Delete</button>
+                                <button class="btn btn-default btn-secondary" data-bind="click:editAddress,visible:showEditButton">Edit</button>
+                                <button class="btn btn-default btn-secondary" data-bind="click:findPersonForAddress, visible:showAddPersonButton">Add person</button>
+                                <button class="btn btn-default btn-secondary" data-bind="click:deleteAddress, visible:userCanEdit">Delete</button>
                             </div>
                             <div id='streetaddress-view'>
                                 <div>
@@ -393,7 +393,7 @@
 
                     <div id="address-edit-buttons">
                         <button class="btn btn-primary" data-bind="click:saveAddress"><translate params="code:'label-save',translator:self"></translate> </button>
-                        <button class="btn btn-default" data-bind="click:cancelAddressEdit"><translate params="code:'label-cancel',translator:self"></translate> </button>
+                        <button class="btn btn-default btn-secondary" data-bind="click:cancelAddressEdit"><translate params="code:'label-cancel',translator:self"></translate> </button>
                     </div>
                     <div class="alert alert-danger" role="alert" data-bind="visible:addressForm.hasErrors">
                         <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
@@ -415,7 +415,7 @@
 
                         <div class="input-group" style="">
                             <input class="form-control" id="address-sortkey-input" data-bind="value:addressForm.sortkey"/>
-                            <span class="input-group-btn"><button class="btn btn-default" type="button" tabindex="-1" data-bind="click:addressForm.refreshSortKey">
+                            <span class="input-group-btn"><button class="btn btn-default btn-secondary" type="button" tabindex="-1" data-bind="click:addressForm.refreshSortKey">
 		                        <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
                         </div>
                     </div>
@@ -486,9 +486,9 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <button class="btn btn-default" data-bind="click:findAddresses" title="Search"><span class="fa fa-search"></span> </button>
-                                    <button class="btn btn-default" data-bind="click:createAddressForPerson" title="Create new address for person."><span class="fa fa-plus"></span></button>
-                                    <button class="btn btn-default" data-bind="click:cancelAddressSearch" title="Cancel"><span class="fa fa-remove"></span></button>
+                                    <button class="btn btn-default btn-secondary" data-bind="click:findAddresses" title="Search"><span class="fa fa-search"></span> </button>
+                                    <button class="btn btn-default btn-secondary" data-bind="click:createAddressForPerson" title="Create new address for person."><span class="fa fa-plus"></span></button>
+                                    <button class="btn btn-default btn-secondary" data-bind="click:cancelAddressSearch" title="Cancel"><span class="fa fa-remove"></span></button>
                                 </div>
                             </div>
                             <div id="findAddressResults"  class="row found well" data-bind="visible:addressesList.selectionCount">
@@ -535,15 +535,16 @@
                 <div class="modal-content">
                     <form>
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <button data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title"><translate params="code:'label-delete',translator:self"></translate> <translate params="code:'dir-person-entity',translator:self"></translate> </h4>
+                            <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">
                             <h3><translate params="code:'dir-label-person-delete',translator:self"></translate></h3>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bind="click: executeDeletePerson"><translate params="code:'label-delete',translator:self"></translate></button>
-                            <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                            <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                         </div>
                     </form>
                 </div><!-- /.modal-content -->
@@ -555,15 +556,16 @@
                 <div class="modal-content">
                     <form>
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <button data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title"><translate params="code:'label-delete',translator:self"></translate> <translate params="code:'dir-address-entity',translator:self"></translate> </h4>
+                            <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">
                             <h3><translate params="code:'dir-label-address-delete',translator:self"></translate></h3>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bind="click: executeDeleteAddress"><translate params="code:'label-delete',translator:self"></translate> </button>
-                            <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                            <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                         </div>
                     </form>
                 </div><!-- /.modal-content -->
@@ -575,8 +577,9 @@
                 <div class="modal-content">
                     <form>
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <button data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title"><translate params="code:'label-add',translator:self"></translate>&nbsp;<translate params="code:'dir-label-affiliation',translator:self"></translate></h4>
+                            <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">
                             <div style="background-color: yellow; color:red; margin-bottom: 5px" data-bind="visible:personForm.affiliationError">
@@ -589,7 +592,7 @@
                                 <div class="input-group" style="margin-bottom: 10px">
                                     <input class="form-control" id="orgsearch" type="search" name="search" placeholder="Select or search for an organization"
                                            data-bind="value: personForm.orgSearchValue, valueUpdate: 'keyup'" autocomplete="off" />
-                                    <span class="input-group-btn"><button class="btn btn-default" type="button" data-bind="click:personForm.onShowOrgList">
+                                    <span class="input-group-btn"><button class="btn btn-default btn-secondary" type="button" data-bind="click:personForm.onShowOrgList">
                                         <i data-bind="visible:personForm.orgListVisible" class="fa fa-caret-up"></i>
                                         <i data-bind="visible:!personForm.orgListVisible()"class="fa fa-caret-down"></i>
 
@@ -620,7 +623,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bind="click:personForm.addAffiliation"><translate params="code:'label-save',translator:self"></translate> </button>
-                            <button type="button" class="btn btn-default"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                            <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                         </div>
                     </form>
                 </div><!-- /.modal-content -->

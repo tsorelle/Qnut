@@ -5,7 +5,7 @@
             <form  data-bind="visible:formVisible">
 
                 <div class="form-group" data-bind="visible: mailboxList().length > 0,css: {'has-error': mailboxSelectError}">
-                    <label class="control-label" for="mailBox" data-bind="selectLabel">
+                    <label class="control-label form-control-label" for="mailBox" data-bind="selectLabel">
                         <translate params="code:'mail-select-recipient',translator:self"></translate></label>
                     <span class="error" data-bind="visible: mailboxSelectError, text: mailboxSelectError"></span>
                     <select class="form-control"  id="mailBox" data-bind="options: mailboxList,
@@ -16,7 +16,7 @@
 
 
                 <div class="form-group" data-bind="css: {'has-error': fromNameError}">
-                    <label class="control-label" for="fromName"><translate params="code:'label-your-name',translator:self"></translate> </label>
+                    <label class="control-label form-control-label" for="fromName"><translate params="code:'label-your-name',translator:self"></translate> </label>
                     <span class="error" data-bind="visible: fromNameError, text: fromNameError"></span>
                     <input type="text" class="form-control" id="fromName" data-bind="textInput: fromName" />
                 </div>

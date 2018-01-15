@@ -35,11 +35,12 @@ class InitializeOrganizationsCommand extends TServiceCommand
                 $pageNumber = $request->pageNumber;
             }
         }
-        $response = new \stdClass();
+        // $response = new \stdClass();
         $manager = new DirectoryManager($this->getMessages());
-        $list = $manager->getOrganizationsList($pageNumber,$pageSize);
-        $response->organizations = $list->organizations;
-        $response->maxPages = $list->maxpages;
+        // $list = $manager->getOrganizationsList($pageNumber,$pageSize);
+        $response = $manager->getOrganizationsList($pageNumber,$pageSize);
+//        $response->organizations = $list->organizations;
+//        $response->maxpages = $list->maxpages;
 
         $user = TUser::getCurrent();
 
