@@ -11,15 +11,12 @@ namespace Peanut\qnut\cms;
 //include __DIR__."/Autoloader.php";
 // require_once str_replace('\\','/',realpath(__DIR__.'../../../')). '/vendor/autoload.php';
 
-use Peanut\Bootstrap;
-use Peanut\sys\PeanutSettings;
 use Peanut\sys\ViewModelPageBuilder;
 use PeanutTest\WebTester;
-use Tops\sys\Autoloader;
-use Tops\sys\TStrings;
+use Tops\services\DownloadServiceFactory;
 use Peanut\sys\ViewModelManager;
-use Tops\sys\TConfiguration;
-use Tops\sys\TPath;
+use Tops\services\ServiceFactory;
+use Tops\sys\TSession;
 
 class CmsController
 {
@@ -36,6 +33,11 @@ class CmsController
 
     const settingsLocation = 'application/config';
 
+    /**
+     * @param $indexDir
+     * @return CmsController
+     * @throws \Exception
+     */
     public static function Start($indexDir) {
         date_default_timezone_set('America/Chicago');
         self::$instance = new CmsController();
@@ -47,13 +49,21 @@ class CmsController
         return $this->contentFile;
     }
 
+    /**
+     * @param $fileRoot
+     * @throws \Exception
+     */
     public static function StartSession($fileRoot) {
+        /** @noinspection PhpIncludeInspection */
         require_once($fileRoot.'/application/config/peanut-bootstrap.php');
-        $settings = \Peanut\Bootstrap::initialize();
         session_start();
-        \Tops\sys\TSession::Initialize();
+        TSession::Initialize();
     }
 
+    /**
+     * @param $indexDir
+     * @throws \Exception
+     */
     public function initialize($indexDir)
     {
         global $_SERVER;
@@ -66,11 +76,12 @@ class CmsController
         }
 
         $fileRoot = str_replace('\\', '/', $indexDir) . '/';
+        /** @noinspection PhpIncludeInspection */
         require_once($fileRoot.'application/config/peanut-bootstrap.php');
 
         $settings = \Peanut\Bootstrap::initialize();
         session_start();
-        \Tops\sys\TSession::Initialize();
+        TSession::Initialize();
 
         if (strtolower($uri) == '/index.php') {
             $routePath = 'home';
@@ -88,26 +99,34 @@ class CmsController
             }
         }
 
-        $this->route($fileRoot, $routePath,$settings->peanutUrl);
+        $this->route($fileRoot, $routePath); // ,$settings->peanutUrl);
     }
 
-    private function route($fileRoot, $routePath, $peanutUrl)
+    /**
+     * @param $fileRoot
+     * @param $routePath
+     * @throws \Exception
+     */
+    private function route($fileRoot, $routePath) // , $peanutUrl)
     {
         switch ($routePath) {
             case 'peanut/settings' :
                 header('Content-type: application/json');
+                /** @noinspection PhpIncludeInspection */
                 include($fileRoot . "/application/config/settings.php");
                 exit;
             case 'peanut/service/execute' :
                 header('Content-type: application/json');
-                $response = \Tops\services\ServiceFactory::Execute();
+                $response = ServiceFactory::Execute();
                 print json_encode($response);
                 exit;
+            case 'peanut/service/download' :
+                DownloadServiceFactory::PrintOutput();
+                exit;
             default:
-                $content = false;
                 $pageContent = @file_get_contents($fileRoot . '/content/' . $routePath . '.html');
                 if ($pageContent === false) {
-                    $content = \Peanut\sys\ViewModelPageBuilder::Build($routePath);
+                    $content = ViewModelPageBuilder::Build($routePath);
                 }
                 else {
                     $content =  ViewModelPageBuilder::BuildStaticPage($pageContent);

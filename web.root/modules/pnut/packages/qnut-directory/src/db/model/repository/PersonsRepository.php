@@ -253,6 +253,15 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         $this->executeStatement($sql,[$addressId,$personId]);
     }
 
+    public function getAffiliationsList() {
+        $sql = 'SELECT DISTINCT o.id, o.code,o.name,o.description '.
+                'FROM qnut_person_affiliations a '.
+                'JOIN qnut_organizations o ON a.organizationId = o.id '.
+                'ORDER BY o.name';
+        $stmt = $this->executeStatement($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
     protected function getFieldDefinitionList()
     {
         return array(

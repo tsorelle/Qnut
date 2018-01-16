@@ -1,0 +1,115 @@
+<div id="downloads-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
+<div id="downloads-view-container" class="row" style="display: none">
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-3">
+                <form method="post" id="contacts-form" action="/peanut/service/download" method="post" >
+                    <input id="contactsService" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadContacts">
+
+                    <fieldset class="download-form">
+                        <legend>Contacts</legend>
+                        <p><strong>Description:</strong> On record per person with full address and other contact information.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
+                               title="Fields" data-content="firstName, lastName, middleName, phone1, phone2, email, dateOfBirth, junior, affiliation, addressName, address1, address2, city, state, zip, country, householdPhone">Fields...</a>
+                        </p>
+                        <h4>Options:</h4>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="contactdirectoryonly" name="directoryonly" data-bind="checked: contactsDirListingOnly"> Directory listing only
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="includekids" name="includekids" data-bind="checked: includeKids"> Include kids
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control" id="affiliation" name="affiliation"
+                                    data-bind="options: affiliations,optionsText:'name',value: selectedAffiliation,optionsCaption:'Filter by meeting...'"></select>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" data-bind="click:submitContacts">Download</button>
+
+                    </fieldset>
+                </form>
+            </div>
+            <div class="col-md-3" >
+                <form method="post" id="addresses-form" action="/peanut/service/download" method="post">
+                    <input id="addressService" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadAddresses">
+
+                    <fieldset class="download-form">
+                        <legend>Addresses</legend>
+                        <p><strong>Description:  </strong>One record per address.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
+                               title="Fields" data-content="addressName, address1, address2, city, state, zip, country">Fields...</a>
+                        </p>
+                        <h4>Options:</h4>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="directoryonly" name="directoryonly" data-bind="checked:addressesDirListingOnly"> Directory listing only
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="residenceonly" name="residenceonly" data-bind="checked: residencesOnly"> Residences only
+                            </label>
+                        </div>
+                        <input type="submit" value="Download"  class="btn btn-primary" />
+                    </fieldset>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <form id='email-list-form' action="/peanut/service/download" method="post">
+                    <input id="email-list-service" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadEmailList">
+
+                    <fieldset class="download-form">
+                        <legend>Email Lists</legend>
+                        <p><strong>Description: </strong> Email list subscribers - name and e-mail address.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
+                               title="Fields" data-content="First name, Last name, E-mail">Fields...</a>
+                        </p>
+                        <div class="form-group">
+                            <div class="alert alert-danger" data-bind="visible: elistError">
+                                <translate params="code:'list-select-error',translator:self"></translate></div>
+                            <select class="form-control" id="lists"
+                                    data-bind="options: elists,optionsText:'name',value: selectedList,optionsCaption:'Select a list...'"></select>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" data-bind="click:submitEmailList,visible:selectedList">Download</button>
+                    </fieldset>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <form id='postal-list-form' action="/peanut/service/download" method="post">
+                    <input id="postal-list-service" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadPostalList">
+
+                    <fieldset class="download-form">
+                        <legend>Postal Lists</legend>
+                        <p><strong>Description: </strong> Postal list subscriber addresss.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
+                               title="Fields" data-content="addressName, address1, address2, city, state, zip, country">Fields...</a>
+                        </p>
+                        <div class="form-group">
+                            <div class="alert alert-danger" data-bind="visible: plistError">
+                                <translate params="code:'list-select-error',translator:self"></translate></div>
+
+                            <select class="form-control" id="postal-lists"
+                                    data-bind="options: postallists,optionsText:'name',value: selectedPostalList,optionsCaption:'Select a list...'"></select>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" data-bind="click:submitPostalList,visible:selectedPostalList">Download</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- div class="col-md-12">
+        <form id="test-form" action="/peanut/service/download" method="post">
+            <button data-bind="click:submitTest">Test</button>
+            <input id="value1" name="value1" type="hidden" value="test1">
+            <input id="serviceCode" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.TestDownload">
+        </form>
+    </div -->
+</div>

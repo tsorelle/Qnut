@@ -470,6 +470,9 @@ class DirectoryManager
 
     }
 
+    public function getAffiliationsList() {
+        return $this->getPersonsRepository()->getAffiliationsList();
+    }
 
     public function removeOrganization($organizationId) {
         $this->getOrganizationsRepository()->deleteOrganization($organizationId);

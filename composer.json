@@ -18,5 +18,8 @@
       "Peanut\\QnutDirectory\\" : "web.root/modules/pnut/packages/qnut-directory/src",
       "Peanut\\PeanutTasks\\" : "web.root/modules/pnut/packages/peanut-tasks/src"
     }
+  },
+  "require": {
+    "phpunit/phpunit": "5.7.26"
   }
 }
