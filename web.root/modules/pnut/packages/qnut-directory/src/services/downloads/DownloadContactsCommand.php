@@ -9,7 +9,10 @@
 namespace Peanut\QnutDirectory\services\downloads;
 
 
+use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\services\TServiceCommand;
+use Tops\sys\TCsvFormatter;
+use Tops\sys\TDates;
 use Tops\sys\TPermissionsManager;
 
 class DownloadContactsCommand extends TServiceCommand
@@ -31,8 +34,22 @@ class DownloadContactsCommand extends TServiceCommand
         $includekids = !empty($request->includekids);
         $affiliation = empty($request->affiliation) ? false : $request->affiliation;
 
-        // todo:: implement download
+        $respository = new PersonsRepository();
+        $contacts = $respository->getContactsForDownload($includekids,$directoryonly,$affiliation);
+        $csv = TCsvFormatter::ToCsv($contacts);
         $response = new \stdClass();
+        $response->data = $csv;
+
+        $response->filename = 'contacts-';
+        if ($directoryonly) {
+            $response->filename .= 'directory-';
+        }
+        if ($affiliation) {
+            $response->filename .= $affiliation.'-';
+        }
+        $response->filename .= TDates::now(TDates::FilenameTimeFormat);
+
+        $this->setReturnValue($response);
 
     }
 }

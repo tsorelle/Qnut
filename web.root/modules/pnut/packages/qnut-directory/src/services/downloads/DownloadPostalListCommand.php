@@ -9,7 +9,11 @@
 namespace Peanut\QnutDirectory\services\downloads;
 
 
+use Peanut\QnutDirectory\db\model\repository\AddressesRepository;
 use Tops\services\TServiceCommand;
+use Tops\sys\TCsvFormatter;
+use Tops\sys\TDates;
+use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
 class DownloadPostalListCommand extends TServiceCommand
@@ -26,8 +30,19 @@ class DownloadPostalListCommand extends TServiceCommand
             $this->addErrorMessage('service-no-request');
             return;
         }
-        // todo:: implement download
+        if (empty($request->list)) {
+            $listEntity = TLanguage::text('list-code');
+            $this->addErrorMessage('service-no-request-value',[$listEntity]);
+            return;
+        }
+
+        $repository = new AddressesRepository();
+        $lists = $repository->getPostalSubscriptionsForDownload($request->list);
+        $csv = TCsvFormatter::ToCsv($lists);
         $response = new \stdClass();
+        $response->data = $csv;
+        $response->filename = 'postal-list-'.$request->list.'-'.TDates::now(TDates::FilenameTimeFormat);
+        $this->setReturnValue($response);
 
     }
 }

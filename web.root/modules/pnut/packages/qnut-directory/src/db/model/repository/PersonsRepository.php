@@ -71,6 +71,51 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         return 'qnut_persons';
     }
 
+    public function getContactsForDownload($includekids, $directoryonly, $affiliation)
+    {
+
+        $sql = 'SELECT fullname, p.phone AS phone1, phone2, a.phone AS homephone, p.email, dateofbirth, '.
+            'addressname, address1, address2, city, state, postalcode, country,  p.sortkey '.
+            'FROM qnut_persons p LEFT OUTER JOIN qnut_addresses a ON p.addressId = a.id ';
+        if($affiliation) {
+            $sql .='LEFT OUTER JOIN qnut_person_affiliations af ON af.personid = p.`id` '.
+                'LEFT OUTER JOIN `qnut_organizations` o ON af.`organizationId` = o.`id` ';
+        }
+
+        $sql .= 'WHERE p.active=1 ';
+
+        if (!$includekids) {
+            $sql .= 'AND (dateofbirth IS NULL OR DATE_ADD(dateofbirth,INTERVAL 15 YEAR) < CURRENT_DATE) ';
+        }
+
+        if ($directoryonly) {
+            if ($directoryonly) {
+                $sql .= 'AND (p.listingtypeid = 3 OR p.listingtypeid = 1) ';
+            }
+        }
+
+        if ($affiliation) {
+            $sql .= 'AND o.code = ? ';
+        }
+
+        $sql .= 'ORDER BY p.sortkey,p.fullname ';
+
+        $stmt = $this->executeStatement($sql, $affiliation ? [$affiliation] : []);
+
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function getEmailSubscriptionsForDownload($listCode)
+    {
+        $sql = 'SELECT p.fullname AS `Name`, p.email '.
+            'FROM qnut_email_subscriptions s  '.
+            'JOIN qnut_persons p ON s.personId = p.id  '.
+            'JOIN qnut_email_lists l ON s.listId = l.id '.
+            'WHERE p.active = 1 AND l.code = ? ORDER BY p.sortkey';
+        $stmt = $this->executeStatement($sql,[$listCode]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
     protected function getDatabaseId() {
         return null;
     }

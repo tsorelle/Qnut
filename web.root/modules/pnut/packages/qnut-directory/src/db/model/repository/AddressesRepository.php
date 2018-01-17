@@ -135,12 +135,24 @@ class AddressesRepository extends \Tops\db\TEntityRepository
             $sql .= 'AND addresstypeid = 1 ';
         }
         if ($directoryonly) {
-            $sql .= 'AND listingtypeid = 3 ';
+            $sql .= 'AND (listingtypeid = 3 OR listingtypeid = 1) ';
         }
         $sql .= 'ORDER BY sortkey,addressname';
         $stmt = $this->executeStatement($sql);
         $result = $stmt->fetchAll(PDO::FETCH_OBJ);
         return $result;
+    }
+
+    public function getPostalSubscriptionsForDownload($listCode)
+    {
+        $sql = 'SELECT addressname, address1, address2, city, state, postalcode, country  '.
+            'FROM qnut_postal_subscriptions s  '.
+            'JOIN qnut_postal_lists l ON s.listId = s.listId '.
+            'JOIN qnut_addresses a ON a.id = s.addressId '.
+            'WHERE a.active=1 AND l.code = ?';
+
+        $stmt = $this->executeStatement($sql,[$listCode]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     protected function getDatabaseId() {

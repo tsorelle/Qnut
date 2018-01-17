@@ -9,7 +9,11 @@
 namespace Peanut\QnutDirectory\services\downloads;
 
 
+use Peanut\QnutDirectory\db\model\repository\EmailListsRepository;
+use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\services\TServiceCommand;
+use Tops\sys\TCsvFormatter;
+use Tops\sys\TDates;
 use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
@@ -23,7 +27,7 @@ class DownloadEmailListCommand extends TServiceCommand
     protected function run()
     {
         $request = $this->getRequest();
-        $listEntity = TLanguage::text('list-code'); // todo: translation
+        $listEntity = TLanguage::text('list-code');
         if (empty($request)) {
             $this->addErrorMessage('service-no-request');
             return;
@@ -33,10 +37,12 @@ class DownloadEmailListCommand extends TServiceCommand
             return;
         }
 
-        $listCode = $request->list;
-
-        // todo:: implement download
+        $repository = new PersonsRepository();
+        $lists = $repository->getEmailSubscriptionsForDownload($request->list);
+        $csv = TCsvFormatter::ToCsv($lists);
         $response = new \stdClass();
-
+        $response->data = $csv;
+        $response->filename = 'email-list-'.$request->list.'-'.TDates::now(TDates::FilenameTimeFormat);
+        $this->setReturnValue($response);
     }
 }
