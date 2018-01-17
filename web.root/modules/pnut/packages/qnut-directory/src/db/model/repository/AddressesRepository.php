@@ -128,6 +128,21 @@ class AddressesRepository extends \Tops\db\TEntityRepository
         $address->setPostalSubscriptions($this->getPostalSubscriptions($address->id));
     }
 
+    public function getAddressesForDownload($residenceonly = false, $directoryonly = false)
+    {
+        $sql = 'SELECT addressname, address1, address2, city, state, postalcode, country FROM '.$this->getTableName().' WHERE active=1 ';
+        if ($residenceonly) {
+            $sql .= 'AND addresstypeid = 1 ';
+        }
+        if ($directoryonly) {
+            $sql .= 'AND listingtypeid = 3 ';
+        }
+        $sql .= 'ORDER BY sortkey,addressname';
+        $stmt = $this->executeStatement($sql);
+        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $result;
+    }
+
     protected function getDatabaseId() {
         return null;
     }
