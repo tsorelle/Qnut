@@ -23,16 +23,28 @@ class InitializeDownloadsCommand extends TServiceCommand
         $result->affiliations = $manager->getAffiliationsList();
         $result->emailLists = $manager->getEmailListLookup();
         $result->postalLists = $manager->getPostalListLookup();
-        $result->translations = TLanguage::getTranslations(array(
+        $result->translations = TLanguage::getTranslations([
             'dir-label-affiliation',
             'dir-label-please-select',
-            'label-download'
-        ));
+            'download-addresses-description',
+            'download-affiliations-caption',
+            'download-contacts-description',
+            'download-directory-only',
+            'download-emails-description',
+            'download-include-kids',
+            'download-postal-description',
+            'label-contacts',
+            'label-description',
+            'label-download',
+            'label-email-lists',
+            'label-fields',
+            'label-options',
+            'label-postal-lists',
+            'list-select-caption'
+            ]);
 
-        // $result->translations['dir-entity-label-persons']   = ucfirst(TLanguage::text('dir-person-entity-plural'));
+        $result->translations['addresses-label']   = ucfirst(TLanguage::text('dir-address-entity-plural'));
 
         $this->setReturnValue($result);
-
-
     }
 }

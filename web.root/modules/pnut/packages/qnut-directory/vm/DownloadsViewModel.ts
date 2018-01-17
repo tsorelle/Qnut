@@ -25,9 +25,10 @@
             public includeKids = ko.observable(true);
             public affiliationListCaption = ko.observable();
             public emailListCaption = ko.observable();
-            public elistError = ko.observable(false);
-            public plistError = ko.observable(false);
-            
+            public fieldsLabel = ko.observable('Fields');
+            public downloadLabel = ko.observable('Download');
+            public listSelectCaption = ko.observable('Select...');
+
             init(successFunction?: () => void) {
                 let me = this;
                 console.log('Downloads Init');
@@ -46,7 +47,10 @@
                             me.postallists(response.postalLists);
                             me.addTranslations(response.translations);
                             me.emailListCaption(me.translate('email-select-caption'));
-                            me.affiliationListCaption(me.translate('affiliation-select-caption'));
+                            me.affiliationListCaption(me.translate('download-affiliations-caption'));
+                            me.fieldsLabel(me.translate('label-fields'));
+                            me.listSelectCaption(me.translate('list-select-caption'));
+                            me.downloadLabel(me.translate('label-download'));
                         }
                         me.bindDefaultSection();
                     })
@@ -81,14 +85,10 @@
                 let options = '';
                 let list = me.selectedList();
                 if (list) {
-                    me.elistError(false);
                     let code = list.code;
                     options = '?list=' + code;
                     let url = "/peanut/service/download" + options;
                     jQuery("#email-list-form").attr("action", url).submit();
-                }
-                else {
-                    this.elistError(true); // todo::translate list-select-error
                 }
             };
 
@@ -97,14 +97,10 @@
                 let options = '';
                 let list = me.selectedPostalList();
                 if (list) {
-                    me.plistError(false);
                     let code = list.code;
                     options = '?list=' + code;
                     let url = "/peanut/service/download" + options;
                     jQuery("#postal-list-form").attr("action", url).submit();
-                }
-                else {
-                    this.plistError(true); // todo::translate list-select-error
                 }
             };
         }

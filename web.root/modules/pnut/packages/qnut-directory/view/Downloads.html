@@ -7,28 +7,28 @@
                     <input id="contactsService" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadContacts">
 
                     <fieldset class="download-form">
-                        <legend>Contacts</legend>
-                        <p><strong>Description:</strong> On record per person with full address and other contact information.
-                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
-                               title="Fields" data-content="firstName, lastName, middleName, phone1, phone2, email, dateOfBirth, junior, affiliation, addressName, address1, address2, city, state, zip, country, householdPhone">Fields...</a>
+                        <legend><translate params="code:'label-contacts',translator:self"></translate></legend>
+                        <p><strong><translate params="code:'label-description',translator:self"></translate>:</strong> <translate params="code:'download-contacts-description',translator:self"></translate>
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-bind="attr: {title: fieldsLabel}"
+                               data-content="firstName, lastName, middleName, phone1, phone2, email, dateOfBirth, junior, affiliation, addressName, address1, address2, city, state, zip, country, householdPhone"><translate params="code:'label-fields',translator:self"></translate>...</a>
                         </p>
-                        <h4>Options:</h4>
+                        <h4><translate params="code:'label-options',translator:self"></translate>:</h4>
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" id="contactdirectoryonly" name="directoryonly" data-bind="checked: contactsDirListingOnly"> Directory listing only
+                                <input type="checkbox" id="contactdirectoryonly" name="directoryonly" data-bind="checked: contactsDirListingOnly"> <translate params="code:'download-directory-only',translator:self"></translate>
                             </label>
                         </div>
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" id="includekids" name="includekids" data-bind="checked: includeKids"> Include kids
+                                <input type="checkbox" id="includekids" name="includekids" data-bind="checked: includeKids"> <translate params="code:'download-include-kids',translator:self"></translate>
                             </label>
                         </div>
                         <div class="form-group">
                             <select class="form-control" id="affiliation" name="affiliation"
-                                    data-bind="options: affiliations,optionsText:'name',value: selectedAffiliation,optionsCaption:'Filter by meeting...'"></select>
+                                    data-bind="options: affiliations,optionsText:'name',value: selectedAffiliation,optionsCaption:affiliationListCaption"></select>
                             </select>
                         </div>
-                        <button class="btn btn-primary" data-bind="click:submitContacts">Download</button>
+                        <button class="btn btn-primary" data-bind="click:submitContacts"><translate params="code:'label-download',translator:self"></translate></button>
 
                     </fieldset>
                 </form>
@@ -38,12 +38,12 @@
                     <input id="addressService" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadAddresses">
 
                     <fieldset class="download-form">
-                        <legend>Addresses</legend>
-                        <p><strong>Description:  </strong>One record per address.
-                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
-                               title="Fields" data-content="addressName, address1, address2, city, state, zip, country">Fields...</a>
+                        <legend><translate params="code:'addresses-label',translator:self"></translate></legend>
+                        <p><strong><translate params="code:'label-description',translator:self"></translate>:  </strong><translate params="code:'download-addresses-description',translator:self"></translate>.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-bind="attr: {title: fieldsLabel}"
+                               data-content="addressName, address1, address2, city, state, zip, country"><translate params="code:'label-fields',translator:self"></translate>...</a>
                         </p>
-                        <h4>Options:</h4>
+                        <h4><translate params="code:'label-options',translator:self"></translate>:</h4>
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" id="directoryonly" name="directoryonly" data-bind="checked:addressesDirListingOnly"> Directory listing only
@@ -54,7 +54,7 @@
                                 <input type="checkbox" id="residenceonly" name="residenceonly" data-bind="checked: residencesOnly"> Residences only
                             </label>
                         </div>
-                        <input type="submit" value="Download"  class="btn btn-primary" />
+                        <input type="submit" data-bind="attr:{value:downloadLabel}" value="Download"  class="btn btn-primary" />
                     </fieldset>
                 </form>
             </div>
@@ -63,19 +63,17 @@
                     <input id="email-list-service" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadEmailList">
 
                     <fieldset class="download-form">
-                        <legend>Email Lists</legend>
-                        <p><strong>Description: </strong> Email list subscribers - name and e-mail address.
-                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
-                               title="Fields" data-content="First name, Last name, E-mail">Fields...</a>
+                        <legend><translate params="code:'label-email-lists',translator:self"></translate></legend>
+                        <p><strong><translate params="code:'label-description',translator:self"></translate>: </strong> <translate params="code:'download-emails-description',translator:self"></translate>.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-bind="attr: {title: fieldsLabel}"
+                               data-content="First name, Last name, E-mail"><translate params="code:'label-fields',translator:self"></translate>...</a>
                         </p>
                         <div class="form-group">
-                            <div class="alert alert-danger" data-bind="visible: elistError">
-                                <translate params="code:'list-select-error',translator:self"></translate></div>
                             <select class="form-control" id="lists"
-                                    data-bind="options: elists,optionsText:'name',value: selectedList,optionsCaption:'Select a list...'"></select>
+                                    data-bind="options: elists,optionsText:'name',value: selectedList,optionsCaption:listSelectCaption"></select>
                             </select>
                         </div>
-                        <button class="btn btn-primary" data-bind="click:submitEmailList,visible:selectedList">Download</button>
+                        <button class="btn btn-primary" data-bind="click:submitEmailList,visible:selectedList"><translate params="code:'label-download',translator:self"></translate></button>
                     </fieldset>
                 </form>
             </div>
@@ -84,20 +82,17 @@
                     <input id="postal-list-service" name="serviceCode" type="hidden" value="peanut.qnut-directory::downloads.DownloadPostalList">
 
                     <fieldset class="download-form">
-                        <legend>Postal Lists</legend>
-                        <p><strong>Description: </strong> Postal list subscriber addresss.
-                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
-                               title="Fields" data-content="addressName, address1, address2, city, state, zip, country">Fields...</a>
+                        <legend><translate params="code:'label-postal-lists',translator:self"></translate></legend>
+                        <p><strong><translate params="code:'label-description',translator:self"></translate>: </strong> <translate params="code:'download-postal-description',translator:self"></translate>.
+                            <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-bind="attr: {title: fieldsLabel}"
+                               title="Fields" data-content="addressName, address1, address2, city, state, zip, country"><translate params="code:'label-fields',translator:self"></translate>...</a>
                         </p>
                         <div class="form-group">
-                            <div class="alert alert-danger" data-bind="visible: plistError">
-                                <translate params="code:'list-select-error',translator:self"></translate></div>
-
                             <select class="form-control" id="postal-lists"
-                                    data-bind="options: postallists,optionsText:'name',value: selectedPostalList,optionsCaption:'Select a list...'"></select>
+                                    data-bind="options: postallists,optionsText:'name',value: selectedPostalList,optionsCaption:listSelectCaption"></select>
                             </select>
                         </div>
-                        <button class="btn btn-primary" data-bind="click:submitPostalList,visible:selectedPostalList">Download</button>
+                        <button class="btn btn-primary" data-bind="click:submitPostalList,visible:selectedPostalList"><translate params="code:'label-download',translator:self"></translate></button>
                     </fieldset>
                 </form>
             </div>
