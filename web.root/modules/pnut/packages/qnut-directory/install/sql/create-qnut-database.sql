@@ -318,6 +318,9 @@ CREATE TABLE IF NOT EXISTS  `qnut_person_affiliations` (
 CREATE TABLE IF NOT EXISTS  `qnut_persons` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `fullname` varchar(128) NOT NULL,
+  `firstname` varchar(128) NULL,
+  `lastname` varchar(128) NULL,
+  `middlename` varchar(128) NULL,
   `addressId` int(11) unsigned DEFAULT NULL,
   `email` varchar(128) DEFAULT NULL,
   `username` varchar(64) DEFAULT NULL,
@@ -327,7 +330,6 @@ CREATE TABLE IF NOT EXISTS  `qnut_persons` (
   `junior` tinyint(1) DEFAULT '0',
   `deceased` date DEFAULT NULL,
   `listingtypeId` int(11) unsigned DEFAULT '1',
-  `sortkey` varchar(128) DEFAULT NULL,
   `notes` text,
   `createdby` varchar(64) NOT NULL DEFAULT 'system',
   `createdon` datetime DEFAULT CURRENT_TIMESTAMP,
