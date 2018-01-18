@@ -129,9 +129,14 @@ class InitializeDirectoryCommand extends TServiceCommand
             'label-select',
             'label-updated',
             'label-young-friend',
+            'label-full-name',
+            'label-first-name',
+            'label-last-name',
+            'label-middle-name',
             'nav-more',
             'nav-previous',
-
+            'directory-name-error',
+            'dir-refresh-button-title'
             ));
 
         $result->translations['dir-entity-label-persons']   = ucfirst(TLanguage::text('dir-person-entity-plural'));

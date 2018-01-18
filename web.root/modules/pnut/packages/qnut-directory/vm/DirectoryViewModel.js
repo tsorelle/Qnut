@@ -312,6 +312,7 @@ var QnutDirectory;
                         me.selectFamily(response.family);
                     }
                     me.addTranslations(response.translations);
+                    me.personForm.refreshButtonTitle(me.translate('dir-refresh-button-title'));
                 }
                 else {
                     me.userCanEdit(false);
@@ -348,13 +349,21 @@ var QnutDirectory;
             me.buildPersonSelectList(selected);
             me.family.visible(true);
         };
+        DirectoryViewModel.getSortValue = function (person) {
+            return ((person.lastname || '') + '+' +
+                (person.firstname || '') + '+' +
+                (person.middlename || '') + '+' +
+                (person.fullname || ''));
+        };
         DirectoryViewModel.prototype.buildPersonSelectList = function (selected) {
             var me = this;
             me.family.persons.sort(function (x, y) {
                 if (x.id === y.id) {
                     return 0;
                 }
-                if (x.sortkey > y.sortkey) {
+                var xvalue = DirectoryViewModel.getSortValue(x);
+                var yvalue = DirectoryViewModel.getSortValue(y);
+                if (xvalue > yvalue) {
                     return 1;
                 }
                 return -1;

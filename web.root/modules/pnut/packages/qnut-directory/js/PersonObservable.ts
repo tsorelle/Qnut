@@ -23,7 +23,7 @@ namespace QnutDirectory {
         public affiliations : IAffiliation[] = [];
         public affiliationList= ko.observableArray<IAffiliationListItem>();
         public organizations : Peanut.ILookupItem[] = [];
-
+        public refreshButtonTitle = ko.observable();
 
         public nameError = ko.observable('');
         public emailError = ko.observable('');
@@ -63,17 +63,17 @@ namespace QnutDirectory {
         public static concatenateFullName(first: string, middle: string, last: string) {
             let result = first;
             if (middle) {
-                result += (result || ' ')+middle;
+                result += (result  ? ' ' : '')+middle;
             }
             if (last) {
-                result += (result || ' ')+last;
+                result += (result  ? ' ' : '')+last;
             }
             return result;
         };
 
         refreshFullname = () => {
             let me = this;
-            return personObservable.concatenateFullName(me.firstname(),me.middlename(),me.lastname());
+            me.fullName(personObservable.concatenateFullName(me.firstname(),me.middlename(),me.lastname()));
         };
 
 
@@ -119,7 +119,6 @@ namespace QnutDirectory {
             me.email('');
             me.dateOfBirth('');
             me.notes('');
-            // me.junior(false);
             me.active(1);
             me.directoryListingTypeId = ko.observable(1);
             me.lastUpdate('');
@@ -300,6 +299,9 @@ namespace QnutDirectory {
             person.deceased = me.deceased();
             person.email = me.email();
             person.fullname = me.fullName();
+            person.firstname = me.firstname();
+            person.middlename = me.middlename();
+            person.lastname = me.lastname();
             person.notes = me.notes();
             person.phone = me.phone();
             person.phone2 = me.phone2();
@@ -311,9 +313,13 @@ namespace QnutDirectory {
             let me = this;
             me.clearValidations();
             let valid = true;
-            let value = me.fullName();
+            let value=me.fullName();
             if (!value) {
-                me.nameError(": " + me.translate('form-error-name-blank')); //Please enter the first name");
+                me.refreshFullname();
+                value = me.fullName();
+            }
+            if (!value) {
+                me.nameError(": " + me.translate('directory-name-error'));
                 valid = false;
             }
             value = me.email();

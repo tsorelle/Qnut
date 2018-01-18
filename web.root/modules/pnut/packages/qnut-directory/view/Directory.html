@@ -171,22 +171,34 @@
                             <span class="sr-only"><translate params="code:'label-error',translator:self"></translate> :</span>
                             <translate params="code:'form-error-message',translator:self"></translate>
                         </div>
-                        <div class="form-group" data-bind="css:{'has-error': personForm.nameError}" >
-                            <label for="fullName" class="control-label"><translate params="code:'label-name',translator:self"></translate><span data-bind="text:personForm.fullNameError"></span></label>
-                            <input class="form-control" id="fullName" data-bind="value:personForm.fullName"/>
+                        <div class="form-group" >
+                            <label for="firstname" class="control-label"><translate params="code:'label-first-name',translator:self"></translate>
+                                <span data-bind="text:personForm.nameError"></span></label>
+                            <input class="form-control" id="firstname" data-bind="value:personForm.firstname"/>
                         </div>
-                        <div class="form-group">
-                            <label for="sortkey-input" class="control-label"><translate params="code:'dir-label-sort-key',translator:self"></translate></label>
-                            <div class="input-group" style="">
-                                <input class="form-control" id="sortkey-input"
-                                       data-bind="value:personForm.sortkey"/>
-                                <span class="input-group-btn"><button class="btn btn-default btn-secondary" type="button" tabindex="-1" data-bind="click:personForm.refreshSortKey">
-		                            <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
-                            </div>
+                        <div class="form-group" data-bind="css:{'has-error': personForm.nameError}" >
+                            <label for="lastname" class="control-label"><translate params="code:'label-last-name',translator:self"></translate>
+                                <span data-bind="text:personForm.nameError"></span></label>
+                            <input class="form-control" id="lastname" data-bind="value:personForm.lastname"/>
+                        </div>
+                        <div class="form-group" >
+                            <label for="middlename" class="control-label"><translate params="code:'label-middle-name',translator:self"></translate></label>
+                            <input class="form-control" id="middlename" data-bind="value:personForm.middlename"/>
+                        </div>
 
+                        <div class="form-group" data-bind="css:{'has-error': personForm.nameError}" >
+                            <label for="fullName" class="control-label"><translate params="code:'label-full-name',translator:self"></translate>
+                                <span data-bind="text:personForm.nameError"></span></label>
+                            <div class="input-group">
+                                <input class="form-control" id="fullName" data-bind="value:personForm.fullName"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default btn-secondary" type="button" tabindex="-1" data-bind="click:personForm.refreshFullname,attr:{title:personForm.refreshButtonTitle}">
+                                <i class="fa fa-refresh" aria-hidden="true"></i></button></span>
+                            </div>
                         </div>
                         <div class="form-group" data-bind="css:{'has-error': personForm.emailError}">
-                            <label for="email-input" class="control-label"><translate params="code:'label-email',translator:self"></translate><span data-bind="text:personForm.emailError"></span></label>
+                            <label for="email-input" class="control-label"><translate params="code:'label-email',translator:self"></translate>
+                                <span data-bind="text:personForm.emailError"></span></label>
                             <input class="form-control" id="email-input" data-bind="value:personForm.email"/>
                         </div>
                         <div class="form-group">
