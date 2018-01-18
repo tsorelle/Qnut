@@ -17,7 +17,6 @@ use Peanut\QnutDirectory\db\model\repository\PersonsRepository;
 use Tops\services\IMessageContainer;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
-
 /**
  * Class GetFamilyService
  * @package Peanut\QnutDirectory\services
@@ -43,7 +42,6 @@ use Tops\sys\TLanguage;
  *               public phone          : string = '';
  *               public notes          : string = '';
  *               public createdon      : string = '';
- *               public sortkey        : string = '';
  *               public addresstypeId  : any = null;
  *               public listingtypeId  : any = null;
  *               public latitude       : any = null;
@@ -64,6 +62,9 @@ use Tops\sys\TLanguage;
  *               public addressId      : any = null;
  *               public listingtypeId  : any = null;
  *               public fullname       : string = '';
+ *               public firstname       : string = '';
+ *               public middlename       : string = '';
+ *               public lastname       : string = '';
  *               public email          : string = '';
  *               public username       : string = '';
  *               public phone          : string = '';

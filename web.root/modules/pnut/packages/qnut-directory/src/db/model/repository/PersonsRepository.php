@@ -37,7 +37,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
                            $includeInactive=false) {
 
         $searchValue = "%$searchValue%";
-        $where = "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search";
+        $where = "fullname LIKE :search OR email LIKE :search  OR firstname LIKE :search  OR middlename LIKE :search OR lastname LIKE :search";
         if ($excludeAddress) {
             $where = sprintf('(%s) and (addressId is NULL OR addressId <> :addressId)',$where);
         }
@@ -45,8 +45,8 @@ class PersonsRepository extends \Tops\db\TEntityRepository
             "SELECT fullname AS `Name`, id AS `Value`,CONCAT(fullname,IF (email IS NULL OR email = '','',".
             "CONCAT(' (',email,')')))  AS Description FROM ".$this->getTableName(),
             $includeInactive,
-            $where, // "fullname LIKE :search OR email LIKE :search  OR sortkey LIKE :search",
-            "ORDER BY fullname,sortkey");
+            $where,
+            "ORDER BY fullname,lastname,firstname,middlename");
 
         $dbh = $this->getConnection();
         /**
@@ -74,8 +74,8 @@ class PersonsRepository extends \Tops\db\TEntityRepository
     public function getContactsForDownload($includekids, $directoryonly, $affiliation)
     {
 
-        $sql = 'SELECT fullname, p.phone AS phone1, phone2, a.phone AS homephone, p.email, dateofbirth, '.
-            'addressname, address1, address2, city, state, postalcode, country,  p.sortkey '.
+        $sql = 'SELECT p.id,fullname,lastname,firstname,middlename, p.phone AS phone1, phone2, a.phone AS homephone, p.email, dateofbirth, '.
+            'addressname, address1, address2, city, state, postalcode, country '.
             'FROM qnut_persons p LEFT OUTER JOIN qnut_addresses a ON p.addressId = a.id ';
         if($affiliation) {
             $sql .='LEFT OUTER JOIN qnut_person_affiliations af ON af.personid = p.`id` '.
@@ -98,7 +98,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
             $sql .= 'AND o.code = ? ';
         }
 
-        $sql .= 'ORDER BY p.sortkey,p.fullname ';
+        $sql .= 'ORDER BY p.lastname,p.firstname,p.middlename,p.fullname ';
 
         $stmt = $this->executeStatement($sql, $affiliation ? [$affiliation] : []);
 
@@ -111,7 +111,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
             'FROM qnut_email_subscriptions s  '.
             'JOIN qnut_persons p ON s.personId = p.id  '.
             'JOIN qnut_email_lists l ON s.listId = l.id '.
-            'WHERE p.active = 1 AND l.code = ? ORDER BY p.sortkey';
+            'WHERE p.active = 1 AND l.code = ? ORDER BY p.lastname,p.firstname,p.middlename,p.fullname';
         $stmt = $this->executeStatement($sql,[$listCode]);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
@@ -153,9 +153,6 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         }
         $person->setEmailSubscriptions($this->getSubscriptionValues($person->id));
     }
-
-
-
 
     /**
      * @param Person $person
@@ -311,6 +308,9 @@ class PersonsRepository extends \Tops\db\TEntityRepository
     {
         return array(
         'id'=>PDO::PARAM_INT,
+        'firstname'=>PDO::PARAM_STR,
+        'lastname'=>PDO::PARAM_STR,
+        'middlename'=>PDO::PARAM_STR,
         'fullname'=>PDO::PARAM_STR,
         'addressId'=>PDO::PARAM_INT,
         'email'=>PDO::PARAM_STR,
@@ -321,7 +321,6 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         // 'junior'=>PDO::PARAM_STR,
         'deceased'=>PDO::PARAM_STR,
         'listingtypeId'=>PDO::PARAM_INT,
-        'sortkey'=>PDO::PARAM_STR,
         'notes'=>PDO::PARAM_STR,
         'createdby'=>PDO::PARAM_STR,
         'createdon'=>PDO::PARAM_STR,

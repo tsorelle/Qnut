@@ -19,6 +19,9 @@ class Person  extends TEntity
 
     // public $id; // from TEntity
     // public $active; // from TEntity
+    public $firstname;
+    public $lastname;
+    public $middlename;
     public $fullname;
     public $addressId;
     public $email;
@@ -29,7 +32,6 @@ class Person  extends TEntity
     public $junior;
     public $deceased;
     public $listingtypeId;
-    public $sortkey;
     public $notes;
 
     /**
@@ -47,6 +49,17 @@ class Person  extends TEntity
         return $types;
     }
 
+    public function concatenatedName() {
+        $result = empty($this->firstname) ? '' : $this->firstname;
+        if (!empty($this->middlename)) {
+            $result .= ' '.$this->middlename;
+        }
+        if (!empty($this->lastname)) {
+            $result .= ' '.$this->middlename;
+        }
+        return $result;
+    }
+    
     public function setAddress($address)
     {
         $this->address = $address;
@@ -70,5 +83,13 @@ class Person  extends TEntity
 
     public function setEmailSubscriptions(array $value) {
         $this->emailSubscriptions = $value;
+    }
+    
+    public function assignFromObject($dto, $username = 'admin')
+    {
+        $result = parent::assignFromObject($dto, $username); 
+        if (empty($this->fullname)) {
+            $this->fullname = $this->concatenatedName();
+        }
     }
 }

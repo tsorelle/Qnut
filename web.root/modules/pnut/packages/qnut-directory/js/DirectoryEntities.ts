@@ -8,14 +8,15 @@ namespace QnutDirectory {
         public addressId      : any = null;
         public listingtypeId  : any = null;
         public fullname       : string = '';
+        public firstname       : string = '';
+        public middlename       : string = '';
+        public lastname       : string = '';
         public email          : string = '';
         public username       : string = '';
         public phone          : string = '';
         public phone2         : string = '';
         public dateofbirth    : string = '';
-        // public junior         : string = '';
         public deceased       : string = '';
-        public sortkey        : string = '';
         public notes          : string = '';
         public createdby      : string = '';
         public createdon      : string = '';

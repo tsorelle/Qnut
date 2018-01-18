@@ -6,13 +6,14 @@ namespace QnutDirectory {
     export class personObservable extends directoryEditPanel {
         public personId = ko.observable('');
         public fullName = ko.observable('');
+        public firstname = ko.observable('');
+        public lastname = ko.observable('');
+        public middlename = ko.observable('');
         public phone = ko.observable('');
         public phone2 = ko.observable('');
         public email = ko.observable('');
         public dateOfBirth = ko.observable('');
-        // public junior= ko.observable(false);
         public deceased= ko.observable('');
-        public sortkey = ko.observable('');
         public notes = ko.observable('');
         public active= ko.observable(1);
         public username = ko.observable('');
@@ -42,8 +43,6 @@ namespace QnutDirectory {
 
         // public emailLists :
 
-        private nameSubscription : KnockoutSubscription = null;
-
         ages = ko.observableArray(['Infant','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']);
 
 
@@ -60,6 +59,23 @@ namespace QnutDirectory {
             let email = me.email();
             return email ? 'mailto:' + me.fullName() + '<' + email + '>' : '#';
         };
+
+        public static concatenateFullName(first: string, middle: string, last: string) {
+            let result = first;
+            if (middle) {
+                result += (result || ' ')+middle;
+            }
+            if (last) {
+                result += (result || ' ')+last;
+            }
+            return result;
+        };
+
+        refreshFullname = () => {
+            let me = this;
+            return personObservable.concatenateFullName(me.firstname(),me.middlename(),me.lastname());
+        };
+
 
         calculateDob = (item: any) => {
             let me = this;
@@ -93,8 +109,10 @@ namespace QnutDirectory {
             let me=this;
             me.isAssigned = false;
             me.clearValidations();
-
             me.fullName('');
+            me.firstname('');
+            me.lastname('');
+            me.middlename('');
             me.username('');
             me.phone('');
             me.phone2('');
@@ -103,7 +121,6 @@ namespace QnutDirectory {
             me.notes('');
             // me.junior(false);
             me.active(1);
-            me.sortkey('');
             me.directoryListingTypeId = ko.observable(1);
             me.lastUpdate('');
             me.personId('');
@@ -131,8 +148,11 @@ namespace QnutDirectory {
             }
             me.isAssigned = true;
             me.clearValidations();
-            me.sortkey(person.sortkey);
-            me.setName(person.fullname);
+            me.fullName(person.fullname);
+            me.firstname(person.firstname);
+            me.lastname(person.lastname);
+            me.middlename(person.middlename);
+
             // me.fullName(person.fullname);
             me.username(person.username);
             me.phone(person.phone);
@@ -151,34 +171,6 @@ namespace QnutDirectory {
             me.updateAffiliationList();
             me.assignEmailSubscriptions(person.emailSubscriptions);
         };
-
-        private setName = (value) => {
-            let me = this;
-            if (me.nameSubscription) {
-                me.nameSubscription.dispose();
-            }
-            me.fullName(value);
-            me.nameSubscription = me.fullName.subscribe(me.updateSortKey);
-        };
-
-        public updateSortKey = (name: string) => {
-            let me = this;
-            name = name.trim();
-            if (name == '') {
-                me.sortkey('');
-            }
-            else if (me.sortkey().trim() == '') {
-                me.sortkey(NameParser.getFileAsName(name));
-            }
-        };
-
-        public refreshSortKey = () => {
-            let me = this;
-            me.sortkey('');
-            me.updateSortKey(me.fullName());
-        };
-
-
 
         private updateAffiliationList = () => {
             let me = this;
@@ -311,7 +303,6 @@ namespace QnutDirectory {
             person.notes = me.notes();
             person.phone = me.phone();
             person.phone2 = me.phone2();
-            person.sortkey = me.sortkey();
             person.username = me.username();
             person.emailSubscriptions = me.getSelectedSubscriptions(me.emailSubscriptionList,me.emailSubscriptionsView);
         };
