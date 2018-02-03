@@ -51,7 +51,7 @@ namespace QnutCalendar {
                         center: 'title',
                         right: 'month,basicWeek,basicDay'
                     },
-                    defaultDate: '2017-12-12',
+                    // defaultDate: '2017-12-12',
                     navLinks: true, // can click day/week names to navigate views
                     editable: true,
                     eventLimit: true, // allow "more" link when too many events

@@ -1,22 +1,35 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Terry
- * Date: 1/19/2018
- * Time: 10:22 AM
+ * Created by /tools/create-model.php
+ * Time:  2018-02-03 12:35:01
  */
 
-namespace Peanut\QnutDirectory\db\model\entity;
+namespace Peanut\QnutCalendar\db\model\entity;
 
-
-use Tops\sys\TDates;
-
-class CalendarEvent
+class CalendarEvent  extends \Tops\db\TimeStampedEntity
 {
-    public $title = '';
-    public $start = '';
+    public $id;
+    public $title;
+    public $start;
+    public $end;
+    public $url;
+    public $eventTypeId;
+    public $notes;
+    public $recurPattern;
+    public $recurStart;
+    public $recurEnd;
+    public $recurId;
+    public $recurInstance;
+    public $active;
 
-    public static function Create($title,$start)
+    public function getDtoDataTypes()
     {
+        $types = parent::getDtoDataTypes();
+        $types['start'] = \Tops\sys\TDataTransfer::dataTypeDateTime;
+        $types['end'] = \Tops\sys\TDataTransfer::dataTypeDateTime;
+        $types['recurStart'] = \Tops\sys\TDataTransfer::dataTypeDate;
+        $types['recurEnd'] = \Tops\sys\TDataTransfer::dataTypeDate;
+        $types['recurInstance'] = \Tops\sys\TDataTransfer::dataTypeDate;
+        return $types;
     }
 }
