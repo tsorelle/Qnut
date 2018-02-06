@@ -11,12 +11,14 @@ namespace Peanut\QnutCalendar\db\model;
 use Peanut\QnutCalendar\db\model\entity\CalendarEvent;
 use Peanut\QnutCalendar\db\model\entity\FullCalendarEvent;
 use Peanut\QnutCalendar\db\model\repository\CalendarEventsRepository;
+use Tops\db\model\repository\LookupTableRepository;
 use Tops\sys\TCalendarPage;
 use Tops\sys\TDateRepeater;
 use Tops\sys\TDates;
 
 class CalendarEventManager
 {
+    const ManageCalendarPermissionName = 'Manage calendar';
     /**
      * @var CalendarEventsRepository
      */
@@ -35,13 +37,24 @@ class CalendarEventManager
         }
     }
 
-    public function getCalendarEvents($request,$year,$month,$filter='',$code='', $pageDirection='')
+    /**
+     * @param $request \stdClass
+     * @return FullCalendarEvent[]
+     */
+    public function getCalendarEvents($request)
     {
+        $year = empty($request->year) ? date('Y') : $request->year;
+        $month = empty($request->month) ? date('n') : $request->month;
+        $filter= empty($request->filter) ? '' : $request->filter;
+        $code=empty($request->code) ? '' : $request->code; 
+        $pageDirection=empty($request->pageDirection) ? '' : $request->pageDirection;
+        $publicOnly = (!empty($request->public));
+
         $calendarPage = TCalendarPage::Create($year, $month, $pageDirection);
         $startDate = $calendarPage->start->format('Y-m-d');
         $endDate = $calendarPage->end->format('Y-m-d');
         $eventsRepository = $this->getEventsRepository();
-        $events = $eventsRepository->getFilteredEvents($filter, $code, $startDate, $endDate);
+        $events = $eventsRepository->getFilteredEvents($startDate,$endDate,$filter,$code,$publicOnly);
 
         /**
          * @var $repeats FullCalendarEvent[]
@@ -52,6 +65,7 @@ class CalendarEventManager
          */
         $repeats = [];
 
+        // divide repeat event templates from event instances
         foreach ($events as $event) {
             if ($event->repeatPattern == null) {
                 $results[] = $event;
@@ -59,13 +73,18 @@ class CalendarEventManager
                 $repeats[] = $event;
             }
         }
+
+        // get repeating dates
         $repeater = new TDateRepeater();
         foreach ($repeats as $event) {
             $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
             foreach ($dates as $date) {
+                // Check if a replacement event found for this instance
                 if ($this->findRepeatInstance($events,$event->id,$date)) {
                     continue;
                 }
+
+                // clone the event and update start and end dates
                 $repeat = clone $event;
                 $repeat->start = $date;
                 @list($datePart,$timePart) = explode('T',$event->start);
@@ -83,6 +102,8 @@ class CalendarEventManager
                 $results[] = $repeat;
             }
         }
+
+        // sort by start time
         uasort($results,function ($eventA,$eventB) {
             $a = new \DateTime($eventA->start);
             $b = new \DateTime($eventB->start);
@@ -91,12 +112,17 @@ class CalendarEventManager
             }
             return ($a < $b) ? -1 : 1;
         });
+
         return $results;
     }
 
     /**
-     * @param $events FullCalendarEvent[]
-     * @param $repeatInstance
+     * Return true if a replacement event was posted for a repeating instance
+     *
+     * @param $events
+     * @param $id
+     * @param $date
+     * @return bool
      */
     private function findRepeatInstance($events,$id,$date) {
         $repeatInstance = $id.','.$date;
@@ -108,6 +134,23 @@ class CalendarEventManager
         return false;
     }
 
+    public function getEventTypesList()
+    {
+        $repository = new LookupTableRepository('qnut_calendar_event_types');
+        $repository->setLookupInfoColumns(['backgroundColor as `color`']);
+        return $repository->getLookupList();
+    }
 
+    public function getResourcesList()
+    {
+        $repository = new LookupTableRepository('qnut_resources');
+        return $repository->getLookupList();
+    }
+
+    public function getCommitteeList()
+    {
+        $repository = new LookupTableRepository('qnut_committees');
+        return $repository->getLookupList();
+    }
 
 }
