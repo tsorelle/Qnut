@@ -38,8 +38,8 @@ class CalendarEventManager
     }
 
     /**
-     * @param $request \stdClass
-     * @return FullCalendarEvent[]
+     * @param $request
+     * @return \stdClass
      */
     public function getCalendarEvents($request)
     {
@@ -113,7 +113,11 @@ class CalendarEventManager
             return ($a < $b) ? -1 : 1;
         });
 
-        return $results;
+        $response = new \stdClass();
+        $response->events = $results;
+        $response->startDate = $calendarPage->start->format('Y-m-d');
+        $response->endDate = $calendarPage->end->format('Y-m-d');
+        return $response;
     }
 
     /**

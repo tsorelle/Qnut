@@ -29,23 +29,24 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
     protected function getFieldDefinitionList()
     {
         return array(
-        'id'=>PDO::PARAM_INT,
-        'title'=>PDO::PARAM_STR,
-        'start'=>PDO::PARAM_STR,
-        'end'=>PDO::PARAM_STR,
-        'url'=>PDO::PARAM_STR,
-        'eventTypeId'=>PDO::PARAM_INT,
-        'notes'=>PDO::PARAM_STR,
-        'recurPattern'=>PDO::PARAM_STR,
-        'recurStart'=>PDO::PARAM_STR,
-        'recurEnd'=>PDO::PARAM_STR,
-        'recurId'=>PDO::PARAM_INT,
-        'recurInstance'=>PDO::PARAM_STR,
-        'createdby'=>PDO::PARAM_STR,
-        'createdon'=>PDO::PARAM_STR,
-        'changedby'=>PDO::PARAM_STR,
-        'changedon'=>PDO::PARAM_STR,
-        'active'=>PDO::PARAM_STR);
+            'id' => PDO::PARAM_INT,
+            'title' => PDO::PARAM_STR,
+            'start' => PDO::PARAM_STR,
+            'end' => PDO::PARAM_STR,
+            'allDay' => PDO::PARAM_STR,
+            'url' => PDO::PARAM_STR,
+            'eventTypeId' => PDO::PARAM_INT,
+            'notes' => PDO::PARAM_STR,
+            'recurPattern' => PDO::PARAM_STR,
+            'recurStart' => PDO::PARAM_STR,
+            'recurEnd' => PDO::PARAM_STR,
+            'recurId' => PDO::PARAM_INT,
+            'recurInstance' => PDO::PARAM_STR,
+            'createdby' => PDO::PARAM_STR,
+            'createdon' => PDO::PARAM_STR,
+            'changedby' => PDO::PARAM_STR,
+            'changedon' => PDO::PARAM_STR,
+            'active' => PDO::PARAM_STR);
     }
 
     /**
@@ -59,12 +60,12 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
     {
         switch ($filter) {
             case 'resource' :
-                $joins = 'JOIN qnut_calendar_event_resources er on er.eventId = e.id JOIN qnut_resources r on r.id = er.resourceId';
-                $filters = "AND r.code = '?'";
+                $joins = 'JOIN qnut_calendar_event_resources er on er.eventId = e.id JOIN qnut_resources j on j.id = er.resourceId';
+                $filters = "AND j.code = ?";
                 break;
             case 'committee' :
-                $joins = 'JOIN qnut_calendar_event_committees ec ON ec.eventId = e.id JOIN qnut_committees c ON c.id = ec.committeeId';
-                $filters = "AND r.code = '?'";
+                $joins = 'JOIN qnut_calendar_event_committees ec ON ec.eventId = e.id JOIN qnut_committees j ON j.id = ec.committeeId';
+                $filters = "AND j.code = ?";
                 break;
             default :
                 $joins = '';
@@ -81,7 +82,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             "SELECT e.id,title ,  " .
             "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
-            "IF(`end` IS NULL,1,0) AS allDay ,e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
+            "allDay,e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
             "CONCAT(e.recurId,',',e.recurInstance) AS repeatInstance,".
             "CONCAT(e.recurPattern,';',e.recurStart,IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern " .
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .

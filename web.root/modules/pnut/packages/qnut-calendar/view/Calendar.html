@@ -1,15 +1,15 @@
 <div id="calendar-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
-<div id="calendar-view-container" class="row" style="display: none">
+<div id="calendar-view-container" class="row" style="display: none;margin-bottom: 10rem">
     <div class="col-md-12">
         <div class="row">
-            <div class="col-md-12" id="calendar-section">
+            <div class="col-md-12"  id="calendar-section">
                 <nav class="navbar navbar-default" data-bind="visible:menuVisible">
                     <div class="container-fluid">
                         <div class="navbar-header">
-                            <a class="navbar-brand" href="#">Filter <i class="fa fa-filter"></i></a>
+                            <a class="navbar-brand" href="#"><translate params="code:'label-filter',translator:self"></translate> <i class="fa fa-filter"></i></a>
                         </div>
                         <ul class="nav navbar-nav">
-                            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Types<span class="caret"></span></a>
+                            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><translate params="code:'calendar-label-event-type',translator:self"></translate><span class="caret"></span></a>
                                 <ul class="dropdown-menu" data-bind="foreach:eventTypes">
                                     <li>
                                         <a href="#" data-bind="click:$parent.filterEventType">
@@ -18,28 +18,63 @@
                                     </li>
                                 </ul>
                             </li>
-                            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Committees<span class="caret"></span></a>
+                            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><translate params="code:'committee-entity-plural',case:'ucfirst',translator:self"></translate><span class="caret"></span></a>
                                 <ul class="dropdown-menu" data-bind="foreach:committees">
                                     <li><a href="#" data-bind="click:$parent.filterCommittee"><span data-bind="text:name"></span></a></li>
                                 </ul>
                             </li>
-                            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Resources<span class="caret"></span></a>
+                            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><translate params="code:'resource-entity-plural',case:'ucfirst',translator:self"></translate><span class="caret"></span></a>
                                 <ul class="dropdown-menu" data-bind="foreach:resources">
                                     <li><a href="#" data-bind="click:$parent.filterResource"><span data-bind="text:name"></span></a></li>
                                 </ul>
                             </li>
-                            <li data-bind="visible:filtered()!=='all'"><a href="#" data-bind="click:clearFilter">Show all</a> </li>
+                            <li data-bind="visible:filtered()!=='all'"><a href="#" data-bind="click:clearFilter"><translate params="code:'label-show-all',translator:self"></translate></a> </li>
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                             <li data-bind="visible:filtered()!=='all'"><a href="#"><strong><span data-bind="text:filterMessage"></span></strong></a></li>
                             <li data-bind="visible:userPermission()=='edit'">
-                                <a href="#" data-bind="click:onNewEvent"><span class="fa fa-calendar"></span> New Event</a> </li>
+                                <a href="#" data-bind="click:onNewEvent"><span class="fa fa-calendar"></span> <translate params="code:'calendar-label-new-event',translator:self"></translate></a> </li>
                         </ul>
                     </div>
                 </nav>
                 <!-- view model bindings -->
-                <div  id='calendar'></div>
+                 <div style="clear: both; padding-left:5rem;padding-right:5rem" id='calendar'></div>
             </div>
         </div>
     </div>
+
+    <!-- modals -->
+    <div class="modal" id="event-info-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <button data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title"  data-bind="text:eventForm.title"></h4>
+                        <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <span style="font-weight: bold" data-bind="text:eventForm.eventTime"></span>
+                        </div>
+                        <div data-bind="visible:eventForm.repeating">
+                            <translate params="code:'calendar-repeat-message',translator:self"></translate> <span class="fa fa-repeat"></span>
+                        </div>
+                        <div style="margin-top: 3ex">
+                            <p>
+                                <a href="#" data-bind="click:getEventDetails"><translate params="code:'calendar-get-details',translator:self"></translate> </a>
+                            </p>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="click: onEditEvent"><translate params="code:'label-edit',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-close',translator:self"></translate></button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
 </div>

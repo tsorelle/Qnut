@@ -1,5 +1,6 @@
 /// <reference path="../../../../pnut/core/ViewModelBase.ts" />
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
+/// <reference path='../../../../typings/moment/moment.d.ts' />
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
 /// <reference path='../../../../typings/lodash/find/index.d.ts' />
 /// <reference path='../../../../typings/lodash/findIndex/index.d.ts' />
@@ -22,16 +23,223 @@ namespace QnutCalendar {
         borderColor : string;
         textColor : string;
         repeatPattern : string;
-        repeatInstance : string;
+        repeatInstance : any;
+    }
+
+    interface ICalendarEventObject {
+        id : any;
+        title : string;
+        start : Moment;
+        end : Moment;
+        allDay : boolean;
+        url : string;
+        eventType : string;
+        repeatPattern : string;
+        repeatInstance : any;
+    }
+
+    interface ICalendarEventDetails extends ICalendarEvent {
+        eventTypeId: any;
+        notes: string;
+        recurId: any;
+        resources: any[];
+        committees: any[];
+        createdBy: string;
+        createdOn: string;
+        changedBy: string;
+        changedOn: string;
     }
 
     interface IGetCalendarResponse {
         events: ICalendarEvent[];
-        eventCount: number;
+        startDate: string;
+        endDate: string;
+    }
+
+    interface ICalendarInitResponse extends IGetCalendarResponse {
+        events: ICalendarEvent[];
         userPermission: string;
         types: Peanut.ILookupItem[];
         committees: Peanut.ILookupItem[];
         resources: Peanut.ILookupItem[];
+        translations : string[];
+    }
+    
+    export class calendarEventObservable {
+        id : any = 0;
+        repeatPattern : string = '';
+        repeatInstance : any = null;
+
+        // view
+        title = ko.observable('');
+        startDate = ko.observable('');
+        startTime = ko.observable('');
+        endDate = ko.observable('');
+        endTime = ko.observable('');
+        repeating = ko.observable(false);
+        allDay = ko.observable<Boolean>(false);
+        url = ko.observable('');
+        eventType = ko.observable('');
+        eventTime = ko.observable('');
+
+        // edit
+        eventTypeId: any;
+        notes = ko.observable('');
+        resources: any[];
+        committees: any[];
+        createdBy = ko.observable('');
+        createdOn = ko.observable('');
+        changedBy = ko.observable('');
+        changedOn = ko.observable('');
+
+        formatStartEnd(startMoment : Moment,endMoment: Moment,allDay) {
+            // moment formatting: http://momentjs.com/docs/#/displaying/
+            let me = this;
+            if (!startMoment) {
+                return '';
+            }
+            let startDay = startMoment.format('ddd MMM D, YYYY');
+            let startTime = allDay ? '' : startMoment.format(' h:mm a');
+            if (!endMoment) {
+                return startDay + startTime;
+            }
+            let endDay = endMoment.format('ddd MMM D, YYYY');
+            let endTime  = '';
+            if (startDay == endDay) {
+                endTime = allDay ? '' : endMoment.format(' to h:mm a');
+                return startDay + startTime + endTime;
+            }
+            endTime = allDay ? '' : endMoment.format(' h:mm a');
+            return startDay + startTime + ' to ' + endDay + endTime;
+        }
+
+        clear = () => {
+            let me = this;
+            me.title('');
+            me.startDate('');
+            me.endDate('');
+            me.startTime('');
+            me.endTime('');
+            me.allDay(false);
+            me.url('');
+            me.eventType('');
+            me.eventTypeId = 0;
+            me.notes('');
+            me.resources = [];
+            me.committees = [];
+            me.createdBy('');
+            me.createdOn('');
+            me.changedBy('');
+            me.changedOn('');
+            me.repeatPattern = '';
+            me.repeatInstance = 0;
+        };
+
+        assignFromCalendarObject = (event: ICalendarEventObject) => {
+            let me = this;
+
+            let range = me.formatStartEnd(event.start,event.end,event.allDay);
+            me.eventTime(range);
+
+            let startDate = event.start ? event.start.format('YYYY-MM-DD'): '';
+            let startTime = event.start ? event.start.format('HH:mm'): '';
+            let endDate = event.start ? event.start.format('YYYY-MM-DD'): '';
+            let endTime = event.start ? event.start.format('HH:mm'): '';
+
+            me.startDate(startDate);
+            me.startTime(startTime);
+            me.endDate(endDate);
+            me.endTime(endTime);
+            me.repeatInstance = event.repeatInstance;
+            me.repeatPattern = event.repeatPattern;
+            me.title(event.title);
+            me.allDay(event.allDay);
+            me.url(event.url);
+            me.eventType(event.eventType);
+            me.repeating(!!event.repeatPattern);
+        };
+
+        assign = (event: ICalendarEvent) => {
+            let me = this;
+
+            // todo assign dates and times
+            me.repeatInstance = event.repeatInstance;
+            me.repeatPattern = event.repeatPattern;
+            me.title(event.title);
+            me.allDay(event.allDay == '1');
+            me.url(event.url);
+            me.eventType(event.eventType);
+        };
+
+        assignDetails = (event: ICalendarEventDetails) => {
+            let me = this;
+            me.eventTypeId = event.eventTypeId ;
+            me.notes (event.notes );
+            me.resources = event.resources ;
+            me.committees = event.committees;
+            me.createdBy(event.createdBy);
+            me.createdOn(event.createdOn );
+            me.changedBy(event.changedBy );
+            me.changedOn(event.changedOn );
+        };
+
+    }
+
+    export class calendarPage {
+        month: number;
+        year: number;
+        startDate: Date;
+        endDate: Date;
+
+        constructor(year: any, month: any, startDate: string, endDate: string)  {
+            this.month = month;
+            this.year = year;
+            this.startDate = new Date(startDate + 'T00:00:00');
+            this.endDate = new Date(endDate  + 'T00:00:00');
+
+        }
+
+        static compareDate(yourDate: string, myDate: Date) {
+            let compDate = new Date(yourDate);
+            if (compDate > myDate) {
+                return 1;
+            }
+            if (compDate < myDate) {
+                return -1;
+            }
+            return 0;
+        }
+        compareStart = (isoDate: string) => {
+            return calendarPage.compareDate(isoDate, this.startDate)
+        };
+
+        compareEnd = (isoDate: string) => {
+            return calendarPage.compareDate(isoDate, this.endDate)
+        };
+
+        getNextMonth = () => {
+            let response = {
+                year: this.year,
+                month: this.month + 1
+            };
+            if (response.month == 13) {
+                response.year++;
+                response.month = 1;
+            }
+            return response;
+        };
+        
+        getPrevMonth = () => {
+            let response = {
+                year: this.year,
+                month: this.month - 1
+            };
+            if (response.month == 0) {
+                response.year--;
+                response.month = 12;
+            }
+            return response;
+        };
     }
 
     export class CalendarViewModel extends Peanut.ViewModelBase {
@@ -39,10 +247,6 @@ namespace QnutCalendar {
 
         test = ko.observable();
 
-        monthStartDate = null;
-        monthEndDate = null;
-
-        eventCount = 0;
         events : ICalendarEvent[] = [];
         eventSource : ICalendarEvent[];
 
@@ -51,6 +255,7 @@ namespace QnutCalendar {
         userPermission = ko.observable('view');
         menuVisible = ko.observable(false);
 
+        eventForm = new calendarEventObservable();
         eventTypes = ko.observableArray<Peanut.ILookupItem>();
         committees = ko.observableArray<Peanut.ILookupItem>();
         resources = ko.observableArray<Peanut.ILookupItem>();
@@ -59,13 +264,17 @@ namespace QnutCalendar {
         filterCode = ko.observable('');
         filterMessage = ko.observable('');
 
+        pages: calendarPage[] = [];
+        currentPage = -1;
+
         private calendar : JQuery;
+        private eventInfoModal : JQuery;
 
 
         init(successFunction?: () => void) {
             let me = this;
-            // jQuery('head').append('<link rel="stylesheet" type="text/css" href="/application/assets/js/libraries/fullcalendar/fullcalendar.print.css media=print">');
             console.log('calendar Init');
+            me.eventInfoModal = jQuery('#event-info-modal');
             me.application.loadStyleSheets([
                 '@lib:fullcalendar-css',
                 '@lib:fullcalendar-print-css media=print'
@@ -78,63 +287,74 @@ namespace QnutCalendar {
                     '@lib:lodash'
                 ], () => {
                     me.lo = _.noConflict(); // avoid conflict with underscore.js
-                    me.services.executeService('peanut.qnut-calendar::GetEvents', {initialize: 1},
-                        (serviceResponse: Peanut.IServiceResponse) => {
-                            if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                                let response = <IGetCalendarResponse>serviceResponse.Value;
-                                let responseEvents = response.events;
-                                me.lo.forEach(responseEvents,(value: any) => {
-                                    me.events.push(value);
-                                });
-                                responseEvents = null;
-                                me.monthStartDate = null;
-                                me.monthEndDate = null;
-                                me.addAllTypesItem(response.types);
-                                me.eventTypes(response.types);
-                                me.userPermission(response.userPermission);
-                                if (response.userPermission=='edit') {
-                                    me.addAllItem(response.resources,'resources');
-                                    me.resources(response.resources);
-                                    me.addAllItem(response.committees,'committees');
-                                    me.committees(response.committees);
-                                    me.menuVisible(true);
-                                }
-                                me.showCalendar(me.events);
+                    let request = {
+                        initialize: 1
+                    };
 
-                            }
-                            me.bindDefaultSection();
-                            successFunction();
-                        })
-                        .fail(() => {
-                            let trace = me.services.getErrorInformation();
-                        })
+                    me.getNewCalendar(request,(response: ICalendarInitResponse) => {
+                        // me.addAllTypesItem(response.types);
+                        me.eventTypes(response.types);
+                        me.userPermission(response.userPermission);
+                        me.addTranslations(response.translations);
+                        if (response.userPermission=='edit') {
+                            me.resources(response.resources);
+                            me.committees(response.committees);
+                            me.menuVisible(true);
+                        }
+                        me.showCalendar(response.events);
+                        me.bindDefaultSection();
+                        successFunction();
+                    });
                 });
             });
         }
 
-        private addAllTypesItem(lookup : any[]) {
-            let itemName = 'event types';
-            lookup.unshift({
-                id: 0,
-                code: 'all',
-                name: 'All ' + itemName,
-                description: 'Show all ' + itemName,
-                color: '#ffffff'
-            });
-        }
+        getEvents = (request: any, successFunction? : (response: IGetCalendarResponse) => void) => {
+            let me = this;
+            me.services.executeService('peanut.qnut-calendar::GetEvents', request,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let response = <IGetCalendarResponse>serviceResponse.Value;
+                        let responseEvents = response.events; 
+                        response.events = [];
+                        me.lo.forEach(responseEvents,(value: any) => {
+                            value.allDay = value.allDay == '1';
+                            response.events.push(value);
+                        });
+                        responseEvents = null;
+                        if (successFunction) {
+                            successFunction(response);
+                        }
+                    }
+                })
+                .fail(() => {
+                    let trace = me.services.getErrorInformation();
+                })
+        };
 
-        private addAllItem(lookup : Peanut.ILookupItem[],itemName: string) {
-            // todo: support translation
-            lookup.unshift({
-                id: 0,
-                code: 'all',
-                name: 'All ' + itemName,
-                description: 'Show all ' + itemName
-            });
-        }
+        getNewCalendar = (request: any, successFunction? : (response: IGetCalendarResponse) => void) => {
+            let me = this;
+            let month = me.getCurrentMonth();
+            if (!request) {
+                request = month;
+            }
+            else {
+                request.year = month.year;
+                request.month = month.month;
+            }
+            me.getEvents(request, (response: IGetCalendarResponse) => {
+                me.pages = [new calendarPage(request.year,request.month,response.startDate,response.endDate)];
+                me.currentPage = 0;
+                if (successFunction) {
+                    successFunction(response);
+                }
+            })
+        };
+
 
         showCalendar(events) {
             let me = this;
+            me.events = me.lo.sortBy(events, ['start']);
             me.eventSource = events;
             me.filtered('all');
             me.calendar = jQuery('#calendar');
@@ -170,98 +390,212 @@ namespace QnutCalendar {
 
         };
 
-        clearFilter() {
+        getCurrentMonth() {
             let me = this;
-            if (me.filtered() !== 'all') {
-                me.switchEventSource(me.events);
-                me.filtered('all');
-                me.filterMessage('');
+            if (me.currentPage < 0) {
+                return {
+                    year: new Date().getFullYear(),
+                    month:  new Date().getMonth() + 1,
+                };
             }
+            else {
+                let page = me.pages[me.currentPage];
+                return {
+                    year: page.year,
+                    month: page.month
+                }
+            }
+
+        }
+
+        clearFilter = (successFunction? : () => void) => {
+            let me = this;
+            let currentFilter= me.filtered();
+                if (currentFilter !== 'type' && currentFilter != 'all') {
+                    me.getNewCalendar(me.getCurrentMonth(),(response: IGetCalendarResponse) => {
+                        me.events = me.lo.sortBy(response.events, ['start']);
+                        me.setFilter(me.events);
+                        if (successFunction) {
+                            successFunction();
+                        }
+                    });
+            }
+            else {
+                me.setFilter(me.events);
+                if (successFunction) {
+                    successFunction();
+                }
+            }
+        };
+
+        setFilter = (events: any[], filter = 'all', message = '', code = '') => {
+            let me = this;
+            me.filtered(filter);
+            me.filterCode(code);
+            me.switchEventSource(events);
+            me.filterMessage(message);
+        };
+
+        setTypeFilter(item: any) {
+            let me = this;
+            let events = me.lo.filter(me.events, (event: ICalendarEvent) => {
+                return event.eventType == item.code;
+            });
+            me.setFilter(events,'type',item.description,item.code);
         }
 
         filterEventType = (item: any) => {
             let me = this;
             let filter = 'type';
-            if (item.code === 'all') {
-                me.clearFilter();
+
+            let currentFilter = me.filtered();
+            let currentCode = me.filterCode();
+            if (!(currentFilter == filter && currentCode == item.code)) {
+                if (currentFilter == filter || currentFilter == 'all' ) {
+                    me.setTypeFilter(item);
+                }
+                else {
+                    // refetch events before filter
+                    me.getNewCalendar(null,(response: IGetCalendarResponse) => {
+                            me.events = response.events;
+                            me.setTypeFilter(item);
+                        });
+                }
             }
-            else if (!(me.filtered() === filter &&  me.filterCode() === item.code)) {
-                let events = me.lo.filter(me.events, (event: ICalendarEvent) => {
-                    return event.eventType == item.code;
-                });
-                me.filtered(filter);
-                me.filterCode(item.code);
-                me.switchEventSource(events);
-                let name = item.name;
-                me.filterMessage(item.description);
+        };
+
+        getFilteredEvents = (filter: string, item: any) => {
+            let me = this;
+            if (me.filtered() != filter) {
+                me.getNewCalendar(
+                    {
+                        filter: filter,
+                        code: item.code
+                    },(response: IGetCalendarResponse) => {
+                        me.events = response.events;
+                        me.setFilter(this.events,filter,item.description,item.code);
+                    });
             }
-        }
+        };
 
         filterCommittee = (item: any) => {
-            let me = this;
-            let filter = 'committee';
-            if (item.code === 'all') {
-                me.clearFilter();
-            }
-            else if (!(me.filtered() === filter &&  me.filterCode() === item.code)) {
-                alert('Filter ' + filter + ' ' + item.code);
-                // todo: implement filer
-                me.filtered(filter);
-                me.filterCode(item.code);
-                let name = item.name;
-                if (name.indexOf('committee') === -1) {
-                    name += ' Committee';
-                }
-                me.filterMessage(name);
-            }
-
+            this.getFilteredEvents('committee',item);
         };
 
         filterResource = (item: any) => {
-            let me = this;
-            let filter = 'resource';
-            if (item.code === 'all') {
-                me.clearFilter();
-            }
-            else if (!(me.filtered() === filter &&  me.filterCode() === item.code)) {
-                alert('Filter ' + filter + ' ' + item.code);
-                // todo: implement filer
-                me.filtered(filter);
-                me.filterCode(item.code);
-                me.filterMessage('Reserved: ' + item.name);
-            }
-        };
-
-        onEventClick = (calEvent, jsEvent, view) => {
-            let me = this;
-            alert('Event: ' + calEvent.title);
-           //  alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-//            alert('View: ' + view.name);
-
-
+            this.getFilteredEvents('resource',item);
         };
 
         onViewRender = (view,element) => {
             let me = this;
-            if (view.start) {
-                let startDate = view.start.format('Y-M-D');
-                if (view.end) {
-                    let endDate = view.end.format('Y-M-D');
-                    me.test(startDate + ' to ' + startDate);
-                    if (me.monthStartDate == null) {
-                        me.monthStartDate =startDate;
-                        me.monthStartDate=endDate;
-                    }
-                    else if (startDate >= me.monthStartDate || endDate > me.monthEndDate ) {
-                        console.log('refresing ' + me.test());
-                    }
-                }
+            if (me.currentPage >= 0) {
+                me.pageCalendar(view.start,view.end);
             }
+        };
+
+        pageCalendar = (start: Moment,end:Moment) => {
+            let me = this;
+            let startDate = start.format('Y-M-D');
+            let endDate = end.format('Y-M-D');
+            console.log('PAGING: start=' + startDate + '; end='+endDate);
+
+            let page = me.pages[me.currentPage];
+            let movePage = 0;
+            if (page.compareStart(startDate) == -1) {
+                console.log('Page prev');
+                movePage = -1;
+            }
+            else if (page.compareEnd(endDate) > 0) {
+                console.log('Page next');
+                movePage = 1;
+            }
+            else {
+                return;
+            }
+            let newPage = me.currentPage + movePage;
+            if (newPage <0 || newPage >= me.pages.length) {
+                me.getNextPage(movePage);
+            }
+            else {
+                me.currentPage = newPage;
+            }
+        };
+
+        getNextPage = (movePage: number) => {
+            let me = this;
+            let page =me.pages[me.currentPage];
+
+            let request = null;
+            if (movePage > 0) {
+                request = page.getNextMonth();
+                request.pageDirection = 'right';
+                console.log('Get next page ' + request.pageDirection + ' ' + request.year + '-' + request.month);
+            }
+            else {
+                request = page.getPrevMonth();
+                request.pageDirection = 'left';
+
+                console.log('Get prev page'+ request.pageDirection + ' ' + request.year + '-' + request.month);
+            }
+
+            if (me.filtered() != 'all' && me.filtered() != 'type') {
+                request.filter = me.filtered();
+                request.code = me.filterCode();
+
+            }
+
+            me.getEvents(request, (response: IGetCalendarResponse) => {
+                let events = me.events.concat(response.events);
+                me.events = me.lo.sortBy(events, ['start']);
+                if (me.filtered() === 'type') {
+                    let code = me.filterCode();
+                    let events = me.lo.filter(me.events, (event: ICalendarEvent) => {
+                        return event.eventType == code;
+                    });
+                }
+                let newPage = new calendarPage(request.year,request.month,response.startDate,response.endDate);
+                if (movePage > 0) {
+                    me.currentPage = me.pages.length;
+                    me.pages.push(newPage);
+                }
+                else {
+                    me.currentPage = 0;
+                    me.pages.unshift(newPage);
+                }
+                me.switchEventSource(events);
+            })
+        };
+
+        onEventClick = (calEvent, jsEvent, view) => {
+            let me = this;
+            me.eventForm.assignFromCalendarObject(calEvent);
+            me.eventInfoModal.modal('show');
+
+
+            /*
+              alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+              alert('View: ' + view.name);
+            let x = jsEvent.clientX;
+            let y = jsEvent.clientY;
+
+
+             */
+
+
         };
 
         onNewEvent = () => {
             alert('new event');
         };
+
+        onEditEvent = () => {
+            alert('edit');
+        };
+
+        getEventDetails = () => {
+            alert('get details');
+
+        }
 
 
     }

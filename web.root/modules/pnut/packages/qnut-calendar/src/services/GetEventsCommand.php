@@ -11,6 +11,7 @@ namespace Peanut\QnutCalendar\services;
 
 use Peanut\QnutCalendar\db\model\CalendarEventManager;
 use Tops\services\TServiceCommand;
+use Tops\sys\TLanguage;
 
 /**
  * Class GetEventsCommand
@@ -32,6 +33,8 @@ use Tops\services\TServiceCommand;
  *  Response:
  *
  *     interface IGetCalendarResponse {
+ *         year: any;
+ *         month: any;
  *         events: ICalendarEvent[];  (FullCalendarEvent[])
  *          Optional if request->initialize
  *              userPermission: string;
@@ -55,8 +58,7 @@ class GetEventsCommand extends TServiceCommand
         }
 
         $manager = new CalendarEventManager();
-        $response = new \stdClass();
-        $response->events = $manager->getCalendarEvents($request);
+        $response = $manager->getCalendarEvents($request);
         // $response->events = $this->getTestData();
         // $response->eventCount = sizeof($response->events);
         if (!empty($request->initialize)) {
@@ -66,6 +68,21 @@ class GetEventsCommand extends TServiceCommand
                 $response->committees = $manager->getCommitteeList();
                 $response->resources = $manager->getResourcesList();
             }
+            $response->translations = TLanguage::getTranslations([
+                'calendar-label-event-type',
+                'calendar-label-new-event',
+                'committee-entity-plural',
+                'label-filter',
+                'label-show-all',
+                'nav-more',
+                'resource-entity-plural',
+                'calendar-get-details',
+                'calendar-repeat-message',
+                'label-edit',
+                'label-close'
+            ]);
+
+
         }
         $this->setReturnValue($response);
     }
