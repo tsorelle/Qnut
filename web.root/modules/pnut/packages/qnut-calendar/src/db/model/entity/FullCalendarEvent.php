@@ -33,6 +33,7 @@ class FullCalendarEvent
     public $start;
     public $end;
     public $allDay;
+    public $location;
     public $url;
     public $eventType;
     public $backgroundColor;

@@ -58,7 +58,11 @@
                             <span style="font-weight: bold" data-bind="text:eventForm.eventTime"></span>
                         </div>
                         <div data-bind="visible:eventForm.repeating">
-                            <translate params="code:'calendar-repeat-message',translator:self"></translate> <span class="fa fa-repeat"></span>
+                            <translate params="code:'calendar-repeat-message',translator:self"></translate> <span class="fa fa-repeat"></span><br>
+                            <span data-bind="text:eventForm.repeatText"></span>
+                        </div>
+                        <div data-bind="visible:eventForm.location">
+                            <span style="font-weight: bold"><translate params="code:'calendar-label-location',case:'ucfirst',translator:self"></translate></span>: <span data-bind="text:eventForm.location"></span>
                         </div>
                         <div style="margin-top: 3ex">
                             <p>

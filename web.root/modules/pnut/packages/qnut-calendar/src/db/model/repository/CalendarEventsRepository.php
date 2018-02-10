@@ -82,7 +82,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             "SELECT e.id,title ,  " .
             "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
-            "allDay,e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
+            "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
             "CONCAT(e.recurId,',',e.recurInstance) AS repeatInstance,".
             "CONCAT(e.recurPattern,';',e.recurStart,IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern " .
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .

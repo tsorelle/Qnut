@@ -73,6 +73,7 @@ class GetEventsCommand extends TServiceCommand
                 'calendar-days-of-week-plural',
                 'calendar-get-details',
                 'calendar-label-event-type',
+                'calendar-label-location',
                 'calendar-label-new-event',
                 'calendar-months-of-year',
                 'calendar-repeat-message',
