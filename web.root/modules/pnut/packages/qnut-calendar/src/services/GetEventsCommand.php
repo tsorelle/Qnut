@@ -69,19 +69,59 @@ class GetEventsCommand extends TServiceCommand
                 $response->resources = $manager->getResourcesList();
             }
             $response->translations = TLanguage::getTranslations([
+                'calendar-days-of-week',
+                'calendar-days-of-week-plural',
+                'calendar-get-details',
                 'calendar-label-event-type',
                 'calendar-label-new-event',
+                'calendar-months-of-year',
+                'calendar-repeat-message',
+                'calendar-weekly-ordinals',
+                'calendar-word-each',
+                'calendar-word-repeating',
+                'calendar-word-very',
                 'committee-entity-plural',
+                'conjunction-in',
+                'conjunction-of',
+                'conjunction-through',
+                'conjunction-to',
+                'label-close',
+                'label-edit',
                 'label-filter',
                 'label-show-all',
                 'nav-more',
                 'resource-entity-plural',
-                'calendar-get-details',
-                'calendar-repeat-message',
-                'label-edit',
-                'label-close'
-            ]);
+                ]);
 
+            $response->vocabulary = new \stdClass();
+            $response->vocabulary->daysOfWeek =       explode(',',TLanguage::text('calendar-days-of-week'));
+            $response->vocabulary->daysOfWeekPlural = explode(',',TLanguage::text('calendar-days-of-week-plural'));
+            $response->vocabulary->monthNames     =   explode(',',TLanguage::text('calendar-months-of-year'));
+            $response->vocabulary->ordinals =         explode(',',TLanguage::text('calendar-weekly-ordinals'));
+            $response->vocabulary->each =             TLanguage::text('calendar-word-each');
+            $response->vocabulary->every =            TLanguage::text('calendar-word-every');
+            $response->vocabulary->in =               TLanguage::text('conjunction-in');
+            $response->vocabulary->from =             TLanguage::text('conjunction-from');
+            $response->vocabulary->until =             TLanguage::text('conjunction-until');
+            $response->vocabulary->starting =         TLanguage::text('conjunction-starting');
+            $response->vocabulary->of =               TLanguage::text('conjunction-of');
+            $response->vocabulary->since =            TLanguage::text('conjunction-since');
+            $response->vocabulary->repeating =        TLanguage::text('calendar-word-repeating');
+            $response->vocabulary->through =          TLanguage::text('conjunction-through');
+            $response->vocabulary->to =               TLanguage::text('conjunction-to');
+            $response->vocabulary->the =               TLanguage::text('conjunction-the');
+            $response->vocabulary->on =               TLanguage::text('conjunction-on');
+            $response->vocabulary->month =            TLanguage::text('calendar-word-month');
+            $response->vocabulary->months =           TLanguage::text('calendar-word-month-plural');
+            $response->vocabulary->day =              TLanguage::text('calendar-word-day');
+            $response->vocabulary->days =             TLanguage::text('calendar-word-day-plural');
+            $response->vocabulary->week =             TLanguage::text('calendar-word-week');
+            $response->vocabulary->weeks =            TLanguage::text('calendar-word-week-plural');
+            $response->vocabulary->weekday =          TLanguage::text('calendar-word-weekday');
+            $response->vocabulary->weekdays =         TLanguage::text('calendar-word-weekday-plural');
+            $response->vocabulary->year =             TLanguage::text('calendar-word-year');
+            $response->vocabulary->years =            TLanguage::text('calendar-word-year-plural');
+            $response->vocabulary->ordinalSuffix =    explode(',',TLanguage::text('calendar-ordinals-suffix'));
 
         }
         $this->setReturnValue($response);

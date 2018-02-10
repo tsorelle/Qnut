@@ -56,6 +56,37 @@ namespace QnutCalendar {
         endDate: string;
     }
 
+    interface ICalendarTranslations {
+        daysOfWeek: string[];
+        daysOfWeekPlural: string[];
+        monthNames: string[];
+        month: string;
+        months: string;
+        day: string;
+        days: string;
+        week: string;
+        weeks: string;
+        weekday: string;
+        weekdays: string;
+        year: string;
+        years: string;
+        ordinals: string[];
+        to: string;
+        from: string;
+        of: string;
+        in: string;
+        on: string;
+        the: string;
+        through: string;
+        starting: string;
+        each: string;
+        every: string;
+        since: string;
+        until: string;
+        repeating: string;
+        ordinalSuffix: string[]
+    }
+
     interface ICalendarInitResponse extends IGetCalendarResponse {
         events: ICalendarEvent[];
         userPermission: string;
@@ -63,6 +94,7 @@ namespace QnutCalendar {
         committees: Peanut.ILookupItem[];
         resources: Peanut.ILookupItem[];
         translations : string[];
+        vocabulary: ICalendarTranslations;
     }
     
     export class calendarEventObservable {
@@ -81,6 +113,7 @@ namespace QnutCalendar {
         url = ko.observable('');
         eventType = ko.observable('');
         eventTime = ko.observable('');
+        repeatText = ko.observable('');
 
         // edit
         eventTypeId: any;
@@ -92,7 +125,9 @@ namespace QnutCalendar {
         changedBy = ko.observable('');
         changedOn = ko.observable('');
 
-        formatStartEnd(startMoment : Moment,endMoment: Moment,allDay) {
+        vocabulary : ICalendarTranslations = null;
+
+        formatDateRange(startMoment : Moment,endMoment: Moment,allDay) {
             // moment formatting: http://momentjs.com/docs/#/displaying/
             let me = this;
             if (!startMoment) {
@@ -106,11 +141,112 @@ namespace QnutCalendar {
             let endDay = endMoment.format('ddd MMM D, YYYY');
             let endTime  = '';
             if (startDay == endDay) {
-                endTime = allDay ? '' : endMoment.format(' to h:mm a');
+                endTime = allDay ? '' : me.vocabulary.to + endMoment.format(' h:mm a');
                 return startDay + startTime + endTime;
             }
             endTime = allDay ? '' : endMoment.format(' h:mm a');
-            return startDay + startTime + ' to ' + endDay + endTime;
+            return startDay + startTime + me.vocabulary.to + endDay + endTime;
+        }
+
+        formatRepeatDates(start: Moment, end: Moment) {
+            if (end == null) {
+                return this.vocabulary.starting + start.format("MMM D, YYYY")
+            }
+            return this.vocabulary.from + start.format("MMM D, YYYY") + this.vocabulary.until + start.format("MMM D, YYYY");
+        }
+        translateDows(pattern: string) {
+            let count = pattern.length;
+            let dows = [];
+            for (let i = 0; i < count; i++) {
+                let n = Number(pattern.charAt(i));
+                dows.push(this.vocabulary.daysOfWeek[n-1]);
+            }
+            return dows.join(', ');
+
+        }
+
+        ordinalDow(n,d) {
+            return this.vocabulary.ordinals[Number(n) -1] + ' ' +
+                this.vocabulary.daysOfWeek[Number[d] - 1];
+        }
+
+        asOrdinal(n: string) {
+            let last = n.slice(-1);
+            return n + this.vocabulary.ordinalSuffix[last];
+        }
+
+        getMonthName(n: string) {
+            return this.vocabulary.monthNames[Number(n) - 1];
+        }
+
+        getRepeatText(repeatPattern: string) {
+            let result = '';
+            let start : Moment = null;
+            let end : Moment = null;
+            let parts = repeatPattern.split(';');
+            if (parts.length > 0) {
+                repeatPattern = parts[0];
+                if (parts.length > 1) {
+                    let dates = parts[1].split(',');
+                    start = moment(dates[0]);
+                    if (dates.length > 1) {
+                        end = moment(dates[1])
+                    }
+                }
+            }
+
+            let patternParts = repeatPattern.substring(2).split(',');
+            let interval = patternParts.length == 0 ? 0 :  Number(patternParts[0]);
+
+            switch (repeatPattern.substring(0,2)) {
+                case 'dd' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.days + ' ' + this.formatRepeatDates(start,end):
+                        this.vocabulary.every + ' ' + this.vocabulary.day + ' ' + this.formatRepeatDates(start,end);
+
+                case 'dw' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.weekdays + ' ' + this.formatRepeatDates(start,end):
+                        this.vocabulary.every + ' ' + this.vocabulary.weekday + ' ' + this.formatRepeatDates(start,end);
+
+                case 'wk' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.weeks + this.vocabulary.on + this.translateDows(patternParts[1]) + this.formatRepeatDates(start,end):
+                        this.vocabulary.every + ' ' + this.vocabulary.week + this.vocabulary.on + this.translateDows(patternParts[1]) + this.formatRepeatDates(start,end);
+
+                case 'md' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.months + this.vocabulary.on + this.vocabulary.the + this.asOrdinal(patternParts[1]) + ' ' + this.formatRepeatDates(start,end):
+                        this.vocabulary.every + ' ' + this.vocabulary.month + this.vocabulary.on + this.vocabulary.the +  this.asOrdinal(patternParts[1]) + ' ' + this.formatRepeatDates(start,end);
+
+                case 'mo' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.months + this.vocabulary.on + this.vocabulary.the
+                            + this.ordinalDow(patternParts[1],patternParts[2]) + ' '
+                            + this.formatRepeatDates(start,end) :
+                        this.vocabulary.every + ' ' + this.vocabulary.month + this.vocabulary.on + this.vocabulary.the +
+                            + this.ordinalDow(patternParts[1],patternParts[2]) + ' '
+                            + this.formatRepeatDates(start,end);
+
+                case 'yd' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.years + this.vocabulary.on +
+                            this.getMonthName(patternParts[1]) + ' ' + patternParts[2] :
+                        this.vocabulary.every + ' ' + this.vocabulary.year + this.vocabulary.on +
+                            this.getMonthName(patternParts[1]) + ' ' + patternParts[2];
+
+                case 'yo' :
+                    return interval > 1 ?
+                        this.vocabulary.every + ' ' + interval + ' ' + this.vocabulary.years + this.vocabulary.on + this.vocabulary.the
+                            + this.ordinalDow(patternParts[1],patternParts[2]) + ' '
+                            + this.formatRepeatDates(start,end) :
+                        this.vocabulary.every + ' ' + this.vocabulary.month + this.vocabulary.on + this.vocabulary.the +
+                            + this.ordinalDow(patternParts[1],patternParts[2]) + ' '
+                            + this.formatRepeatDates(start,end);
+
+                default:
+                    return '(error: invalid pattern)';
+            }
         }
 
         clear = () => {
@@ -132,13 +268,14 @@ namespace QnutCalendar {
             me.changedBy('');
             me.changedOn('');
             me.repeatPattern = '';
+            me.repeatText('');
             me.repeatInstance = 0;
         };
 
         assignFromCalendarObject = (event: ICalendarEventObject) => {
             let me = this;
 
-            let range = me.formatStartEnd(event.start,event.end,event.allDay);
+            let range = me.formatDateRange(event.start,event.end,event.allDay);
             me.eventTime(range);
 
             let startDate = event.start ? event.start.format('YYYY-MM-DD'): '';
@@ -157,6 +294,7 @@ namespace QnutCalendar {
             me.url(event.url);
             me.eventType(event.eventType);
             me.repeating(!!event.repeatPattern);
+            me.repeatText(me.repeating() ? me.getRepeatText(event.repeatPattern) : '');
         };
 
         assign = (event: ICalendarEvent) => {
@@ -296,6 +434,7 @@ namespace QnutCalendar {
                         me.eventTypes(response.types);
                         me.userPermission(response.userPermission);
                         me.addTranslations(response.translations);
+                        me.eventForm.vocabulary = response.vocabulary;
                         if (response.userPermission=='edit') {
                             me.resources(response.resources);
                             me.committees(response.committees);
