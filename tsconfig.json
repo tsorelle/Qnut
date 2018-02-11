@@ -13,6 +13,6 @@
     "web.root/modules/pnut/js/**/*",
     "web.root/modules/pnut/admin/**/*",
     "web.root/modules/pnut/extensions/**/*",
-    "web.root/application/**/*"
+    "web.root/application/mvvm/**/*"
   ]
 }

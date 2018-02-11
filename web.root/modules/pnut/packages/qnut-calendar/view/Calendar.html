@@ -38,7 +38,7 @@
                     </div>
                 </nav>
                 <!-- view model bindings -->
-                 <div style="clear: both; padding-left:5rem;padding-right:5rem" id='calendar'></div>
+                 <div style="clear: both;" data-bind="style: {'padding-right': deviceSize() > 3 ? '5rem' : 0, 'padding-left': deviceSize() > 3 ? '5rem' : 0}" id="calendar"></div>
             </div>
         </div>
     </div>

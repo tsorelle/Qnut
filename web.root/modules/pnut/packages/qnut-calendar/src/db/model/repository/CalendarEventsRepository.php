@@ -100,4 +100,35 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         return $events;
     }
 
+    public function getEventDetails($id)
+    {
+        $event = $this->get($id);
+        if (empty($id)) {
+            return false;
+        }
+        $event->committees = $this->getEventCommittees($id);
+        $event->resources = $this->getEventResources($id);
+        return $event;
+    }
+
+    public function getEventCommittees($eventId) {
+        $sql =
+            'SELECT c.id, c.code,c.name,c.description FROM qnut_committees c '.
+            'JOIN qnut_calendar_event_committees e ON c.id = e.committeeId WHERE e.eventId = ?';
+        $stmt = $this->executeStatement($sql,[$eventId]);
+        $result = $stmt->fetchAll(PDO::FETCH_CLASS,'Tops\sys\TLookupItem');
+        return $result;
+
+    }
+
+    public function getEventResources($eventId) {
+        $sql =
+            'SELECT r.id, r.code,r.name,r.description FROM qnut_resources r '.
+            'JOIN qnut_calendar_event_resources e ON r.id = e.resourceId WHERE e.eventId = ?';
+        $stmt = $this->executeStatement($sql,[$eventId]);
+        $result = $stmt->fetchAll(PDO::FETCH_CLASS,'Tops\sys\TLookupItem');
+        return $result;
+
+    }
+
 }

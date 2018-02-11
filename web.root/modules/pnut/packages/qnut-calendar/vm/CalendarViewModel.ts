@@ -10,12 +10,14 @@
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
 namespace QnutCalendar {
+    interface Moment extends moment.Moment {}  // for syntactical help
 
     interface ICalendarEvent {
         id : any;
         title : string;
         start : string;
         end : string;
+        location: string;
         allDay : string;
         url : string;
         eventType : string;
@@ -32,6 +34,7 @@ namespace QnutCalendar {
         start : Moment;
         end : Moment;
         allDay : boolean;
+        location: string;
         url : string;
         eventType : string;
         repeatPattern : string;
@@ -42,8 +45,8 @@ namespace QnutCalendar {
         eventTypeId: any;
         notes: string;
         recurId: any;
-        resources: any[];
-        committees: any[];
+        resources: Peanut.ILookupItem[];
+        committees: Peanut.ILookupItem[];
         createdBy: string;
         createdOn: string;
         changedBy: string;
@@ -110,6 +113,7 @@ namespace QnutCalendar {
         endTime = ko.observable('');
         repeating = ko.observable(false);
         allDay = ko.observable<Boolean>(false);
+        location = ko.observable('');
         url = ko.observable('');
         eventType = ko.observable('');
         eventTime = ko.observable('');
@@ -127,7 +131,7 @@ namespace QnutCalendar {
 
         vocabulary : ICalendarTranslations = null;
 
-        formatDateRange(startMoment : Moment,endMoment: Moment,allDay) {
+        formatDateRange(startMoment : Moment, endMoment: Moment,allDay) {
             // moment formatting: http://momentjs.com/docs/#/displaying/
             let me = this;
             if (!startMoment) {
@@ -171,8 +175,8 @@ namespace QnutCalendar {
         }
 
         asOrdinal(n: string) {
-            let last = n.slice(-1);
-            return n + this.vocabulary.ordinalSuffix[last];
+            let i = (Number(n) >= this.vocabulary.ordinalSuffix.length) ? n.toString().slice(-1) : Number(n);
+            return n + this.vocabulary.ordinalSuffix[i];
         }
 
         getMonthName(n: string) {
@@ -181,8 +185,8 @@ namespace QnutCalendar {
 
         getRepeatText(repeatPattern: string) {
             let result = '';
-            let start : Moment = null;
-            let end : Moment = null;
+            let start : moment.Moment = null;
+            let end : moment.Moment = null;
             let parts = repeatPattern.split(';');
             if (parts.length > 0) {
                 repeatPattern = parts[0];
@@ -257,6 +261,8 @@ namespace QnutCalendar {
             me.startTime('');
             me.endTime('');
             me.allDay(false);
+            me.location('');
+            me.repeating(false);
             me.url('');
             me.eventType('');
             me.eventTypeId = 0;
@@ -274,6 +280,7 @@ namespace QnutCalendar {
 
         assignFromCalendarObject = (event: ICalendarEventObject) => {
             let me = this;
+            me.id = event.id;
 
             let range = me.formatDateRange(event.start,event.end,event.allDay);
             me.eventTime(range);
@@ -291,6 +298,7 @@ namespace QnutCalendar {
             me.repeatPattern = event.repeatPattern;
             me.title(event.title);
             me.allDay(event.allDay);
+            me.location(event.location);
             me.url(event.url);
             me.eventType(event.eventType);
             me.repeating(!!event.repeatPattern);
@@ -471,6 +479,7 @@ namespace QnutCalendar {
                 })
         };
 
+
         getNewCalendar = (request: any, successFunction? : (response: IGetCalendarResponse) => void) => {
             let me = this;
             let month = me.getCurrentMonth();
@@ -632,11 +641,11 @@ namespace QnutCalendar {
             }
         };
 
-        pageCalendar = (start: Moment,end:Moment) => {
+        pageCalendar = (start: moment.Moment,end:moment.Moment) => {
             let me = this;
             let startDate = start.format('Y-M-D');
             let endDate = end.format('Y-M-D');
-            console.log('PAGING: start=' + startDate + '; end='+endDate);
+            // console.log('PAGING: start=' + startDate + '; end='+endDate);
 
             let page = me.pages[me.currentPage];
             let movePage = 0;
@@ -732,7 +741,17 @@ namespace QnutCalendar {
         };
 
         getEventDetails = () => {
-            alert('get details');
+            let me = this;
+            me.services.executeService('peanut.qnut-calendar::GetEventDetails', me.eventForm.id,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let response = <ICalendarEventDetails>serviceResponse.Value;
+                        me.eventForm.assignDetails(response);
+                    }
+                })
+                .fail(() => {
+                    let trace = me.services.getErrorInformation();
+                })
 
         }
 
