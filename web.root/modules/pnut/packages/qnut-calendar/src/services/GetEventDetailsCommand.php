@@ -9,8 +9,10 @@
 namespace Peanut\QnutCalendar\services;
 
 
+use Peanut\QnutCalendar\db\model\CalendarEventManager;
 use Peanut\QnutCalendar\db\model\repository\CalendarEventsRepository;
 use Tops\services\TServiceCommand;
+use Tops\sys\TPermissionsManager;
 
 class GetEventDetailsCommand extends TServiceCommand
 {
@@ -24,6 +26,9 @@ class GetEventDetailsCommand extends TServiceCommand
         }
         $repository = new CalendarEventsRepository();
         $response = $repository->getEventDetails($request);
+        if (!$this->getUser()->isAuthorized(CalendarEventManager::ManageCalendarPermissionName)) {
+            $response->notes = '';
+        }
         $this->setReturnValue($response);
     }
 }

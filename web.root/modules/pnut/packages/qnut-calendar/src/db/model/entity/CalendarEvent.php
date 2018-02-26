@@ -15,6 +15,7 @@ class CalendarEvent  extends \Tops\db\TimeStampedEntity
     public $url;
     public $eventTypeId;
     public $notes;
+    public $description;
     public $recurPattern;
     public $recurStart;
     public $recurEnd;

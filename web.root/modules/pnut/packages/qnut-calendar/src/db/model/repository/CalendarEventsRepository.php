@@ -37,6 +37,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             'url' => PDO::PARAM_STR,
             'eventTypeId' => PDO::PARAM_INT,
             'notes' => PDO::PARAM_STR,
+            'description' => PDO::PARAM_STR,
             'recurPattern' => PDO::PARAM_STR,
             'recurStart' => PDO::PARAM_STR,
             'recurEnd' => PDO::PARAM_STR,

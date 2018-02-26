@@ -46,6 +46,10 @@ use Tops\sys\TLanguage;
  */
 class GetEventsCommand extends TServiceCommand
 {
+    private function getUserPermissionLevel()
+    {
+
+    }
     protected function run()
     {
         $request = $this->getRequest();
@@ -71,25 +75,48 @@ class GetEventsCommand extends TServiceCommand
             $response->translations = TLanguage::getTranslations([
                 'calendar-days-of-week',
                 'calendar-days-of-week-plural',
+                'calendar-event-entity',
                 'calendar-get-details',
+                'calendar-label-allday',
                 'calendar-label-event-type',
-                'calendar-label-location',
                 'calendar-label-new-event',
+                'calendar-label-return',
                 'calendar-months-of-year',
                 'calendar-repeat-message',
                 'calendar-weekly-ordinals',
+                'calendar-word-day',
+                'calendar-word-day-plural',
                 'calendar-word-each',
                 'calendar-word-repeating',
                 'calendar-word-very',
+                'calander-hour',
+                'calander-hour-plural',
+                'calendar-time-error',
+                'calender-time-order-error',
+                'calendar-date-format',
+                'calendar-time-format',
                 'committee-entity-plural',
+                'calendar-set-custorm',
                 'conjunction-in',
                 'conjunction-of',
                 'conjunction-through',
                 'conjunction-to',
+                'conjunction-until',
                 'label-close',
+                'label-location',
+                'label-new',
+                'label-notes',
+                'label-cancel',
+                'label-custom',
+                'label-description',
                 'label-edit',
                 'label-filter',
+                'label-remove',
+                'label-add',
+                'label-save',
                 'label-show-all',
+                'label-title',
+                'label-to',
                 'nav-more',
                 'resource-entity-plural',
                 ]);
