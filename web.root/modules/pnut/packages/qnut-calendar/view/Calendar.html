@@ -167,7 +167,17 @@
                                 </div><!-input-group -->
                             </div>
                         </div>
-                        <!-- todo: recursion -->
+
+                        <div class="row">
+                            <div class="col-md-12" style="padding-bottom: 1rem">
+                                <span class="fa fa-repeat">&nbsp;</span>
+                                <span data-bind="text:eventForm.repeatText()"></span>
+                                <a href="#" data-bind="click:eventForm.times.onShowRepeatInfo">
+                                    <span data-bind="visible:eventForm.repeatText() == ''"><translate params="code:'calendar-word-repeat',case:'ucfirst',translator:self"></translate>. . .</span>
+                                    <span data-bind="visible:eventForm.repeatText">[<translate params="code:'label-update',case:'ucfirst',translator:self"></translate>]</span>
+                                </a>
+                            </div>
+                        </div>
 
                         <!-- filter types -->
                         <div class="row">
@@ -306,7 +316,317 @@
                 </form>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
+    </div><!-- event info modal -->
+
+    <div class="modal" id="repeat-info-modal"> <!-- repeat modal -->
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <button data-bind="visible:bootstrapVersion() !== 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4>Repeat</h4>
+                        <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body" >
+                        <div class="row"> <!-- recurance Pattern -->
+                            <div class="col-md-12">
+                                <fieldset class="calendar-repeat-section">
+                                    <legend><translate params="code:'calendar-pattern-header',translator:self"></translate></legend>
+                                    <div class="row">
+                                        <div class="col-md-2" id="repeat-basis-panel"> <!-- basis -->
+                                            <div class="radio">
+                                                <label><input type="radio" name="basis" value="d" data-bind="checked:eventForm.times.repeat.basis"><translate params="code:'calendar-word-daily',case:'ucfirst',translator:self"></translate></label>
+                                            </div>
+                                            <div class="radio">
+                                                <label><input type="radio" name="basis" value="w" data-bind="checked:eventForm.times.repeat.basis"><translate params="code:'calendar-word-weekly',case:'ucfirst',translator:self"></translate></label>
+                                            </div>
+                                            <div class="radio">
+                                                <label><input type="radio" name="basis" value="m" data-bind="checked:eventForm.times.repeat.basis"><translate params="code:'calendar-word-monthly',case:'ucfirst',translator:self"></translate></label>
+                                            </div>
+                                            <div class="radio">
+                                                <label><input type="radio" name="basis" value="y" data-bind="checked:eventForm.times.repeat.basis"><translate params="code:'calendar-word-yearly',case:'ucfirst',translator:self"></translate></label>
+                                            </div>
+
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="repeat-detail-panel" data-bind="visible:eventForm.times.repeat.basis()==='d'">
+                                                <!-- daily -->
+                                                <div class="inline-formlet">
+                                                    <div class="inline-formlet-block">
+                                                        <input type="radio" name="patterntype" value="dd" data-bind="checked:eventForm.times.repeat.patternType">
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <translate params="code:'calendar-word-every',case:'ucfirst',translator:self"></translate>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.interval"/>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <span data-bind="visible:eventForm.times.repeat.interval()==1">
+                                                            <translate params="code:'calendar-word-day',translator:self"></translate>
+                                                        </span>
+                                                        <span data-bind="visible:eventForm.times.repeat.interval()>1">
+                                                            <translate params="code:'calendar-word-day-plural',translator:self"></translate>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="inline-formlet">
+                                                    <div class="inline-formlet-block">
+                                                    <input type="radio" name="patterntype" value="dw" data-bind="checked:eventForm.times.repeat.patternType">
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                    <translate params="code:'calendar-word-every',case:'ucfirst',translator:self"></translate>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                    <translate params="code:'calendar-word-weekday',case:'ucfirst',translator:self"></translate>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="repeat-detail-panel" data-bind="visible:eventForm.times.repeat.basis()==='w'">
+                                                <!-- weekly -->
+                                                <div style="margin-bottom: 1rem">
+                                                    <translate params="code:'calendar-word-every',case:'ucfirst',translator:self"></translate>
+                                                    <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.interval"/>
+                                                    <span data-bind="visible:eventForm.times.repeat.interval()==1">
+                                                    <translate params="code:'calendar-word-week',translator:self"></translate>
+                                                    </span>
+                                                    <span data-bind="visible:eventForm.times.repeat.interval()>1">
+                                                    <translate params="code:'calendar-word-week-plural',translator:self"></translate>
+                                                    </span>
+                                                </div>
+                                                <div class="flex-wrap-container" data-bind="foreach:eventForm.times.repeat.dowList">
+                                                    <button class="dow-button" type='button'
+                                                            data-bind="attr:{title:Description}, click:$parent.eventForm.times.repeat.onDowClick,
+                                                                css:{'dow-button-selected': $parent.eventForm.times.repeat.selectedWeekdays().indexOf(Value) > -1 }">
+                                                        <span data-bind="text:Name"></span></button>
+                                                </div>
+                                                <div data-bind="text:eventForm.times.repeat.weekdaysMessage"></div>
+
+                                            </div>
+                                            <div class="repeat-detail-panel" data-bind="visible:eventForm.times.repeat.basis()==='m'">
+                                                <!-- monthly -->
+                                                <div class="inline-formlet">
+                                                    <div class="inline-formlet-block">
+                                                        <input type="radio" name="patterntype" value="md" data-bind="checked:eventForm.times.repeat.patternType">
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <translate params="code:'calendar-word-day',case:'ucfirst',translator:self"></translate>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.monthDay"/>
+                                                        <span style="padding-left: 1rem;padding-right: 1rem">
+                                                            <translate params="code:'conjunction-of',translator:self"></translate>
+                                                            <translate params="code:'calendar-word-every',translator:self"></translate>
+                                                        </span>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.interval"/>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <span data-bind="visible:eventForm.times.repeat.interval()==1">
+                                                            <translate params="code:'calendar-word-month',translator:self"></translate>
+                                                        </span>
+                                                        <span data-bind="visible:eventForm.times.repeat.interval()>1">
+                                                            <translate params="code:'calendar-word-month-plural',translator:self"></translate>
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="inline-formlet">
+                                                    <div class="inline-formlet-block">
+                                                        <input type="radio" name="patterntype" value="mw"
+                                                               data-bind="checked:eventForm.times.repeat.patternType">
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <translate params="code:'calendar-word-the',case:'ucfirst',translator:self"></translate>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <!-- [ordinal dropdown] -->
+                                                        <select id="month-ordinal-select"
+                                                                data-bind="options: eventForm.times.repeat.ordinals, optionsText:'Name', value: eventForm.times.selectedOrdinal">
+                                                        </select>
+                                                    </div>
+
+                                                        <!-- [dow dropdown] -->
+                                                    <div class="inline-formlet-block">
+                                                        <select id="month-dow-select"
+                                                                data-bind="options: eventForm.times.repeat.daysOfWeek, optionsText:'Name', value: eventForm.times.selectedDow">
+                                                        </select>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <span style="padding-left: 1rem;padding-right: 1rem">
+                                                            <translate params="code:'conjunction-of',translator:self"></translate>
+                                                            <translate params="code:'calendar-word-every',translator:self"></translate>
+                                                        </span>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <!-- [month interval] -->
+                                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.monthInterval"/>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <span data-bind="visible:eventForm.times.repeat.monthInterval()==1">
+                                                            <translate params="code:'calendar-word-month',translator:self"></translate>
+                                                        </span>
+                                                        <span data-bind="visible:eventForm.times.repeat.monthInterval()>1">
+                                                            <translate params="code:'calendar-word-month-plural',translator:self"></translate>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="repeat-detail-panel" data-bind="visible:eventForm.times.repeat.basis()==='y'">
+                                                <!-- yearly -->
+
+                                                <!-- Repeat every [interval] years-->
+                                                <div style="margin-bottom: 1rem">
+                                                    <translate params="code:'calendar-word-every',case:'ucfirst',translator:self"></translate>
+                                                    <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.interval"/>
+                                                    <span data-bind="visible:eventForm.times.repeat.interval()==1">
+                                                    <translate params="code:'calendar-word-year',translator:self"></translate>
+                                                    </span>
+                                                    <span data-bind="visible:eventForm.times.repeat.interval()>1">
+                                                    <translate params="code:'calendar-word-year-plural',translator:self"></translate>
+                                                    </span>
+                                                </div>
+
+                                                <!-- () On: [month] [day of month] -->
+                                                <div class="inline-formlet">
+                                                    <div class="inline-formlet-block">
+                                                        <input type="radio" name="patterntype" value="yd" data-bind="checked:eventForm.times.repeat.patternType">
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <translate params="code:'calendar-word-on',case:'ucfirst',translator:self"></translate>
+
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <!-- month dropdown selectedMonth -->
+                                                        <select id="year-monthe-select"
+                                                                data-bind="options: eventForm.times.repeat.months,
+                                                                    optionsText:'Name', value: eventForm.times.selectedMonth">
+                                                        </select>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.monthDay"/>
+                                                    </div>
+                                                </div>
+
+                                                <!-- () On the [ordinal] [day of week] of [month]-->
+                                                <div class=inline-formlet>
+                                                    <div class="inline-formlet-block">
+                                                        <input type="radio" name="patterntype" value="yo"
+                                                               data-bind="checked:eventForm.times.repeat.patternType">
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <translate params="code:'calendar-word-on',case:'ucfirst',translator:self"></translate>
+                                                        <translate params="code:'conjunction-the',case:'ucfirst',translator:self"></translate>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <!-- [ordinal dropdown] -->
+                                                            <select id="year-ordinal-select"
+                                                                    data-bind="options: eventForm.times.repeat.ordinals, optionsText:'Name', value: eventForm.times.selectedOrdinal">
+                                                            </select>
+                                                    </div>
+                                                        <!-- [dow dropdown] -->
+                                                    <div class="inline-formlet-block">
+                                                        <select id="year-dow-select"
+                                                                data-bind="options: eventForm.times.repeat.daysOfWeek, optionsText:'Name', value: eventForm.times.selectedDow">
+                                                        </select>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                        <translate params="code:'conjunction-of',translator:self"></translate>
+                                                    </div>
+                                                    <div class="inline-formlet-block">
+                                                    <!-- [month selectedOrdinalMonth] -->
+                                                            <select id="year-ordinal-month-select"
+                                                                    data-bind="options: eventForm.times.repeat.months,
+                                                                        optionsText:'Name', value: eventForm.times.selectedOrdinalMonth">
+                                                            </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <fieldset class="calendar-repeat-section">
+                                    <legend><translate params="code:'calendar-range-header',translator:self"></translate></legend>
+                                    <!-- range -->
+                                    <div class="row" style="padding-top: 1rem">
+                                        <div class="col-md-4">
+                                            <div class="inline-formlet">
+                                                <div class="inline-formlet-block">
+                                                     <translate params="code:'calendar-word-start',translator:self"></translate>:
+                                                </div>
+                                            </div>
+                                            <div class="inline-formlet">
+                                                <div class="inline-formlet-block">
+                                                    <input class="datepicker" style="width:100%" type="text" id="repeat-start"
+                                                           data-bind="value:eventForm.times.repeat.startOn"/>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-8">
+                                            <div class="inline-formlet">
+                                                <!-- () No end date -->
+                                                <div class="inline-formlet-block">
+                                                    <input type="radio" name="end-date-basis" value="none"
+                                                           data-bind="checked:eventForm.times.repeat.endDateBasis">
+                                                </div>
+                                                <div class="inline-formlet-block">
+                                                    <translate params="code:'calendar-phrase-no-end',translator:self"></translate>
+                                                </div>
+                                            </div>
+
+                                            <div class="inline-formlet">
+                                                <!-- () End after [occurances] occurances-->
+                                                <div class="inline-formlet-block">
+                                                    <input type="radio" name="end-date-basis" value="occurances"
+                                                           data-bind="checked:eventForm.times.repeat.endDateBasis">
+                                                </div>
+                                                <div class="inline-formlet-block">
+                                                    <translate params="code:'calendar-phrase-end-after',translator:self"></translate>
+                                                </div>
+                                                <div class="inline-formlet-block">
+                                                    <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.endOccurances"/>
+                                                </div>
+                                                <div class="inline-formlet-block">
+                                                    <translate params="code:'calendar-word-occurances',translator:self"></translate>
+                                                </div>
+                                            </div>
+
+                                            <div class="inline-formlet">
+                                                <!-- () End by  [end date] -->
+                                                <div class="inline-formlet-block">
+                                                    <input type="radio" name="end-date-basis" value="date"
+                                                           data-bind="checked:eventForm.times.repeat.endDateBasis">
+                                                </div>
+                                                <div class="inline-formlet-block">
+                                                    <translate params="code:'calendar-phrase-end-by',translator:self"></translate>
+                                                </div>
+                                                <div class="inline-formlet-block">
+                                                    <input class="datepicker" type="text" id="repeat-end" style="width:100%"
+                                                           data-bind="value:eventForm.times.repeat.endBy"/>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="click: eventForm.times.onSaveRepeatInfo"><translate params="code:'label-save',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- end repeat modal -->
 
 
 </div>

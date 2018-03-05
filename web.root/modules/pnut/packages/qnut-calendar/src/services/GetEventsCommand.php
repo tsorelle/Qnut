@@ -73,6 +73,9 @@ class GetEventsCommand extends TServiceCommand
                 $response->resources = $manager->getResourcesList();
             }
             $response->translations = TLanguage::getTranslations([
+                'calander-hour',
+                'calander-hour-plural',
+                'calendar-date-format',
                 'calendar-days-of-week',
                 'calendar-days-of-week-plural',
                 'calendar-event-entity',
@@ -83,74 +86,77 @@ class GetEventsCommand extends TServiceCommand
                 'calendar-label-return',
                 'calendar-months-of-year',
                 'calendar-repeat-message',
+                'calendar-set-custorm',
+                'calendar-time-error',
+                'calendar-time-format',
                 'calendar-weekly-ordinals',
+                'calendar-word-after',
+                'calendar-word-daily',
                 'calendar-word-day',
                 'calendar-word-day-plural',
                 'calendar-word-each',
+                'calendar-word-every',
+                'calendar-word-month',
+                'calendar-word-month-plural',
+                'calendar-word-monthly',
+                'calendar-word-occurances',
+                'calendar-word-repeat',
                 'calendar-word-repeating',
                 'calendar-word-very',
-                'calander-hour',
-                'calander-hour-plural',
-                'calendar-time-error',
+                'calendar-word-week',
+                'calendar-word-week-plural',
+                'calendar-word-weekday',
+                'calendar-word-weekday-plural',
+                'calendar-word-weekly',
+                'calendar-word-year',
+                'calendar-word-year-plural',
+                'calendar-word-yearly',
                 'calender-time-order-error',
-                'calendar-date-format',
-                'calendar-time-format',
                 'committee-entity-plural',
-                'calendar-set-custorm',
+                'conjunction-from',
                 'conjunction-in',
                 'conjunction-of',
+                'conjunction-on',
+                'conjunction-since',
+                'conjunction-starting',
+                'conjunction-the',
                 'conjunction-through',
                 'conjunction-to',
                 'conjunction-until',
-                'label-close',
-                'label-location',
-                'label-new',
-                'label-notes',
+                'label-add',
                 'label-cancel',
+                'label-close',
                 'label-custom',
                 'label-description',
                 'label-edit',
                 'label-filter',
+                'label-location',
+                'label-new',
+                'label-notes',
                 'label-remove',
-                'label-add',
                 'label-save',
                 'label-show-all',
                 'label-title',
                 'label-to',
+                'label-update',
                 'nav-more',
                 'resource-entity-plural',
-                ]);
+                'calendar-pattern-header',
+                'calendar-range-header',
+                'calendar-phrase-end-by',
+                'calendar-phrase-end-after',
+                'calendar-phrase-no-end',
+                'calendar-word-start'
+            ]);
 
+            $response->translations['calendar-word-the'] = trim($response->translations['conjunction-the']);
+            $response->translations['calendar-word-on'] = trim($response->translations['conjunction-on']);
             $response->vocabulary = new \stdClass();
             $response->vocabulary->daysOfWeek =       explode(',',TLanguage::text('calendar-days-of-week'));
             $response->vocabulary->daysOfWeekPlural = explode(',',TLanguage::text('calendar-days-of-week-plural'));
             $response->vocabulary->monthNames     =   explode(',',TLanguage::text('calendar-months-of-year'));
             $response->vocabulary->ordinals =         explode(',',TLanguage::text('calendar-weekly-ordinals'));
-            $response->vocabulary->each =             TLanguage::text('calendar-word-each');
-            $response->vocabulary->every =            TLanguage::text('calendar-word-every');
-            $response->vocabulary->in =               TLanguage::text('conjunction-in');
-            $response->vocabulary->from =             TLanguage::text('conjunction-from');
-            $response->vocabulary->until =             TLanguage::text('conjunction-until');
-            $response->vocabulary->starting =         TLanguage::text('conjunction-starting');
-            $response->vocabulary->of =               TLanguage::text('conjunction-of');
-            $response->vocabulary->since =            TLanguage::text('conjunction-since');
-            $response->vocabulary->repeating =        TLanguage::text('calendar-word-repeating');
-            $response->vocabulary->through =          TLanguage::text('conjunction-through');
-            $response->vocabulary->to =               TLanguage::text('conjunction-to');
-            $response->vocabulary->the =               TLanguage::text('conjunction-the');
-            $response->vocabulary->on =               TLanguage::text('conjunction-on');
-            $response->vocabulary->month =            TLanguage::text('calendar-word-month');
-            $response->vocabulary->months =           TLanguage::text('calendar-word-month-plural');
-            $response->vocabulary->day =              TLanguage::text('calendar-word-day');
-            $response->vocabulary->days =             TLanguage::text('calendar-word-day-plural');
-            $response->vocabulary->week =             TLanguage::text('calendar-word-week');
-            $response->vocabulary->weeks =            TLanguage::text('calendar-word-week-plural');
-            $response->vocabulary->weekday =          TLanguage::text('calendar-word-weekday');
-            $response->vocabulary->weekdays =         TLanguage::text('calendar-word-weekday-plural');
-            $response->vocabulary->year =             TLanguage::text('calendar-word-year');
-            $response->vocabulary->years =            TLanguage::text('calendar-word-year-plural');
             $response->vocabulary->ordinalSuffix =    explode(',',TLanguage::text('calendar-ordinals-suffix'));
-
         }
         $this->setReturnValue($response);
     }
