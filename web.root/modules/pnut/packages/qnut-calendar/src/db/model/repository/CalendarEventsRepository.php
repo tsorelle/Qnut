@@ -101,6 +101,25 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         return $events;
     }
 
+    public function getEventNotificationDays($eventId,$personId) {
+        $sql = "SELECT COUNT(*) FROM qnut_notification_types WHERE code = 'calendar' AND active=1";
+        $stmt = $this->executeStatement($sql,[$personId,$eventId]);
+        $result = $stmt->fetch(PDO::FETCH_COLUMN);
+        if ($result != 1) {
+            // notifications not supported if notification type not active.
+            return -1;
+        }
+
+        $sql=
+            'SELECT leadDays FROM qnut_notification_subscriptions s '.
+            'JOIN qnut_notification_types t ON s.notificationTypeId = t.id '.
+            "WHERE personId = ? AND s.itemId = ? AND t.code = 'calendar'";
+
+        $stmt = $this->executeStatement($sql,[$personId,$eventId]);
+        $result = $stmt->fetch(PDO::FETCH_COLUMN);
+        return ($result === false) ? 0 : $result;
+    }
+
     public function getEventDetails($id)
     {
         $event = $this->get($id);

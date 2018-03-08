@@ -214,6 +214,25 @@
 
                         </div>
 
+                        <div class="row" data-bind="visible:eventForm.notificationDays() > -1">
+                            <div class="col-md-12">
+                                <div class="inline-formlet">
+                                    <div class="inline-formlet-block">
+                                        <input type="checkbox" name="notifications" data-bind="checked:eventForm.sendNotifications">
+                                    </div>
+                                    <div class="inline-formlet-block">
+                                        <translate params="code:'calendar-notify-remind',case:'ucfirst',translator:self"></translate>
+                                    </div>
+                                    <div class="inline-formlet-block" data-bind="visible:eventForm.sendNotifications">
+                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.notificationDays"/>
+                                    </div>
+                                    <div class="inline-formlet-block" data-bind="visible:eventForm.sendNotifications">
+                                        <translate params="code:'calendar-notify-when',translator:self"></translate>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- notes -->
                         <div class="row">
                             <div class="col-md-12">
@@ -592,7 +611,6 @@
                                                 <div class="inline-formlet-block">
                                                     <input class="inline-formlet-number-input" data-bind="value:eventForm.times.repeat.endOccurances"/>
                                                 </div>
-                                                <!-- test git -->
                                                 <div class="inline-formlet-block">
                                                     <translate params="code:'calendar-word-occurances',translator:self"></translate>
                                                 </div>
@@ -628,6 +646,35 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- end repeat modal -->
+
+    <div class="modal" id="repeat-mode-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"><translate params="code:'calendar-update-modal-title',translator:self"></translate></h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <p style="font-weight: bold"><translate params="code:'calendar-update-modal-question',translator:self"></translate></p>
+                        <div>
+                            <div class="radio">
+                                <label><input value="all" data-bind="checked:eventForm.repeatMode" type="radio" name="repeatmode"><translate params="code:'calendar-update-modal-all',translator:self"></translate></label>
+                            </div>
+                            <div class="radio">
+                                <label><input value="instance" data-bind="checked:eventForm.repeatMode" type="radio" name="repeatmode"><translate params="code:'calendar-update-modal-instance',translator:self"></translate></label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bind="click:updateEvent">Continue</button>
+                    <a href="#" data-dismiss="modal">Cancel</a>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- end repeat-mode-modal -->
+
 
 
 </div>

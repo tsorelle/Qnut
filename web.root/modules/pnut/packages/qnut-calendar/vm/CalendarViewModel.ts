@@ -48,8 +48,10 @@ namespace QnutCalendar {
         notes: string;
         description: string;
         recurId: any;
+        notificationDays: any;
         resources: Peanut.ILookupItem[];
         committees: Peanut.ILookupItem[];
+        notification: any;
         createdBy: string;
         createdOn: string;
         changedBy: string;
@@ -341,7 +343,8 @@ namespace QnutCalendar {
             if (repeatPattern.length < 2) {
                 console.error('Invalid repeat pattern.');
                 return;
-            }
+            };
+
             let parts = repeatPattern.split(';');
 
             if (parts.length > 0) {
@@ -973,6 +976,7 @@ namespace QnutCalendar {
 
         eventType = ko.observable('');
         addCaption = ko.observable('');
+        repeatMode = ko.observable('all');
         repeating = ko.observable(false);
         location = ko.observable('');
         url = ko.observable('');
@@ -985,6 +989,8 @@ namespace QnutCalendar {
         titleError = ko.observable('');
         eventTypes = ko.observableArray([]);
         selectedEventType = ko.observable<Peanut.ILookupItem>();
+        notificationDays = ko.observable(-1);
+        sendNotifications = ko.observable(false);
 
         availableResources = ko.observableArray([]);
         selectedResources = ko.observableArray([]);
@@ -1047,7 +1053,6 @@ namespace QnutCalendar {
                 dows.push(this.vocabulary.daysOfWeek[n - 1]);
             }
             return dows.join(', ');
-
         }
 
         ordinalDow(n, d) {
@@ -1224,6 +1229,8 @@ namespace QnutCalendar {
             let me = this;
             me.eventTypeId = event.eventTypeId;
             me.notes(event.notes ? event.notes : '');
+            me.notificationDays(event.notification < 1 ? 1 : event.notification);
+            me.sendNotifications(event.notification > 0);
             if (event.notes) {
                 me.notesLines(event.notes.split('\n'));
             }
@@ -1785,18 +1792,16 @@ namespace QnutCalendar {
             me.eventInfoModal.modal('hide');
             if (!me.eventForm.createdBy()) {
                 me.getEventDetails(() => {
-                    me.showEditPage();
-
+                    this.showEditPage();
                 });
             }
             else {
-                me.showEditPage();
+                this.showEditPage();
             }
         };
 
         showEditPage = () => {
-            let me = this;
-            me.eventForm.edit(me.committees,me.resources,me.eventTypes);
+            this.eventForm.edit(this.committees,this.resources,this.eventTypes);
             this.tab('edit');
         };
 
@@ -1805,7 +1810,20 @@ namespace QnutCalendar {
         };
 
         onUpdateEvent  = () => {
-            this.tab('calendar');
+            if (this.eventForm.repeating()) {
+                this.eventForm.repeatMode('all');
+                jQuery('#repeat-mode-modal').modal('show');
+            }
+            else {
+                this.updateEvent();
+            }
+        };
+
+        updateEvent() {
+            let me = this;
+            jQuery('#repeat-mode-modal').modal('hide');
+            let repeatMode = me.eventForm.repeating() ? me.eventForm.repeatMode() : '';
+            me.tab('calendar');
         };
 
         showEventDetails = () => {
@@ -1833,7 +1851,5 @@ namespace QnutCalendar {
                 })
 
         }
-
-
     }
 }

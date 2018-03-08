@@ -146,7 +146,14 @@ class GetEventsCommand extends TServiceCommand
                 'calendar-phrase-end-by',
                 'calendar-phrase-end-after',
                 'calendar-phrase-no-end',
-                'calendar-word-start'
+                'calendar-word-start',
+                'calendar-word-last',
+                'calendar-update-modal-title',
+                'calendar-update-modal-question',
+                'calendar-update-modal-all',
+                'calendar-update-modal-instance',
+                'calendar-notify-remind',
+                'calendar-notify-when'
             ]);
 
             $response->translations['calendar-word-the'] = trim($response->translations['conjunction-the']);
@@ -156,6 +163,7 @@ class GetEventsCommand extends TServiceCommand
             $response->vocabulary->daysOfWeekPlural = explode(',',TLanguage::text('calendar-days-of-week-plural'));
             $response->vocabulary->monthNames     =   explode(',',TLanguage::text('calendar-months-of-year'));
             $response->vocabulary->ordinals =         explode(',',TLanguage::text('calendar-weekly-ordinals'));
+            array_push($response->vocabulary->ordinals,TLanguage::text('calendar-word-last'));
             $response->vocabulary->ordinalSuffix =    explode(',',TLanguage::text('calendar-ordinals-suffix'));
         }
         $this->setReturnValue($response);

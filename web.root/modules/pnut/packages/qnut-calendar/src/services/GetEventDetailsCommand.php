@@ -26,9 +26,18 @@ class GetEventDetailsCommand extends TServiceCommand
         }
         $repository = new CalendarEventsRepository();
         $response = $repository->getEventDetails($request);
-        if (!$this->getUser()->isAuthorized(CalendarEventManager::ManageCalendarPermissionName)) {
+        $user = $this->getUser();
+        if (!$user->isAuthorized(CalendarEventManager::ManageCalendarPermissionName)) {
             $response->notes = '';
         }
+        if ($user->isAuthenticated()) {
+            $personId = $user->getId();
+            $response->notification = $repository->getEventNotificationDays($request, $this->getUser()->getId());
+        }
+        else {
+            $response->notification = -1;
+        }
+
         $this->setReturnValue($response);
     }
 }
