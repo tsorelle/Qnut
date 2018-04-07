@@ -74,7 +74,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
                 break;
         }
 
-        $params = [$startDate, $endDate, $startDate, $endDate];
+        $params = [$startDate, $endDate, $endDate,$endDate, $startDate];
         if ($code) {
             $params[] = $code;
         }
@@ -84,11 +84,16 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
             "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
-            "CONCAT(e.recurId,',',e.recurInstance) AS repeatInstance,".
-            "CONCAT(e.recurPattern,';',e.recurStart,IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern " .
+
+            "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern " .
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .
-            "WHERE((e.recurPattern IS NULL AND DATE(e.`start`) >= ?  AND  (DATE(e.`end`) < ? OR e.`end` IS NULL)) " .
-            "OR (e.recurPattern IS NOT NULL  AND (e.recurStart <= ? AND (e.recurEnd IS NULL OR e.recurEnd > ?)))) " .
+
+            "WHERE ((e.recurPattern IS NULL AND ( DATE(e.`start`) >= ? ".
+            "AND DATE(e.`start`) < ? AND  (DATE(e.`end`) < ? OR e.`end` IS NULL))) ".
+
+            "OR (e.recurPattern IS NOT NULL AND (DATE(e.`start`) <= ? ".
+            "AND (e.recurEnd IS NULL OR e.recurEnd > ?)))) ".
+
             $filters;
 
         if ($publicOnly) {
@@ -98,6 +103,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         $stmt = $this->executeStatement($sql,$params);
         $events = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
         // $events = $stmt->fetchAll(PDO::FETCH_OBJ);// ,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
+
         return $events;
     }
 

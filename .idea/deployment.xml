@@ -2,20 +2,6 @@
 <project version="4">
   <component name="PublishConfigData">
     <serverData>
-      <paths name="Local.Tops">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="Peanut2">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
       <paths name="design.scym">
         <serverdata>
           <mappings>
@@ -24,13 +10,6 @@
         </serverdata>
       </paths>
       <paths name="dhfarms.old">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="local.peanut-test">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
@@ -66,13 +45,6 @@
         </serverdata>
       </paths>
       <paths name="production.quakers4re.org">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="staging.scym.org">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />

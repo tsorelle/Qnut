@@ -1,8 +1,7 @@
 <div id="calendar-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="calendar-view-container" class="row" style="display: none;margin-bottom: 10rem">
-    <div class="col-md-12">
-        <!--calendar panel -->
-        <div class="row" data-bind="visible:tab() == 'calendar'">
+    <div class="col-md-12" id="main-panel">
+        <div class="row" id="calendar-panel" data-bind="visible:tab() == 'calendar'">
             <div class="col-md-12"  id="calendar-section">
                 <nav class="navbar navbar-default" data-bind="visible:menuVisible">
                     <div class="container-fluid">
@@ -43,18 +42,16 @@
                 <p data-bind="text:deviceSize"></p>
             </div>
         </div>
-        <div class="row" data-bind="visible:tab() == 'edit'">
+        <div class="row" id="edit-panel" data-bind="visible:tab() == 'edit'">
             <div class="col-md-12">
                 <form>
                     <fieldset>
-
                         <legend data-bind="visible:eventForm.id() === 0">
                             <translate params="code:'label-new',translator:self"></translate> <translate params="code:'calendar-event-entity',translator:self"></translate>
                         </legend>
                         <legend data-bind="visible:eventForm.id() > 0"><translate params="code:'calendar-event-entity',case:'ucfirst',translator:self"></translate></legend>
 
-                        <!-- title / location -->
-                        <div class="row">
+                        <div class="row" id="title-row">
                             <div class="col-md-12">
                                 <div class="form-group" data-bind="css: {'has-error': eventForm.titleError}">
                                     <label class="control-label" for="title"><translate params="code:'label-title',translator:self"></translate></label>
@@ -172,7 +169,7 @@
                             <div class="col-md-12" style="padding-bottom: 1rem">
                                 <span class="fa fa-repeat">&nbsp;</span>
                                 <span data-bind="text:eventForm.repeatText()"></span>
-                                <a href="#" data-bind="click:eventForm.times.onShowRepeatInfo">
+                                <a href="#" data-bind="click:eventForm.onShowRepeatInfo">
                                     <span data-bind="visible:eventForm.repeatText() == ''"><translate params="code:'calendar-word-repeat',case:'ucfirst',translator:self"></translate>. . .</span>
                                     <span data-bind="visible:eventForm.repeatText">[<translate params="code:'label-update',case:'ucfirst',translator:self"></translate>]</span>
                                 </a>
@@ -256,9 +253,7 @@
                 </form>
             </div>
         </div>
-
-        <!-- view panel -->
-        <div class="row" data-bind="visible:tab() == 'view'">
+        <div class="row" id="view-panel" data-bind="visible:tab() == 'view'">
             <div class="col-md-12">
                 <form>
                     <fieldset>
@@ -300,7 +295,6 @@
                 </form>
             </div>
         </div>
-
     </div>
 
     <!-- modals -->
@@ -420,7 +414,7 @@
                                                         <span data-bind="text:Name"></span></button>
                                                 </div>
                                                 <div data-bind="text:eventForm.times.repeat.weekdaysMessage"></div>
-
+                                                <!-- div data-bind="text:eventForm.times.repeat.selectedWeekdays"></div --> <!-- for testing -->
                                             </div>
                                             <div class="repeat-detail-panel" data-bind="visible:eventForm.times.repeat.basis()==='m'">
                                                 <!-- monthly -->
@@ -581,8 +575,8 @@
                                             </div>
                                             <div class="inline-formlet">
                                                 <div class="inline-formlet-block">
-                                                    <input class="datepicker" style="width:100%" type="text" id="repeat-start"
-                                                           data-bind="value:eventForm.times.repeat.startOn"/>
+                                                    <!-- input class="datepicker" style="width:100%" type="text" id="repeat-start"  data-bind="value:eventForm.times.repeat.startOn"/ -->
+                                                    <span data-bind="text:eventForm.times.repeat.startOn"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -639,7 +633,8 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bind="click: eventForm.times.onSaveRepeatInfo"><translate params="code:'label-save',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-primary" data-bind="click: eventForm.onSaveRepeatInfo"><translate params="code:'label-save',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-secondary" data-bind="click:eventForm.onRemoveRepeatInfo"><translate params="code:'label-remove',translator:self"></translate> </button>
                         <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
                     </div>
                 </form>
@@ -668,13 +663,16 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bind="click:updateEvent">Continue</button>
+                    <button type="button" class="btn btn-primary" data-bind="click:updateEvent">Continue</button> <!-- todo: translate buttons -->
                     <a href="#" data-dismiss="modal">Cancel</a>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- end repeat-mode-modal -->
 
+    <modal-confirm params="id:'confirm-repeat-delete-modal',headerText: 'calendar-confirm-removerepeat-header', bodyText: 'calendar-confirm-removerepeat-text', confirmClick: updateEvent, translator:self"></modal-confirm>
 
+    <!-- todo: is this obsolete? -->
+    <modal-confirm params="id:'confirm-save-modal',headerText: 'calendar-confirm-saverepeat-header', bodyText: 'save-modal-message', confirmClick: test, translator:self"></modal-confirm>
 
 </div>

@@ -75,6 +75,8 @@ class GetEventsCommand extends TServiceCommand
             $response->translations = TLanguage::getTranslations([
                 'calander-hour',
                 'calander-hour-plural',
+                'calendar-confirm-removerepeat-header',
+                'calendar-confirm-removerepeat-text',
                 'calendar-date-format',
                 'calendar-days-of-week',
                 'calendar-days-of-week-plural',

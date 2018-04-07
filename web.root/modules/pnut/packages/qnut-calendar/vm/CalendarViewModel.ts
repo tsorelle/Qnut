@@ -43,6 +43,33 @@ namespace QnutCalendar {
         repeatInstance : any;
     }
 
+    interface ICalendarDto {
+        id : any;
+        title : string;
+        start : string;
+        end : string;
+        allDay : boolean;
+        location: string;
+        url : string;
+        eventType : string;
+        repeatPattern : string;
+        repeatInstance : any;
+        notes: string;
+        description: string;
+        recurId: any;
+    }
+
+    interface ICalendarUpdateRequest {
+        dto: ICalendarDto;
+        filter: string;
+        code: string;
+        repeatUpdateMode: string;  // 'all' | 'instance'
+        notificationDays: any;
+        resources: any[];
+        committees: any[];
+    }
+
+
     interface ICalendarEventDetails extends ICalendarEvent {
         eventTypeId: any;
         notes: string;
@@ -100,7 +127,7 @@ namespace QnutCalendar {
         public static toIsoString(m: Moment) {
             return m.format('YYYY-MM-DD[T]HH:mm:00');
         }
-        
+
         public static parse(m: Moment = null, normalize = true) {
             if (!m) {
                 m = moment(); // today
@@ -125,12 +152,23 @@ namespace QnutCalendar {
         }
 
         public static momentFromString(s: string) {
-            let date = new Date(s);
-            let d = this.getStringValue(date.getDate());
-            let m = this.getStringValue(date.getMonth() + 1);
-            let iso = date.getFullYear().toString()+'-'+m+ '-' + d + 'T00:00:00';
-            return moment(iso);
-            // return moment(date.toISOString());
+            let parts = s.split('/');
+            if (parts.length === 3) {
+                // convert US short date to iso format
+                let m = parts[0].length === 1 ? '0' + parts[0].toString() : parts[0];
+                let d = parts[1].length === 1 ? '0' + parts[1].toString() : parts[1];
+                let y = parts[2].length === 2 ? '20' + parts[2].toString() : parts[2];
+                s =  y + '-' + m + '-'+ d + 'T00:00:00';
+            }
+            else if (s.length === 10) {
+                s += 'T00:00:00'; // If date only specify midnight to avoid timezone issues
+            }
+            return moment(s);
+        }
+
+        public static getDateString(s: string) {
+            let m = (s === null || s.trim() === '') ? moment() : this.momentFromString(s);
+            return m.format('YYYY-MM-DD');
         }
     }
 
@@ -269,6 +307,7 @@ namespace QnutCalendar {
         weekdaysMessage = ko.observable('');
         endDateBasis = ko.observable();
         startOn = ko.observable('');
+        isNew = ko.observable(false);
         endBy = ko.observable('');
         endOccurances = ko.observable<any>('');
         basisSubscription : any = null;
@@ -277,21 +316,21 @@ namespace QnutCalendar {
             let me = this;
             for(let i = 0; i<7; i++) {
                 let day =  {
-                    Value: i,
+                    Value: i + 1,
                     Name: vocabulary.daysOfWeek[i],
                 };
                 me.daysOfWeek.push(day);
 
                 let dow = {
                     Name: day.Name.substring(0,1),
-                    Value: i,
+                    Value: i + 1,
                     Description: day.Name
                 };
                 me.dowList.push(dow);
             }
             me.dayOfWeek(me.dowList()[0]);
             me.selectedDow(me.daysOfWeek()[0]);
-
+            let test = me.dowList();
             for (let i = 0; i < vocabulary.ordinals.length; i++) {
                 let item = <Peanut.INameValuePair> {
                     Name: vocabulary.ordinals[i],
@@ -308,7 +347,7 @@ namespace QnutCalendar {
                 };
                 me.months().push(item);
             }
-            me.selectedMonth (me.months()[0])
+            me.selectedMonth (me.months()[0]);
             me.selectedOrdinalMonth (me.months()[0])
 
         }
@@ -317,7 +356,7 @@ namespace QnutCalendar {
             let message = '';
             let days = this.selectedWeekdays();
             for (let i = 0; i < days.length; i++ ) {
-                let value = days.charAt(i);
+                let value = Number(days.charAt(i)) - 1;
                 message = message + (message !== '' ? ', ' : '') + this.daysOfWeek()[value].Name;
             }
             this.weekdaysMessage(message);
@@ -337,49 +376,61 @@ namespace QnutCalendar {
             me.startOn('');
             me.endBy('');
             me.endOccurances(1);
-            if (!repeatPattern) {
+            let noRepeat = !repeatPattern;
+            me.isNew(noRepeat);
+            if (noRepeat) {
                 return;
             }
             if (repeatPattern.length < 2) {
                 console.error('Invalid repeat pattern.');
                 return;
-            };
+            }
 
             let parts = repeatPattern.split(';');
-
             if (parts.length > 0) {
                 repeatPattern = parts[0];
                 if (parts.length > 1) {
                     let dates = parts[1].split(',');
-                    if (dates.length > 1) {
-                        me.startOn(Momentito.momentFromString(parts[0]).format(dateFormat));
-                        let end = parts[1];
-                        let occurances = Number(end);
-                        if (isNaN(occurances)) {
-                            me.endDateBasis('occurances');
-                            me.endOccurances(occurances);
+                    if (dates.length < 1) {
+                        console.error('No start date in repeat pattern.');
+                    }
+                    else {
+                        let startMoment = Momentito.momentFromString(dates[0]);
+                        let startText = startMoment.format(dateFormat);
+                        me.startOn(startText);
+                        me.startOn(Momentito.momentFromString(dates[0]).format(dateFormat));
+                        if (dates.length > 1) {
+                            let end = dates[1];
+                            let occurances = Number(end);
+                            if (isNaN(occurances)) {
+                                me.endDateBasis('date');
+                                me.endBy(Momentito.momentFromString(end).format(dateFormat));
+                            }
+                            else {
+                                me.endDateBasis('occurances');
+                                me.endOccurances(occurances);
+                            }
                         }
                         else {
-                            me.endDateBasis('date');
-                            me.endBy(Momentito.momentFromString(end).format(dateFormat));
+                            me.endDateBasis('none');
+                            me.endBy('');
                         }
                     }
                 }
             }
 
-
             let patternParts = repeatPattern.substring(2).split(',');
             let interval = patternParts.length == 0 ? 0 : Number(patternParts[0]);
             me.setBasis(repeatPattern.substring(0, 1));
-            me.patternType(repeatPattern.substring(1, 1));
-
-            switch (repeatPattern.substring(0, 2)) {
+            me.patternType(repeatPattern.substring(0, 2));
+            switch (me.patternType()) {
                 case 'dd' :
                     break;
                 case 'dw' :
                     break;
                 case 'wk' :
                     me.selectedWeekdays(patternParts.length < 2 ? '' : patternParts[1]);
+                    me.setWeekdaysMessage();
                     break;
                 case 'md' :
                     me.monthDay(patternParts.length < 2 ? '' : patternParts[1]);
@@ -418,6 +469,7 @@ namespace QnutCalendar {
             this.interval(1);
             this.monthDay(1);
             // this.selectedWeekdays('');
+            this.setWeekdaysMessage();
             this.monthInterval(1);
             this.selectedOrdinal (this.ordinals()[0]);
             this.dayOfWeek(this.dowList()[0]);
@@ -460,16 +512,54 @@ namespace QnutCalendar {
             selected(null);
         }
 
-        public getPattern() : string {
-            return '';
+        public getRepeatPattern() : string {
+            let me = this;
+            let pattern = me.getPattern();
+            if (pattern === null) {
+                return null;
+            }
+            let startOn = me.startOn();
+            pattern += ';' + Momentito.getDateString(startOn);
+
+            let endBasis = me.endDateBasis();
+            if (endBasis != 'none') {
+                pattern += ',';
+            }
+            if (endBasis === 'occurances') {
+                pattern += me.endOccurances();
+            }
+            else {
+                let endBy = me.endBy();
+                if (endBy.trim() !== '') {
+                    pattern += Momentito.getDateString(endBy);
+                }
+            }
+            return pattern;
         }
 
-        onBasisChanged = (item: any) => {
-            alert('basis changed');
-        };
-
-
-
+        public getPattern() : string {
+            let me = this;
+            switch (me.patternType()) {
+                case 'dd' :
+                    return 'dd' + me.interval();
+                case 'dw' :
+                    return 'dw';
+                case 'wk' :
+                    return 'wk' + me.interval() + ',' + me.selectedWeekdays();
+                case 'md' :
+                    return 'md' + me.monthInterval() + ',' + me.monthDay();
+                case 'mo' :
+                    return 'mo' + me.monthInterval() + ',' + me.selectedOrdinal().Value + ',' +  me.dayOfWeek().Value;
+                case 'yd' :
+                    return 'yd' + me.interval() + ',' + me.selectedMonth().Value + ',' + me.monthDay();
+                case 'yo' :
+                    return 'yo' + me.interval() + + ',' + me.selectedOrdinal().Value + ',' + me.dayOfWeek().Value + ',' + me.selectedOrdinalMonth().Value;
+                default:
+                    // log error
+                    console.error('Invalid repeat pattern.');
+                    return null;
+            }
+        }
     }
 
     export class eventTimeEditor {
@@ -552,7 +642,6 @@ namespace QnutCalendar {
             me.allDay(allDay);
             me.isCustom(false);
             me.repeat.setPattern(repeatPattern,me.dateFormat);
-
             let startDt = Momentito.parse(start);
             me.startDate = startDt.date;
             me.startDateText(startDt.date.format(me.dateFormat));
@@ -667,7 +756,6 @@ namespace QnutCalendar {
         };
 
         setCustomState = (state : boolean = true) => {
-            // todo: review this
             if (this.isCustom() !== state) {
                 if (state) {
                     if (this.endDate == null || (this.endDate && this.endDate.isBefore(this.startDate))) {
@@ -705,13 +793,19 @@ namespace QnutCalendar {
         };
 
         setStartDate = (value: string) => {
+            let sameDay = this.startDate.isSame(this.endDate);
             let newDate = Momentito.momentFromString(value);
+/*
             if (this.endDate && (this.endDate.isAfter(newDate))) {
                 this.timeError(this.invaildTimeOrderErrorMsg);
                 this.timeErrorField('startdate');
                 return false;
             }
+*/
             this.startDate = newDate;
+            if (sameDay || this.endDate.isBefore(newDate)) {
+                this.setEndToStart();
+            }
             return true;
         };
 
@@ -946,21 +1040,12 @@ namespace QnutCalendar {
             this.activateSubscriptions();
         };
 
-        onShowRepeatInfo = () => {
-
-            jQuery('#repeat-info-modal').modal('show');
-        };
-
-        onSaveRepeatInfo = () => {
-            jQuery('#repeat-info-modal').modal('hide');
-            alert('save repeat info');
-        };
-
 
     }
     
     export class calendarEventObservable {
         id = ko.observable<any>(null);
+        recurId : any;
 
         lo: any;
 
@@ -1089,6 +1174,8 @@ namespace QnutCalendar {
             let patternParts = repeatPattern.substring(2).split(',');
             let interval = patternParts.length == 0 ? 0 : Number(patternParts[0]);
             let wordEvery = this.translator.translate('calendar-word-every');
+            wordEvery = wordEvery.charAt(0).toUpperCase() + wordEvery.slice(1);
+
             let wordOn =       this.translator.translate('conjunction-on');
             let wordThe =      this.translator.translate('conjunction-the');
 
@@ -1151,7 +1238,6 @@ namespace QnutCalendar {
             me.end = null;
             me.title('');
             me.location('');
-            me.repeating(false);
             me.url('');
             me.setEventType();
             me.eventTypeId = 0;
@@ -1163,6 +1249,7 @@ namespace QnutCalendar {
             me.createdOn('');
             me.changedBy('');
             me.changedOn('');
+            me.repeating(false);
             me.repeatPattern = '';
             me.repeatText('');
             me.repeatInstance = 0;
@@ -1170,6 +1257,7 @@ namespace QnutCalendar {
             me.resourcesText('');
             me.notes('');
             me.description('');
+
         };
 
         setEventType = (code? : any) => {
@@ -1209,10 +1297,10 @@ namespace QnutCalendar {
 
         };
 
+        // todo: is this never used?
         assign = (event: ICalendarEvent) => {
             let me = this;
 
-            // todo assign dates and times
             me.repeatInstance = event.repeatInstance;
             me.repeatPattern = event.repeatPattern;
             me.title(event.title);
@@ -1222,11 +1310,11 @@ namespace QnutCalendar {
             me.committeesText('');
             me.resourcesText('');
             me.notesLines([]);
-
         };
 
         assignDetails = (event: ICalendarEventDetails) => {
             let me = this;
+            me.recurId = event.recurId;
             me.eventTypeId = event.eventTypeId;
             me.notes(event.notes ? event.notes : '');
             me.notificationDays(event.notification < 1 ? 1 : event.notification);
@@ -1246,6 +1334,7 @@ namespace QnutCalendar {
             me.createdOn(event.createdOn);
             me.changedBy(event.changedBy);
             me.changedOn(event.changedOn);
+            me.repeatMode('all');
         };
 
         assignText(items: Peanut.ILookupItem[], observable: KnockoutObservable<string>) {
@@ -1344,6 +1433,87 @@ namespace QnutCalendar {
 
         };
 
+        validate() : boolean | ICalendarDto {
+            // todo: test validation
+            let me = this;
+            let valid = true;
+            let title = me.title().trim();
+            if (title === '') {
+                me.titleError(me.translator.translate('calendar-error-no-title'));
+                valid = false;
+            }
+
+            if (!valid) {
+                return false;
+            }
+
+
+            let start =  me.times.startDate.format('YYYY-MM-DD');
+            let end = me.times.endDate.format('YYYY-MM-DD');
+            let startTime = '';
+            if (me.times.allDay()) {
+                if (me.times.isSameDay()) {
+                    end = null;
+                }
+            }
+            else {
+                start += ' ' + timeHelper.timeValueToString(me.times.startTimeValue, 23);
+                end += ' '   + timeHelper.timeValueToString(me.times.endTimeValue, 23);
+            }
+
+            let dto = <ICalendarDto> {
+                id : me.id,
+                title : title,
+                start : start,
+                end : end,
+                allDay : me.times.allDay(),
+                location: me.location(),
+                url : '', // not inplemented yet
+                eventType : me.selectedEventType().id,
+                repeatPattern : me.repeatPattern,
+                repeatInstance : me.repeatInstance,
+                notes: me.notes(),
+                description: me.description(),
+                recurId: me.recurId
+            };
+
+            return dto;
+        }
+        onShowRepeatInfo = () => {
+            this.times.repeat.setPattern(this.repeatPattern,this.times.dateFormat);
+            if (!this.repeatPattern) {
+                this.times.repeat.startOn(this.times.startDateText())
+            }
+            jQuery('#repeat-info-modal').modal('show');
+        };
+
+        onSaveRepeatInfo = () => {
+            this.repeatPattern = this.times.repeat.getRepeatPattern();
+            this.repeating(true);
+            this.repeatText(this.getRepeatText(this.repeatPattern));
+            jQuery('#repeat-info-modal').modal('hide');
+        };
+
+        onRemoveRepeatInfo = () => {
+            this.repeatMode('remove');
+            this.repeating(false);
+            this.repeatPattern = '';
+            this.repeatText('');
+            jQuery('#repeat-info-modal').modal('hide');
+        };
+
+        /*
+        onCancelRemoveRepeat = () => {
+            this.repeatMode('');
+        };
+
+        removeRepeat =() => {
+            jQuery('#confirm-repeat-delete-modal').modal('hide');
+            this.repeating(false);
+            this.repeatPattern = '';
+            this.repeatMode('remove');
+        };
+    */
     }
 
     export class calendarPage {
@@ -1446,47 +1616,50 @@ namespace QnutCalendar {
                 '@lib:fullcalendar-css',
                 '@lib:fullcalendar-print-css media=print'
             ]);
-            me.application.loadResources([
-                '@lib:moment-js'
-            ], () => {
+
+            me.application.registerComponents('@pnut/modal-confirm', () => {
                 me.application.loadResources([
-                    '@lib:jqueryui-css',
-                    '@lib:jqueryui-js',
-                    '@lib:fullcalendar-js',
-                    '@lib:lodash',
-                    '@lib:tinymce'
+                    '@lib:moment-js'
                 ], () => {
-                    // initialize date popups
-                    jQuery(function () {
-                        jQuery(".datepicker").datepicker();
-                    });
+                    me.application.loadResources([
+                        '@lib:jqueryui-css',
+                        '@lib:jqueryui-js',
+                        '@lib:fullcalendar-js',
+                        '@lib:lodash',
+                        '@lib:tinymce'
+                    ], () => {
+                        // initialize date popups
+                        jQuery(function () {
+                            jQuery(".datepicker").datepicker();
+                        });
 
-                    me.lo = _.noConflict(); // avoid conflict with underscore.js
-                    me.eventForm.lo = me.lo;
-                    let request = {
-                        initialize: 1
-                    };
+                        me.lo = _.noConflict(); // avoid conflict with underscore.js
+                        me.eventForm.lo = me.lo;
+                        let request = {
+                            initialize: 1
+                        };
 
-                    me.getNewCalendar(request,(response: ICalendarInitResponse) => {
-                        // me.addAllTypesItem(response.types);
-                        me.eventTypes(response.types);
-                        me.userPermission(response.userPermission);
-                        me.addTranslations(response.translations);
-                        me.eventForm.times.initialize(me);
-                        me.eventForm.times.repeat.initialize(response.vocabulary);
-                        me.eventForm.vocabulary = response.vocabulary;
-                        me.eventForm.translator = me;
+                        me.getNewCalendar(request, (response: ICalendarInitResponse) => {
+                            // me.addAllTypesItem(response.types);
+                            me.eventTypes(response.types);
+                            me.userPermission(response.userPermission);
+                            me.addTranslations(response.translations);
+                            me.eventForm.times.initialize(me);
+                            me.eventForm.times.repeat.initialize(response.vocabulary);
+                            me.eventForm.vocabulary = response.vocabulary;
+                            me.eventForm.translator = me;
 
-                        if (response.userPermission == 'edit') {
-                            me.initEditor('#event-description');
-                            me.resources(response.resources);
-                            me.committees(response.committees);
-                            me.eventForm.addCaption(me.translate('label-add') + '...');
-                            me.menuVisible(true);
-                        }
-                        me.showCalendar(response.events);
-                        me.bindDefaultSection();
-                        successFunction();
+                            if (response.userPermission == 'edit') {
+                                me.initEditor('#event-description');
+                                me.resources(response.resources);
+                                me.committees(response.committees);
+                                me.eventForm.addCaption(me.translate('label-add') + '...');
+                                me.menuVisible(true);
+                            }
+                            me.showCalendar(response.events);
+                            me.bindDefaultSection();
+                            successFunction();
+                        });
                     });
                 });
             });
@@ -1503,19 +1676,24 @@ namespace QnutCalendar {
             });
         };
 
+        assignEventList(response : IGetCalendarResponse) {
+            let me = this;
+            let responseEvents = response.events;
+            response.events = [];
+            me.lo.forEach(responseEvents,(value: any) => {
+                value.allDay = value.allDay == '1';
+                response.events.push(value);
+            });
+            responseEvents = null;
+        }
+
         getEvents = (request: any, successFunction? : (response: IGetCalendarResponse) => void) => {
             let me = this;
             me.services.executeService('peanut.qnut-calendar::GetEvents', request,
                 (serviceResponse: Peanut.IServiceResponse) => {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IGetCalendarResponse>serviceResponse.Value;
-                        let responseEvents = response.events; 
-                        response.events = [];
-                        me.lo.forEach(responseEvents,(value: any) => {
-                            value.allDay = value.allDay == '1';
-                            response.events.push(value);
-                        });
-                        responseEvents = null;
+                        me.assignEventList(response);
                         if (successFunction) {
                             successFunction(response);
                         }
@@ -1815,15 +1993,58 @@ namespace QnutCalendar {
                 jQuery('#repeat-mode-modal').modal('show');
             }
             else {
-                this.updateEvent();
+                if (this.eventForm.repeatMode() === 'remove') {
+                    jQuery('#confirm-repeat-delete-modal').modal('show');
+                }
+                else {
+                    this.updateEvent();
+                }
             }
         };
 
-        updateEvent() {
-            let me = this;
-            jQuery('#repeat-mode-modal').modal('hide');
-            let repeatMode = me.eventForm.repeating() ? me.eventForm.repeatMode() : '';
-            me.tab('calendar');
+        updateEvent = () => {
+            if (this.eventForm.repeatMode() == 'remove') {
+                jQuery('#confirm-repeat-delete-modal').modal('hide');
+            }
+            else {
+                jQuery('#repeat-mode-modal').modal('hide');
+            }
+
+            alert('updated');
+            this.tab('calendar');
+            let dto = null;
+
+            // todo: test event update
+            // todo: fix validate
+            // let dto = this.eventForm.validate();
+
+            if (dto) {
+                let repeatMode = this.eventForm.repeating() ? this.eventForm.repeatMode() : '';
+                let request = <ICalendarUpdateRequest>{
+                    dto: dto,
+                    filter: this.filtered(),
+                    code: this.filterCode(),
+                    repeatUpdateMode: repeatMode
+                };
+
+                // test only
+                this.tab('calendar');
+
+                /*
+                this.services.executeService('peanut.qnut-calendar::UpdateEvent', dto,
+                    (serviceResponse: Peanut.IServiceResponse) => {
+                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                            let response = <IGetCalendarResponse>serviceResponse.Value;
+                            this.assignEventList(response);
+                            this.tab('calendar');
+                        }
+                    })
+                    .fail(() => {
+                        let trace = this.services.getErrorInformation();
+                    })
+                */
+            }
+
         };
 
         showEventDetails = () => {
@@ -1850,6 +2071,16 @@ namespace QnutCalendar {
                     let trace = me.services.getErrorInformation();
                 })
 
-        }
+        };
+        testModal = () => {
+            // jQuery("#confirm-save-modal").modal('show');
+            jQuery('#confirm-repeat-delete-modal').modal('show');
+        };
+
+        test = () => {
+            // jQuery("#confirm-save-modal").modal('hide');
+            alert('test');
+        };
+
     }
 }

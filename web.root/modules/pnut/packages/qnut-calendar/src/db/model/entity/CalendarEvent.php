@@ -12,15 +12,14 @@ class CalendarEvent  extends \Tops\db\TimeStampedEntity
     public $title;
     public $start;
     public $end;
+    public $location;
     public $url;
     public $eventTypeId;
     public $notes;
     public $description;
     public $recurPattern;
-    public $recurStart;
     public $recurEnd;
     public $recurId;
-    public $recurInstance;
     public $active;
 
     public function getDtoDataTypes()
@@ -28,9 +27,7 @@ class CalendarEvent  extends \Tops\db\TimeStampedEntity
         $types = parent::getDtoDataTypes();
         $types['start'] = \Tops\sys\TDataTransfer::dataTypeDateTime;
         $types['end'] = \Tops\sys\TDataTransfer::dataTypeDateTime;
-        $types['recurStart'] = \Tops\sys\TDataTransfer::dataTypeDate;
         $types['recurEnd'] = \Tops\sys\TDataTransfer::dataTypeDate;
-        $types['recurInstance'] = \Tops\sys\TDataTransfer::dataTypeDate;
         return $types;
     }
 }
