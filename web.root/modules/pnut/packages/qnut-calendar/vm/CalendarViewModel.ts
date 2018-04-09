@@ -12,6 +12,8 @@
 namespace QnutCalendar {
 
 
+    import ILookupItem = Peanut.ILookupItem;
+
     interface Moment extends moment.Moment {}  // for syntactical help
 
     interface ICalendarEvent {
@@ -60,7 +62,7 @@ namespace QnutCalendar {
     }
 
     interface ICalendarUpdateRequest {
-        dto: ICalendarDto;
+        eventDto: ICalendarDto;
         filter: string;
         code: string;
         repeatUpdateMode: string;  // 'all' | 'instance'
@@ -1433,8 +1435,8 @@ namespace QnutCalendar {
 
         };
 
+
         validate() : boolean | ICalendarDto {
-            // todo: test validation
             let me = this;
             let valid = true;
             let title = me.title().trim();
@@ -1447,21 +1449,26 @@ namespace QnutCalendar {
                 return false;
             }
 
-
             let start =  me.times.startDate.format('YYYY-MM-DD');
-            let end = me.times.endDate.format('YYYY-MM-DD');
-            let startTime = '';
-            if (me.times.allDay()) {
-                if (me.times.isSameDay()) {
-                    end = null;
+            if (!me.times.allDay()) {
+                start += (' ' + timeHelper.timeValueToString(me.times.startTimeValue,24));
+            }
+
+            let end =  null;
+
+            if (!me.times.isSameDay()) {
+                end = me.times.endDate.format('YYYY-MM-DD');
+                if (!me.times.allDay()) {
+                    end += (' ' + timeHelper.timeValueToString(me.times.endTimeValue,24));
                 }
             }
-            else {
-                start += ' ' + timeHelper.timeValueToString(me.times.startTimeValue, 23);
-                end += ' '   + timeHelper.timeValueToString(me.times.endTimeValue, 23);
-            }
 
-            let dto = <ICalendarDto> {
+
+            // tinymce.get('event-description').setContent(me.description());
+            tinymce.triggerSave();
+            me.description(jQuery('#event-description').val());
+
+            return <ICalendarDto> {
                 id : me.id,
                 title : title,
                 start : start,
@@ -1476,9 +1483,8 @@ namespace QnutCalendar {
                 description: me.description(),
                 recurId: me.recurId
             };
-
-            return dto;
         }
+
         onShowRepeatInfo = () => {
             this.times.repeat.setPattern(this.repeatPattern,this.times.dateFormat);
             if (!this.repeatPattern) {
@@ -2002,6 +2008,14 @@ namespace QnutCalendar {
             }
         };
 
+        getSelectedItemIds(observable: KnockoutObservableArray<ILookupItem>) {
+            let result = [];
+            let list = observable();
+            for (let i = 0; i<list.length; i++) {
+                result.push(list[i].id);
+            }
+            return result;
+        }
         updateEvent = () => {
             if (this.eventForm.repeatMode() == 'remove') {
                 jQuery('#confirm-repeat-delete-modal').modal('hide');
@@ -2010,21 +2024,21 @@ namespace QnutCalendar {
                 jQuery('#repeat-mode-modal').modal('hide');
             }
 
-            alert('updated');
-            this.tab('calendar');
-            let dto = null;
+            let dto = this.eventForm.validate();
 
             // todo: test event update
-            // todo: fix validate
-            // let dto = this.eventForm.validate();
 
             if (dto) {
                 let repeatMode = this.eventForm.repeating() ? this.eventForm.repeatMode() : '';
+
                 let request = <ICalendarUpdateRequest>{
-                    dto: dto,
+                    eventDto: dto,
                     filter: this.filtered(),
                     code: this.filterCode(),
-                    repeatUpdateMode: repeatMode
+                    repeatUpdateMode: repeatMode,
+                    notificationDays: this.eventForm.notificationDays(),
+                    resources: this.getSelectedItemIds(this.eventForm.selectedResources),
+                    committees: this.getSelectedItemIds(this.eventForm.selectedCommittees)
                 };
 
                 // test only
