@@ -16,6 +16,7 @@ namespace QnutCalendar {
 
     interface Moment extends moment.Moment {}  // for syntactical help
 
+    // for calendar display
     interface ICalendarEvent {
         id : any;
         title : string;
@@ -30,11 +31,15 @@ namespace QnutCalendar {
         textColor : string;
         repeatPattern : string;
         repeatInstance : any;
+        occurance: any;
     }
 
+
+    // Calendar object converted for edit
     interface ICalendarEventObject {
         id : any;
         title : string;
+        occurance: any;
         start : Moment;
         end : Moment;
         allDay : boolean;
@@ -50,19 +55,20 @@ namespace QnutCalendar {
         title : string;
         start : string;
         end : string;
-        allDay : boolean;
+        allDay : number;
         location: string;
         url : string;
-        eventType : string;
-        repeatPattern : string;
-        repeatInstance : any;
+        eventTypeId : any;
+        recurPattern : string;
+        recurEnd : any;
+        recurId: any;
+        recurInstance: any;
         notes: string;
         description: string;
-        recurId: any;
     }
 
     interface ICalendarUpdateRequest {
-        eventDto: ICalendarDto;
+        event: ICalendarDto;
         filter: string;
         code: string;
         repeatUpdateMode: string;  // 'all' | 'instance'
@@ -81,6 +87,7 @@ namespace QnutCalendar {
         resources: Peanut.ILookupItem[];
         committees: Peanut.ILookupItem[];
         notification: any;
+        recurStartOn: string;
         createdBy: string;
         createdOn: string;
         changedBy: string;
@@ -123,6 +130,12 @@ namespace QnutCalendar {
         public static clone(m: Moment, useCurrentLocale = true) {
             return useCurrentLocale ? m.clone() : moment(m.format());
         }
+        public static swapDates(m:Moment, ds: string) {
+            let timeString = m.format('[T]00:00:00');
+            Momentito.getDateString(ds); // convert to iso
+            return moment(ds + timeString);
+        }
+
         public static normalize(m: Moment) {
              return moment(m.format('YYYY-MM-DD[T]HH:mm:00'));
         }
@@ -172,6 +185,8 @@ namespace QnutCalendar {
             let m = (s === null || s.trim() === '') ? moment() : this.momentFromString(s);
             return m.format('YYYY-MM-DD');
         }
+
+
     }
 
     export class timeHelper {
@@ -313,6 +328,7 @@ namespace QnutCalendar {
         endBy = ko.observable('');
         endOccurances = ko.observable<any>('');
         basisSubscription : any = null;
+        endDateBasisSubscription: any = null;
 
         public initialize(vocabulary: ICalendarTranslations) {
             let me = this;
@@ -364,8 +380,14 @@ namespace QnutCalendar {
             this.weekdaysMessage(message);
         };
 
+
         public setPattern(repeatPattern: string, dateFormat: string) {
             let me = this;
+            if (me.endDateBasisSubscription !== null) {
+                me.endDateBasisSubscription.dispose();
+                me.endDateBasisSubscription = null;
+            }
+
             me.setBasis('d');
             me.patternType('dd');
             me.interval(1);
@@ -377,7 +399,7 @@ namespace QnutCalendar {
             me.endDateBasis('none');
             me.startOn('');
             me.endBy('');
-            me.endOccurances(1);
+            me.endOccurances('');
             let noRepeat = !repeatPattern;
             me.isNew(noRepeat);
             if (noRepeat) {
@@ -419,6 +441,7 @@ namespace QnutCalendar {
                         }
                     }
                 }
+                me.endDateBasisSubscription = me.endDateBasis.subscribe(me.onEndDateBasisChange);
             }
 
             let patternParts = repeatPattern.substring(2).split(',');
@@ -455,11 +478,34 @@ namespace QnutCalendar {
                     console.error('Invalid repeat pattern.');
                     break;
             }
+
         }
+
+        onEndDateBasisChange = (value: any) => {
+            switch (value) {
+                case 'none':
+                    this.endBy('');
+                    this.endOccurances('');
+                    return;
+                case 'occurances' :
+                    this.endBy('');
+                    if (this.endOccurances() == '') {
+                        this.endOccurances('1');
+                    }
+                    return;
+                case 'date' :
+                    this.endOccurances('');
+                    if (this.endBy() == '') {
+                        this.endBy(this.startOn());
+                    }
+                    return;
+            }
+        };
 
         setBasis = (value: any) =>{
             if (this.basisSubscription !== null) {
                 this.basisSubscription.dispose();
+                this.basisSubscription = null;
             }
             this.basis(value);
             this.basisSubscription = this.basis.subscribe(this.onBasisChange);
@@ -478,7 +524,6 @@ namespace QnutCalendar {
             this.selectedDow(this.daysOfWeek()[0]);
             this.selectedMonth(this.months()[0]);
             this.selectedOrdinalMonth(this.months()[0]);
-
         };
 
         onDowClick = (item: Peanut.ISelectListItem) => {
@@ -524,13 +569,16 @@ namespace QnutCalendar {
             pattern += ';' + Momentito.getDateString(startOn);
 
             let endBasis = me.endDateBasis();
-            if (endBasis != 'none') {
+            if (endBasis == 'none') {
+                me.endBy('');
+            }
+            else {
                 pattern += ',';
             }
             if (endBasis === 'occurances') {
                 pattern += me.endOccurances();
             }
-            else {
+            else if (endBasis === 'date') {
                 let endBy = me.endBy();
                 if (endBy.trim() !== '') {
                     pattern += Momentito.getDateString(endBy);
@@ -670,6 +718,7 @@ namespace QnutCalendar {
                 else {
                     me.endTimeValue = endDt.time;
                 }
+
                 if (sameDay) {
                     me.endDate = null;
                 }
@@ -1078,6 +1127,7 @@ namespace QnutCalendar {
         selectedEventType = ko.observable<Peanut.ILookupItem>();
         notificationDays = ko.observable(-1);
         sendNotifications = ko.observable(false);
+        isVirtual = ko.observable(false);
 
         availableResources = ko.observableArray([]);
         selectedResources = ko.observableArray([]);
@@ -1156,6 +1206,17 @@ namespace QnutCalendar {
             return this.vocabulary.monthNames[Number(n) - 1];
         };
 
+        /*
+        getRepeatStartDate(repeatPattern: string) {
+            let parts = repeatPattern.split(';');
+            if (parts.length > 1) {
+                let dates = parts[1].split(',');
+                return moment(dates[0]).format("MMM D, YYYY");
+            }
+            return null;
+        }
+        */
+
         getRepeatText = (repeatPattern: string) => {
             let result = '';
             let start = null;
@@ -1232,8 +1293,17 @@ namespace QnutCalendar {
             }
         };
 
-        clear = () => {
+        setDescription = (text: string) => {
+            this.description(text);
+            tinymce.get('event-description').setContent(text);
+        };
+
+        clear = (committees: KnockoutObservableArray<Peanut.ILookupItem>,
+                 resources: KnockoutObservableArray<Peanut.ILookupItem>, eventTypes: KnockoutObservableArray<Peanut.ILookupItem>
+        ) => {
+
             let me = this;
+
             me.suspendSubscriptions();
             me.id(0);
             me.start = moment();
@@ -1241,12 +1311,20 @@ namespace QnutCalendar {
             me.title('');
             me.location('');
             me.url('');
-            me.setEventType();
             me.eventTypeId = 0;
             me.notes('');
             me.selectedResources([]);
             me.selectedCommittees([]);
-            me.selectedEventType(null);
+
+            let type = me.lo.find(eventTypes(), (type: Peanut.ILookupItem) => {
+                return type.code === 'public';
+            });
+
+            me.selectedEventType(type);
+
+            me.availableCommittees(committees());
+            me.availableResources(resources());
+
             me.createdBy('');
             me.createdOn('');
             me.changedBy('');
@@ -1258,10 +1336,21 @@ namespace QnutCalendar {
             me.committeesText('');
             me.resourcesText('');
             me.notes('');
-            me.description('');
+            me.setDescription('');
+            me.sendNotifications(false);
+            me.notificationDays(-1);
+
+            me.start = moment();
+            me.end = moment();
+            me.end.add(1,'hour');
+            me.allDay = false;
+
+            me.times.setTimes(me.start,me.end,me.allDay,me.repeatPattern);
+            me.activateSubscriptions();
 
         };
 
+/*
         setEventType = (code? : any) => {
             let me = this;
             if (!code) {
@@ -1273,6 +1362,7 @@ namespace QnutCalendar {
             me.selectedEventType(type);
         };
 
+*/
         assignFromCalendarObject = (event: ICalendarEventObject) => {
             let me = this;
             me.id(event.id);
@@ -1295,23 +1385,9 @@ namespace QnutCalendar {
             me.notes('');
             me.notesLines([]);
             me.changedBy('');
-            me.description('');
+            me.setDescription('');
+            me.isVirtual(event.occurance > 1);
 
-        };
-
-        // todo: is this never used?
-        assign = (event: ICalendarEvent) => {
-            let me = this;
-
-            me.repeatInstance = event.repeatInstance;
-            me.repeatPattern = event.repeatPattern;
-            me.title(event.title);
-            me.allDay = (event.allDay == '1');
-            me.url(event.url);
-            me.eventType(event.eventType);
-            me.committeesText('');
-            me.resourcesText('');
-            me.notesLines([]);
         };
 
         assignDetails = (event: ICalendarEventDetails) => {
@@ -1329,7 +1405,7 @@ namespace QnutCalendar {
             }
             me.selectedResources(event.resources);
             me.assignText(event.resources, me.resourcesText);
-            me.description(event.description ? event.description : '');
+            me.setDescription(event.description ? event.description : '');
             me.selectedCommittees(event.committees);
             me.assignText(event.committees, me.committeesText);
             me.createdBy(event.createdBy);
@@ -1397,7 +1473,7 @@ namespace QnutCalendar {
             me.selectedEventType(type);
 
             me.times.setTimes(me.start,me.end,me.allDay,me.repeatPattern);
-            tinymce.get('event-description').setContent(me.description());
+            me.setDescription(me.description());
             me.activateSubscriptions();
         };
 
@@ -1435,6 +1511,29 @@ namespace QnutCalendar {
 
         };
 
+        parseRepeatPattern(repeatPattern : string) {
+            let result = {
+                pattern: null,
+                start: null,
+                endValue: null
+            };
+            if (repeatPattern) {
+                let parts = repeatPattern.split(';');
+                if (parts.length > 0) {
+                    result.pattern = parts[0];
+                    if (parts.length > 1) {
+                        let dates = parts[1].split(',');
+                        if (dates.length > 0) {
+                            result.start = dates[0];
+                        }
+                        if (dates.length > 1) {
+                            result.endValue = dates[1];
+                        }
+                    }
+                }
+            }
+            return result;
+        }
 
         validate() : boolean | ICalendarDto {
             let me = this;
@@ -1449,40 +1548,55 @@ namespace QnutCalendar {
                 return false;
             }
 
-            let start =  me.times.startDate.format('YYYY-MM-DD');
-            if (!me.times.allDay()) {
-                start += (' ' + timeHelper.timeValueToString(me.times.startTimeValue,24));
-            }
-
-            let end =  null;
-
-            if (!me.times.isSameDay()) {
-                end = me.times.endDate.format('YYYY-MM-DD');
-                if (!me.times.allDay()) {
-                    end += (' ' + timeHelper.timeValueToString(me.times.endTimeValue,24));
-                }
-            }
-
-
-            // tinymce.get('event-description').setContent(me.description());
             tinymce.triggerSave();
             me.description(jQuery('#event-description').val());
 
-            return <ICalendarDto> {
-                id : me.id,
+            let startDate =  me.times.startDate; // .format('YYYY-MM-DD');
+            let endDate =  me.times.endDate;
+            let repeatPattern = this.parseRepeatPattern(me.repeatPattern);
+
+            if (repeatPattern.pattern && repeatPattern.start) {
+                let startDay = Momentito.momentFromString(repeatPattern.start); //  moment(repeatPattern.start);
+                let daysDiff = moment.duration(startDay.diff(me.times.startDate)).asDays();
+                // if recurrence start date doesn't match start, adjust
+                if (daysDiff != 0) {
+                    startDate = startDay;
+                    if (endDate) {
+                        endDate.add(daysDiff,'days');
+                    }
+                }
+            }
+            let start = startDate.format('YYYY-MM-DD');
+            let end = endDate == null? start : endDate.format('YYYY-MM-DD');
+
+            if (!me.times.allDay()) {
+               start +=  ' ' + timeHelper.timeValueToString(me.times.startTimeValue,24);
+               end   +=  ' ' + timeHelper.timeValueToString(me.times.endTimeValue,24);
+            }
+
+            if (start == end) {
+                end = null;
+            }
+
+            let dto = <ICalendarDto> {
+                id : me.id(),
                 title : title,
                 start : start,
                 end : end,
-                allDay : me.times.allDay(),
+                allDay : me.times.allDay() ? 1 : 0,
                 location: me.location(),
-                url : '', // not inplemented yet
-                eventType : me.selectedEventType().id,
-                repeatPattern : me.repeatPattern,
-                repeatInstance : me.repeatInstance,
+                url : null, // not inplemented yet
+                eventTypeId : me.selectedEventType().id,
+                recurPattern : repeatPattern.pattern,
+                recurEnd : me.times.repeat.endDateBasis() == 'date' ? repeatPattern.endValue : null,
+                recurId: me.recurId,
+                recurInstance : null,
                 notes: me.notes(),
                 description: me.description(),
-                recurId: me.recurId
+                active: 1
             };
+
+            return dto;
         }
 
         onShowRepeatInfo = () => {
@@ -1497,6 +1611,7 @@ namespace QnutCalendar {
             this.repeatPattern = this.times.repeat.getRepeatPattern();
             this.repeating(true);
             this.repeatText(this.getRepeatText(this.repeatPattern));
+            // todo: validate repeat pattern
             jQuery('#repeat-info-modal').modal('hide');
         };
 
@@ -1587,6 +1702,8 @@ namespace QnutCalendar {
     }
 
     export class CalendarViewModel extends Peanut.ViewModelBase {
+        // todo: implement delete event
+
         // observables
 
         tab = ko.observable('calendar');
@@ -1967,8 +2084,9 @@ namespace QnutCalendar {
         };
 
         onNewEvent = () => {
-            this.eventForm.clear();
-            this.tab('edit');
+            this.eventForm.clear(this.committees,this.resources,this.eventTypes);
+            // this.tab('edit');
+            this.showEditPage();
         };
 
         onEditEvent = () => {
@@ -2016,6 +2134,8 @@ namespace QnutCalendar {
             }
             return result;
         }
+
+
         updateEvent = () => {
             if (this.eventForm.repeatMode() == 'remove') {
                 jQuery('#confirm-repeat-delete-modal').modal('hide');
@@ -2026,26 +2146,24 @@ namespace QnutCalendar {
 
             let dto = this.eventForm.validate();
 
-            // todo: test event update
 
             if (dto) {
                 let repeatMode = this.eventForm.repeating() ? this.eventForm.repeatMode() : '';
 
                 let request = <ICalendarUpdateRequest>{
-                    eventDto: dto,
+                    event: dto,
                     filter: this.filtered(),
                     code: this.filterCode(),
                     repeatUpdateMode: repeatMode,
-                    notificationDays: this.eventForm.notificationDays(),
+                    notificationDays: this.eventForm.sendNotifications() ? this.eventForm.notificationDays() : -1,
                     resources: this.getSelectedItemIds(this.eventForm.selectedResources),
                     committees: this.getSelectedItemIds(this.eventForm.selectedCommittees)
                 };
 
-                // test only
-                this.tab('calendar');
 
-                /*
-                this.services.executeService('peanut.qnut-calendar::UpdateEvent', dto,
+                // todo: test update service call
+
+                this.services.executeService('peanut.qnut-calendar::UpdateEvent', request,
                     (serviceResponse: Peanut.IServiceResponse) => {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetCalendarResponse>serviceResponse.Value;
@@ -2056,7 +2174,6 @@ namespace QnutCalendar {
                     .fail(() => {
                         let trace = this.services.getErrorInformation();
                     })
-                */
             }
 
         };

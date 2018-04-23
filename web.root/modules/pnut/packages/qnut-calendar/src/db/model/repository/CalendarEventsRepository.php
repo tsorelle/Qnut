@@ -37,9 +37,10 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             'url' => PDO::PARAM_STR,
             'eventTypeId' => PDO::PARAM_INT,
             'notes' => PDO::PARAM_STR,
+            'location' => PDO::PARAM_STR,
             'description' => PDO::PARAM_STR,
             'recurPattern' => PDO::PARAM_STR,
-            'recurStart' => PDO::PARAM_STR,
+            // 'recurStart' => PDO::PARAM_STR,
             'recurEnd' => PDO::PARAM_STR,
             'recurId' => PDO::PARAM_INT,
             'recurInstance' => PDO::PARAM_STR,
@@ -85,7 +86,8 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
             "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
 
-            "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern " .
+            "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern, " .
+            "IF (e.recurId IS NULL,'',CONCAT(e.recurId,',',DATE_FORMAT(e.recurInstance,'%Y-%m-%d'))) AS repeatInstance, 0 AS occurance ".
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .
 
             "WHERE ((e.recurPattern IS NULL AND ( DATE(e.`start`) >= ? ".
@@ -102,7 +104,6 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
 
         $stmt = $this->executeStatement($sql,$params);
         $events = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
-        // $events = $stmt->fetchAll(PDO::FETCH_OBJ);// ,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
 
         return $events;
     }

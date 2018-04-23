@@ -22,30 +22,31 @@ use Tops\sys\TPermissionsManager;
  * Service Contract:
  *	Request:
  *     interface ICalendarUpdateRequest {
- *          dto: ICalendarDto;
+ *          event: ICalendarDto;
  *          filter: string;
  *          code: string;
  *          repeatUpdateMode: string;
  *          notificationDays: any;
  *          resources: any[];
  *          committees: any[];
- *     }
+ *    }
  *
- *	   interface ICalendarDto {
- *			id : any;
- *	        title : string;
- *	        start : string;
- *	        end : string;
- *	        allDay : boolean;
- *	        location: string;
- *	        url : string;
- *	        eventType : string;
- *	        repeatPattern : string;
- *	        repeatInstance : any;
- *	        notes: string;
- *	        description: string;
- *	        recurId: any;
- *		}
+ *    interface ICalendarDto {
+ *        id : any;
+ *        title : string;
+ *        start : string;
+ *        end : string;
+ *        allDay : number;
+ *        location: string;
+ *        url : string;
+ *        eventTypeId : any;
+ *        recurPattern : string;
+ *        recurEnd : any;
+ *        recurId: any;
+ *        recurInstance: any;
+ *        notes: string;
+ *        description: string;
+ *    }
  *
  *	Response:
  *     interface IGetCalendarResponse {
@@ -65,55 +66,92 @@ class UpdateEventCommand extends TServiceCommand
 
     protected function run()
     {
+
         $request = $this->getRequest();
         if ($request == null) {
             $this->addErrorMessage('service-no-request');
             return;
         }
 
-        if (empty($request->dto)) {
+        if (empty($request->event)) {
             $this->addErrorMessage('calendar-error-no-event');
             return;
         }
-        if (empty($request->dto->startTime)) {
+        if (empty($request->event->start)) {
             $this->addErrorMessage('calendar-error-no-start');
             return;
         }
 
-        $startTime = TDates::stringToTimestamp($request->dto->start,TDates::IsoDateTimeFormat);
+        $startTime = TDates::stringToTimestamp($request->event->start,TDates::IsoDateTimeFormat);
         if ($startTime === false) {
             $this->addErrorMessage('calendar-error-invalid-start');
             return;
         }
 
-        if (!empty($request->recurPattern)) {
+        //todo: test case: Update repeating from first
+        //todo: test case: Update from repeat instance
+        //todo: test case: Update and remove recurrences
+        //todo: test case: Update and change recurrences
+        //todo: test case: Update post replacement for repeat instance
+
+        if (!empty($request->event->repeatPattern)) {
             // todo: extract start end dates
         }
 
-        if ($request->dto->id === 0) {
-            $dto = new CalendarEvent();
-            $dto->assignFromObject($request->dto);
+        $manager = new CalendarEventManager();
+        $id = $request->event->id;
+        $isNew = ($id === 0);
+        if ($isNew) {
+            $event = new CalendarEvent();
         }
         else {
-            // todo: retrieve event
-            // if previously recurring, drop modified instances ?
+            $event = $manager->getEvent($request->event->id);
         }
 
-        // todo: UpdateEventCommand - perform update on $request->dto
+        // todo: test2 - assert assignment correct - revist for recurrence test cases.
+        $event->assignFromObject($request->event);
+
+        $user = $this->getUser();
+        if ($isNew) {
+            $id = $manager->addEvent($event,$user->getUserName());
+        }
+        else {
+            $manager->updateEvent($event,$user->getUserName());
+        }
+
+        $manager->updateEventAssociations($id,
+            isset($request->committees) ? $request->committees : null,
+            isset($request->resources) ? $request->resources : null
+        );
+
+        if (isset($request->notificationDays)) {
+            if ($request->notificationDays < 0) {
+                if (!$isNew) {
+                    $manager->clearEventNotification($id, $user->getId());
+                }
+            }
+            else {
+                $manager->addEventNotification($id,$user->getId(),$request->notificationDays,$user->getUserName());
+            }
+        }
 
 
+        // todo: translate message
+        $this->addInfoMessage('Event updated');
+
+
+        // return events list
         $getEventsRequest = new \stdClass();
         $getEventsRequest->year = date('Y',$startTime);
         $getEventsRequest->month = date('m',$startTime);
         $getEventsRequest->filter = $request->filter;
         $getEventsRequest->code = $request->code;
-        $user =$this->getUser();
         if (!isset($request->public)) {
-            $request->public = !$user->isAuthenticated();
+            $getEventsRequest->public = !$user->isAuthenticated();
         }
 
         $manager = new CalendarEventManager();
-        $response = $manager->getCalendarEvents($request);
+        $response = $manager->getCalendarEvents($getEventsRequest);
         $this->setReturnValue($response);
     }
 }

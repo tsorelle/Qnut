@@ -128,6 +128,7 @@ class GetEventsCommand extends TServiceCommand
                 'label-add',
                 'label-cancel',
                 'label-close',
+                'label-continue',
                 'label-custom',
                 'label-description',
                 'label-edit',

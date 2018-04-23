@@ -343,7 +343,8 @@
                         <button data-bind="visible:bootstrapVersion() === 4" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body" >
-                        <div class="row"> <!-- recurance Pattern -->
+                        <!-- repeat pattern -->
+                        <div class="row">
                             <div class="col-md-12">
                                 <fieldset class="calendar-repeat-section">
                                     <legend><translate params="code:'calendar-pattern-header',translator:self"></translate></legend>
@@ -563,6 +564,7 @@
                                 </fieldset>
                             </div>
                         </div>
+                        <!-- repeat range -->
                         <div class="row">
                             <div class="col-md-12">
                                 <fieldset class="calendar-repeat-section">
@@ -576,8 +578,10 @@
                                                 </div>
                                             </div>
                                             <div class="inline-formlet">
-                                                <div class="inline-formlet-block">
-                                                    <!-- input class="datepicker" style="width:100%" type="text" id="repeat-start"  data-bind="value:eventForm.times.repeat.startOn"/ -->
+                                                <div class="inline-formlet-block" data-bind="visible:eventForm.isVirtual">
+                                                    <input class="datepicker" style="width:100%" type="text" id="repeat-start"  data-bind="value:eventForm.times.repeat.startOn"/>
+                                                </div>
+                                                <div class="inline-formlet-block" data-bind="visible:!eventForm.isVirtual()">
                                                     <span data-bind="text:eventForm.times.repeat.startOn"></span>
                                                 </div>
                                             </div>
@@ -665,8 +669,12 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bind="click:updateEvent">Continue</button> <!-- todo: translate buttons -->
-                    <a href="#" data-dismiss="modal">Cancel</a>
+                    <button type="button" class="btn btn-primary" data-bind="click:updateEvent">
+                        <translate params="code:'label-continue',translator:self"></translate>
+                    </button>
+                    <a href="#" data-dismiss="modal">
+                        <translate params="code:'label-cancel',translator:self"></translate>
+                    </a>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->

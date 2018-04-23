@@ -10,8 +10,15 @@ namespace Peanut\QnutCalendar\db\model;
 
 use Peanut\QnutCalendar\db\model\entity\CalendarEvent;
 use Peanut\QnutCalendar\db\model\entity\FullCalendarEvent;
+use Peanut\QnutCalendar\db\model\entity\NotificationSubscription;
+use Peanut\QnutCalendar\db\model\repository\CalendarCommitteeAssociation;
 use Peanut\QnutCalendar\db\model\repository\CalendarEventsRepository;
+use Peanut\QnutCalendar\db\model\repository\CalendarResourceAssociation;
+use Peanut\QnutCalendar\db\model\repository\NotificationSubscriptionsRepository;
+use Peanut\QnutCalendar\db\model\repository\NotificationTypesRepository;
 use Tops\db\model\repository\LookupTableRepository;
+use Tops\db\NamedEntity;
+use Tops\sys\IUser;
 use Tops\sys\TCalendarPage;
 use Tops\sys\TDateRepeater;
 use Tops\sys\TDates;
@@ -30,11 +37,67 @@ class CalendarEventManager
         return $this->eventsRepository;
     }
 
+    /**
+     * @var CalendarCommitteeAssociation
+     */
+    private $committeesAssociation;
+    private function getCommitteesAssociation() {
+        if (!isset($this->committeesAssociation)) {
+            $this->committeesAssociation = new CalendarCommitteeAssociation();
+        }
+        return $this->committeesAssociation;
+    }
+
+    /**
+     * @var NotificationSubscriptionsRepository
+     */
+    private $notificationsRepository;
+    private function getNotificationsRepository() {
+        if (!isset($this->notificationsRepository)) {
+            $this->notificationsRepository = new NotificationSubscriptionsRepository();
+        }
+        return $this->notificationsRepository;
+    }
+
+
+
+    /**
+     * @var CalendarResourceAssociation;
+     */
+    private $resourcesAssociation;
+    private function getResourcesAssociation() {
+        if (!isset($this->resourcesAssociation)) {
+            $this->resourcesAssociation = new CalendarResourceAssociation();
+        }
+        return $this->resourcesAssociation;
+    }
+
     private static $instance;
     public static function GetInstance() {
         if (!isset(self::$instance)) {
             self::$instance = new CalendarEventManager();
         }
+    }
+
+    public function getEvent($id) {
+        return $this->getEventsRepository()->get($id);
+    }
+
+    public function addEvent(CalendarEvent $event, $username = 'system') {
+        return $this->getEventsRepository()->insert($event,$username);
+    }
+
+    public function updateEventAssociations($eventId,array $committees = null, array $resources = null) {
+        if ($committees !== null) {
+            $this->getCommitteesAssociation()->updateRightValues($eventId,$committees);
+        }
+        if ($resources !== null) {
+            $this->getResourcesAssociation()->updateRightValues($eventId,$resources);
+        }
+    }
+
+    public function updateEvent(CalendarEvent $event, $username = 'system') {
+        $this->getEventsRepository()->update($event,$username);
     }
 
     /**
@@ -77,6 +140,7 @@ class CalendarEventManager
         // get repeating dates
         $repeater = new TDateRepeater();
         foreach ($repeats as $event) {
+            $occurance = 0;
             $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
             foreach ($dates as $date) {
                 // Check if a replacement event found for this instance
@@ -86,6 +150,7 @@ class CalendarEventManager
 
                 // clone the event and update start and end dates
                 $repeat = clone $event;
+                $repeat->occurance = ++$occurance;
                 $repeat->start = $date;
                 @list($datePart,$timePart) = explode('T',$event->start);
                 if ($timePart !== null) {
@@ -155,6 +220,48 @@ class CalendarEventManager
     {
         $repository = new LookupTableRepository('qnut_committees');
         return $repository->getLookupList();
+    }
+
+    private $subscriptionTypeId;
+    private function getSubscriptionTypeId()
+    {
+        if (!isset($this->subscriptionTypeId)) {
+            /**
+             * @var $type NamedEntity
+             */
+            $type = (new NotificationTypesRepository())->getEntityByCode('calendar');
+            $this->subscriptionTypeId = empty($type) ? 1 : $type->getId();
+        }
+        return $this->subscriptionTypeId;
+    }
+
+    public function addEventNotification($eventId,$personId,$leadDays,$username = 'system') {
+        /**
+         * @var $subscription NotificationSubscription
+         */
+        $subscription = $this->getNotificationsRepository()->getSubscription('calendar',$eventId,$personId);
+        if (empty($subscription)) {
+            $subscription = new NotificationSubscription;
+            $subscription->personId = $personId;
+            $subscription->notificationTypeId = $this->getSubscriptionTypeId();
+            $subscription->itemId = $eventId;
+            $subscription->leadDays = $leadDays;
+            $this->getNotificationsRepository()->insert($subscription,$username);
+        }
+        else if ($subscription->leadDays != $leadDays) {
+            $subscription->leadDays = $leadDays;
+            $this->getNotificationsRepository()->update($subscription, $username);
+        }
+    }
+
+    public function clearEventNotification($eventId,$personId) {
+        /**
+         * @var $subscription NotificationSubscription
+         */
+        $subscription = $this->getNotificationsRepository()->getSubscription('calendar',$eventId,$personId);
+        if (!empty($subscription)) {
+           $this->getNotificationsRepository()->delete($subscription->id);
+        }
     }
 
 }
