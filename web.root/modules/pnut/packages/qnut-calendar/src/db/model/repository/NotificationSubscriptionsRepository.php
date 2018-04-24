@@ -53,4 +53,22 @@ class NotificationSubscriptionsRepository extends \Tops\db\TEntityRepository
         $result = $stmt->fetch();
         return $result;
     }
+
+    public function getSubscriptionTypeId($typeCode) {
+        $sql = 'SELECT id FROM '.self::notificationTypesTable.' WHERE code = ?';
+        $stmt = $this->executeStatement($sql,[$typeCode]);
+        return $stmt->fetch(PDO::FETCH_COLUMN);
+    }
+
+    public function deleteSubscriptions($typeCode,$itemId,$personId=0) {
+        $typeId = $this->getSubscriptionTypeId($typeCode);
+        $args = [$typeId,$itemId];
+        $sql =    'DELETE FROM '.$this->getTableName();
+        $sql .=  ' WHERE notificationTypeId = ? AND itemId = ?';
+        if ($personId) {
+            $sql .= ' AND personId = ?';
+            $args[] = $personId;
+        }
+        $stmt = $this->executeStatement($sql,$args);
+    }
 }

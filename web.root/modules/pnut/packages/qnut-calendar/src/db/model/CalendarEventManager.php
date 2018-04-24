@@ -79,6 +79,10 @@ class CalendarEventManager
         }
     }
 
+    /**
+     * @param $id
+     * @return bool|CalendarEvent
+     */
     public function getEvent($id) {
         return $this->getEventsRepository()->get($id);
     }
@@ -145,6 +149,7 @@ class CalendarEventManager
             foreach ($dates as $date) {
                 // Check if a replacement event found for this instance
                 if ($this->findRepeatInstance($events,$event->id,$date)) {
+                    // todo: handled deleted instance
                     continue;
                 }
 
@@ -262,6 +267,19 @@ class CalendarEventManager
         if (!empty($subscription)) {
            $this->getNotificationsRepository()->delete($subscription->id);
         }
+    }
+
+    public function deleteEvent($eventId) {
+        $this->getNotificationsRepository()->deleteSubscriptions('calendar',$eventId);
+        $this->getCommitteesAssociation()->removeAllLeft($eventId);
+        $this->getResourcesAssociation()->removeAllLeft($eventId);
+        $this->getEventsRepository()->delete($eventId);
+    }
+
+    public function deleteRepeatingEvent($eventId)
+    {
+        $this->getEventsRepository()->deleteRepeatInstances($eventId);
+        $this->deleteEvent($eventId);
     }
 
 }

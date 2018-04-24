@@ -77,6 +77,14 @@ namespace QnutCalendar {
         committees: any[];
     }
 
+    interface ICalendarDeleteRequest {
+        eventId: any;
+        startDate: any;
+        repeatUpdateMode: string;  // 'all' | 'instance' | 'none'
+        filter: string;
+        code: string;
+    }
+
 
     interface ICalendarEventDetails extends ICalendarEvent {
         eventTypeId: any;
@@ -1714,6 +1722,7 @@ namespace QnutCalendar {
 
         userPermission = ko.observable('view');
         menuVisible = ko.observable(false);
+        updateMode = ko.observable('update');
 
         eventForm = new calendarEventObservable();
         eventTypes = ko.observableArray<Peanut.ILookupItem>();
@@ -1729,6 +1738,7 @@ namespace QnutCalendar {
 
         private calendar : JQuery;
         private eventInfoModal : JQuery;
+
 
         init(successFunction?: () => void) {
             let me = this;
@@ -2084,13 +2094,22 @@ namespace QnutCalendar {
         };
 
         onNewEvent = () => {
+            this.updateMode('new');
             this.eventForm.clear(this.committees,this.resources,this.eventTypes);
             // this.tab('edit');
             this.showEditPage();
         };
 
+
+        onDeleteEvent = () => {
+            this.updateMode('delete');
+            this.eventInfoModal.modal('hide');
+            this.deleteConfirmModal('show');
+        };
+
         onEditEvent = () => {
             let me = this;
+            me.updateMode('update');
             me.eventInfoModal.modal('hide');
             if (!me.eventForm.createdBy()) {
                 me.getEventDetails(() => {
@@ -2135,6 +2154,50 @@ namespace QnutCalendar {
             return result;
         }
 
+        deleteConfirmModal = (mode = 'show') => {
+            // todo: translate modal text for confirm-event-delete-modal
+            // todo: test case repeating event
+            let deleteModalId = this.eventForm.repeating() ? '#repeat-mode-modal' : '#confirm-event-delete-modal';
+            jQuery(deleteModalId).modal(mode);
+        };
+
+        showDeleteConfirmation = () => {
+            this.deleteConfirmModal('show');
+        };
+
+        deleteEvent = () => {
+            this.deleteConfirmModal('hide');
+            let request = <ICalendarDeleteRequest> {
+                eventId: this.eventForm.id(),
+                startDate: this.eventForm.start.format('YYYY-MM-DD'),
+                repeatUpdateMode: this.eventForm.repeating() ? this.eventForm.repeatMode() : 'none',
+                filter: this.filtered(),
+                code: this.filterCode()
+            };
+
+            // todo: test delete service
+            this.services.executeService('peanut.qnut-calendar::DeleteEvent', request,
+                (serviceResponse: Peanut.IServiceResponse) => {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let response = <IGetCalendarResponse>serviceResponse.Value;
+                        this.assignEventList(response);
+                        this.tab('calendar');
+                    }
+                })
+                .fail(() => {
+                    let trace = this.services.getErrorInformation();
+                })
+
+        };
+
+        onUpdateConfirmed = () => {
+            if (this.updateMode() == 'update') {
+                this.updateEvent();
+            }
+            else {
+                this.deleteEvent();
+            }
+        };
 
         updateEvent = () => {
             if (this.eventForm.repeatMode() == 'remove') {

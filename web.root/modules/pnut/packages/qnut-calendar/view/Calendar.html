@@ -326,6 +326,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bind="visible:userPermission() == 'edit', click: onEditEvent"><translate params="code:'label-edit',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-primary" data-bind="visible:userPermission() == 'edit', click: onDeleteEvent"><translate params="code:'label-delete',translator:self"></translate> </button>
                         <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-close',translator:self"></translate></button>
                     </div>
                 </form>
@@ -653,11 +654,19 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title"><translate params="code:'calendar-update-modal-title',translator:self"></translate></h4>
+                    <h4 data-bind="visible:updateMode() == 'update'" class="modal-title"><translate params="code:'calendar-update-modal-title',translator:self"></translate></h4>
+                    <h4 data-bind="visible:updateMode() == 'delete'" class="modal-title"><translate params="code:'calendar-delete-modal-title',translator:self"></translate></h4>
                 </div>
                 <div class="modal-body">
                     <form>
-                        <p style="font-weight: bold"><translate params="code:'calendar-update-modal-question',translator:self"></translate></p>
+                        <p style="font-weight: bold">
+                            <span data-bind="visible: updateMode() == 'update'">
+                                <translate params="code:'calendar-update-modal-question',translator:self"></translate>
+                            </span>
+                            <span data-bind="visible: updateMode() == 'delete'">
+                                <translate params="code:'calendar-delete-modal-question',translator:self"></translate>
+                            </span>
+                        </p>
                         <div>
                             <div class="radio">
                                 <label><input value="all" data-bind="checked:eventForm.repeatMode" type="radio" name="repeatmode"><translate params="code:'calendar-update-modal-all',translator:self"></translate></label>
@@ -681,6 +690,7 @@
     </div><!-- end repeat-mode-modal -->
 
     <modal-confirm params="id:'confirm-repeat-delete-modal',headerText: 'calendar-confirm-removerepeat-header', bodyText: 'calendar-confirm-removerepeat-text', confirmClick: updateEvent, translator:self"></modal-confirm>
+    <modal-confirm params="id:'confirm-event-delete-modal',headerText: 'calendar-confirm-delete-header', bodyText: 'calendar-confirm-delete-text', confirmClick: deleteEvent, translator:self"></modal-confirm>
 
     <!-- todo: is this obsolete? -->
     <modal-confirm params="id:'confirm-save-modal',headerText: 'calendar-confirm-saverepeat-header', bodyText: 'save-modal-message', confirmClick: test, translator:self"></modal-confirm>

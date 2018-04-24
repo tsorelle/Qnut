@@ -158,4 +158,21 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
 
     }
 
+    public function getRepeatInstances($eventId)
+    {
+        $sql = 'SELECT id FROM qnut_calendar_events WHERE recurId = ?';
+        $stmt = $this->executeStatement($sql,[$eventId]);
+        $result = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return $result;
+    }
+
+    public function deleteRepeatInstances($eventId)
+    {
+        $sql = 'DELETE FROM '.$this->getTableName().' WHERE recurId = ?';
+        $this->executeStatement($sql,[$eventId]);
+    }
+
+
+
+
 }
