@@ -135,7 +135,9 @@ class CalendarEventManager
         // divide repeat event templates from event instances
         foreach ($events as $event) {
             if ($event->repeatPattern == null) {
-                $results[] = $event;
+                if ($event->active) {
+                    $results[] = $event;
+                }
             } else {
                 $repeats[] = $event;
             }
@@ -146,10 +148,11 @@ class CalendarEventManager
         foreach ($repeats as $event) {
             $occurance = 0;
             $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
+            $replacements = $eventsRepository->getRepeatReplacementDates($event->id);
             foreach ($dates as $date) {
                 // Check if a replacement event found for this instance
-                if ($this->findRepeatInstance($events,$event->id,$date)) {
-                    // todo: handled deleted instance
+                // if ($this->findRepeatInstance($events,$event->id,$date)) {
+                if (in_array($date,$replacements)) {
                     continue;
                 }
 
@@ -190,23 +193,6 @@ class CalendarEventManager
         return $response;
     }
 
-    /**
-     * Return true if a replacement event was posted for a repeating instance
-     *
-     * @param $events
-     * @param $id
-     * @param $date
-     * @return bool
-     */
-    private function findRepeatInstance($events,$id,$date) {
-        $repeatInstance = $id.','.$date;
-        foreach ($events as $event) {
-            if ($event->repeatInstance == $repeatInstance) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public function getEventTypesList()
     {
@@ -280,6 +266,25 @@ class CalendarEventManager
     {
         $this->getEventsRepository()->deleteRepeatInstances($eventId);
         $this->deleteEvent($eventId);
+    }
+
+    /**
+     * @param $event CalendarEvent
+     * @param $instanceDate
+     * @param string $username
+     *
+     * Insert a "cloned" event with active=0.  This supresses the generation of a "virtual" repeating event for that date.
+     */
+    public function deleteRepeatInstance($event,$instanceDate,$username='system')
+    {
+        $event->recurId = $event->id;
+        $event->id = 0;
+        $event->recurPattern = null;
+        $event->recurEnd = null;
+        $event->active = 0;
+        $event->start = $instanceDate;
+        $event->recurInstance = $instanceDate;
+        $this->getEventsRepository()->insert($event, $username);
     }
 
 }

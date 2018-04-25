@@ -20,10 +20,6 @@ namespace Peanut\QnutCalendar\db\model\entity;
  *     Semicolon seperated list = pattern;start-date{;end-date}
  *     See: Tops\sys\TDateRepeater for descriptoin of pattern format
  *
- *    $repeatInstance
- *       For events posted as replacement for a repeated event. Takes the form: id,date
- *       Where id is the id of the repeating event template and date is the date of the generated repeat date
- *
  * Data retrieval example in Peanut\QnutCalendar\db\model\repository::getFilteredEvents
  */
 class FullCalendarEvent
@@ -40,6 +36,6 @@ class FullCalendarEvent
     public $borderColor;
     public $textColor;
     public $repeatPattern;
-    public $repeatInstance;
+    public $active;
 
 }

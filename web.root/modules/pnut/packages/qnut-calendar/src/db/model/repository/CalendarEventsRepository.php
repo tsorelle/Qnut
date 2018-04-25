@@ -81,13 +81,13 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         }
 
         $sql =
-            "SELECT e.id,title ,  " .
+            "SELECT e.id,title , e.active, " .
             "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
             "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
 
-            "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern, " .
-            "IF (e.recurId IS NULL,'',CONCAT(e.recurId,',',DATE_FORMAT(e.recurInstance,'%Y-%m-%d'))) AS repeatInstance, 0 AS occurance ".
+            "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern, 0 AS occurance " .
+            // "IF (e.recurId IS NULL,'',CONCAT(e.recurId,',',DATE_FORMAT(e.recurInstance,'%Y-%m-%d'))) AS repeatInstance, 0 AS occurance ".
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .
 
             "WHERE ((e.recurPattern IS NULL AND ( DATE(e.`start`) >= ? ".
@@ -172,6 +172,11 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         $this->executeStatement($sql,[$eventId]);
     }
 
+    public function getRepeatReplacementDates($recurId) {
+        $sql = 'SELECT recurInstance FROM qnut_calendar_events WHERE recurId = ?';
+        $stmt = $this->executeStatement($sql,[$recurId]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 
 
 

@@ -74,7 +74,7 @@ class DeleteEventCommand extends TServiceCommand
                 $manager->deleteRepeatingEvent($eventId);
                 break;
             case 'instance' :
-                // todo: deal with substitute repeat instances
+                $manager->deleteRepeatInstance($eventId,$request->startDate,$this->getUser()->getUserName());
                 break;
         }
 

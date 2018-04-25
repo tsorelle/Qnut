@@ -30,7 +30,6 @@ namespace QnutCalendar {
         borderColor : string;
         textColor : string;
         repeatPattern : string;
-        repeatInstance : any;
         occurance: any;
     }
 
@@ -47,7 +46,6 @@ namespace QnutCalendar {
         url : string;
         eventType : string;
         repeatPattern : string;
-        repeatInstance : any;
     }
 
     interface ICalendarDto {
@@ -1109,7 +1107,6 @@ namespace QnutCalendar {
         lo: any;
 
         repeatPattern: string = '';
-        repeatInstance: any = null;
 
         times = new eventTimeEditor();
 
@@ -1340,7 +1337,6 @@ namespace QnutCalendar {
             me.repeating(false);
             me.repeatPattern = '';
             me.repeatText('');
-            me.repeatInstance = 0;
             me.committeesText('');
             me.resourcesText('');
             me.notes('');
@@ -1379,7 +1375,6 @@ namespace QnutCalendar {
             let range = me.formatDateRange(event.start, event.end, event.allDay);
             me.eventTime(range);
 
-            me.repeatInstance = event.repeatInstance;
             me.repeatPattern = event.repeatPattern;
             me.title(event.title);
             me.allDay = event.allDay;
