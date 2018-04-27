@@ -23,6 +23,8 @@ use Tops\sys\TPermissionsManager;
  *	Request:
  *     interface ICalendarUpdateRequest {
  *          event: ICalendarDto;
+ *          year: any;
+ *          month: any;
  *          filter: string;
  *          code: string;
  *          repeatUpdateMode: string;
@@ -88,6 +90,7 @@ class UpdateEventCommand extends TServiceCommand
             return;
         }
 
+        //todo: test case: New repeating event
         //todo: test case: Update repeating from first
         //todo: test case: Update from repeat instance
         //todo: test case: Update and remove recurrences
@@ -142,8 +145,8 @@ class UpdateEventCommand extends TServiceCommand
 
         // return events list
         $getEventsRequest = new \stdClass();
-        $getEventsRequest->year = date('Y',$startTime);
-        $getEventsRequest->month = date('m',$startTime);
+        $getEventsRequest->year = $request->year;
+        $getEventsRequest->month = $request->month;
         $getEventsRequest->filter = $request->filter;
         $getEventsRequest->code = $request->code;
         if (!isset($request->public)) {

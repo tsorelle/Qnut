@@ -67,6 +67,8 @@ namespace QnutCalendar {
 
     interface ICalendarUpdateRequest {
         event: ICalendarDto;
+        year: any;
+        month: any;
         filter: string;
         code: string;
         repeatUpdateMode: string;  // 'all' | 'instance'
@@ -77,6 +79,8 @@ namespace QnutCalendar {
 
     interface ICalendarDeleteRequest {
         eventId: any;
+        year: any;
+        month: any;
         startDate: any;
         repeatUpdateMode: string;  // 'all' | 'instance' | 'none'
         filter: string;
@@ -850,15 +854,9 @@ namespace QnutCalendar {
         };
 
         setStartDate = (value: string) => {
-            let sameDay = this.startDate.isSame(this.endDate);
+            // let sameDay = this.endDate === null || this.startDate.isSame(this.endDate);
+            let sameDay = this.endDate !== null && this.startDate.isSame(this.endDate);
             let newDate = Momentito.momentFromString(value);
-/*
-            if (this.endDate && (this.endDate.isAfter(newDate))) {
-                this.timeError(this.invaildTimeOrderErrorMsg);
-                this.timeErrorField('startdate');
-                return false;
-            }
-*/
             this.startDate = newDate;
             if (sameDay || this.endDate.isBefore(newDate)) {
                 this.setEndToStart();
@@ -1705,8 +1703,6 @@ namespace QnutCalendar {
     }
 
     export class CalendarViewModel extends Peanut.ViewModelBase {
-        // todo: implement delete event
-
         // observables
 
         tab = ko.observable('calendar');
@@ -1733,6 +1729,8 @@ namespace QnutCalendar {
 
         private calendar : JQuery;
         private eventInfoModal : JQuery;
+
+        private pagingEnabled = false;
 
 
         init(successFunction?: () => void) {
@@ -1835,6 +1833,7 @@ namespace QnutCalendar {
 
         getNewCalendar = (request: any, successFunction? : (response: IGetCalendarResponse) => void) => {
             let me = this;
+            me.pagingEnabled = false;
             let month = me.getCurrentMonth();
             if (!request) {
                 request = month;
@@ -1995,32 +1994,38 @@ namespace QnutCalendar {
         };
 
         pageCalendar = (start: moment.Moment,end:moment.Moment) => {
-            let me = this;
-            let startDate = start.format('Y-M-D');
-            let endDate = end.format('Y-M-D');
-            // console.log('PAGING: start=' + startDate + '; end='+endDate);
 
-            let page = me.pages[me.currentPage];
-            let movePage = 0;
-            // if (page.compareStart(startDate) == -1) {
-            if (page.compareStart(start) == -1) {
-                console.log('Page prev');
-                movePage = -1;
-            }
-            // else if (page.compareEnd(endDate) > 0) {
-            else if (page.compareEnd(end) > 0) {
-                console.log('Page next');
-                movePage = 1;
+            let me = this;
+            if (me.pagingEnabled) {
+                let startDate = start.format('Y-M-D');
+                let endDate = end.format('Y-M-D');
+                // console.log('PAGING: start=' + startDate + '; end='+endDate);
+
+                let page = me.pages[me.currentPage];
+                let movePage = 0;
+                // if (page.compareStart(startDate) == -1) {
+                if (page.compareStart(start) == -1) {
+                    console.log('Page prev');
+                    movePage = -1;
+                }
+                // else if (page.compareEnd(endDate) > 0) {
+                else if (page.compareEnd(end) > 0) {
+                    console.log('Page next');
+                    movePage = 1;
+                }
+                else {
+                    return;
+                }
+                let newPage = me.currentPage + movePage;
+                if (newPage < 0 || newPage >= me.pages.length) {
+                    me.getNextPage(movePage);
+                }
+                else {
+                    me.currentPage = newPage;
+                }
             }
             else {
-                return;
-            }
-            let newPage = me.currentPage + movePage;
-            if (newPage <0 || newPage >= me.pages.length) {
-                me.getNextPage(movePage);
-            }
-            else {
-                me.currentPage = newPage;
+                me.pagingEnabled = true;
             }
         };
 
@@ -2067,6 +2072,23 @@ namespace QnutCalendar {
                 }
                 me.switchEventSource(events);
             })
+        };
+        
+        refreshEvents = (response: IGetCalendarResponse) => {
+            // let response = <IGetCalendarResponse>serviceResponse.Value;
+            this.assignEventList(response);
+            this.events = this.lo.sortBy(response.events, ['start']);
+            if (this.filtered() === 'type') {
+                let code = this.filterCode();
+                let events = this.lo.filter(this.events, (event: ICalendarEvent) => {
+                    return event.eventType == code;
+                });
+            }
+            let page = this.pages[this.currentPage];
+            this.pages = [page];
+            this.currentPage = 0;
+            this.switchEventSource(this.events);
+            this.tab('calendar');
         };
 
         onEventClick = (calEvent, jsEvent, view) => {
@@ -2150,7 +2172,6 @@ namespace QnutCalendar {
         }
 
         deleteConfirmModal = (mode = 'show') => {
-            // todo: translate modal text for confirm-event-delete-modal
             // todo: test case repeating event
             let deleteModalId = this.eventForm.repeating() ? '#repeat-mode-modal' : '#confirm-event-delete-modal';
             jQuery(deleteModalId).modal(mode);
@@ -2162,12 +2183,15 @@ namespace QnutCalendar {
 
         deleteEvent = () => {
             this.deleteConfirmModal('hide');
+            let page = this.pages[this.currentPage];
             let request = <ICalendarDeleteRequest> {
                 eventId: this.eventForm.id(),
                 startDate: this.eventForm.start.format('YYYY-MM-DD'),
                 repeatUpdateMode: this.eventForm.repeating() ? this.eventForm.repeatMode() : 'none',
                 filter: this.filtered(),
-                code: this.filterCode()
+                code: this.filterCode(),
+                year: page.year,
+                month: page.month
             };
 
             // todo: test delete service
@@ -2175,8 +2199,8 @@ namespace QnutCalendar {
                 (serviceResponse: Peanut.IServiceResponse) => {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IGetCalendarResponse>serviceResponse.Value;
-                        this.assignEventList(response);
-                        this.tab('calendar');
+                        this.refreshEvents(response);
+
                     }
                 })
                 .fail(() => {
@@ -2207,9 +2231,11 @@ namespace QnutCalendar {
 
             if (dto) {
                 let repeatMode = this.eventForm.repeating() ? this.eventForm.repeatMode() : '';
-
+                let currentPage = this.pages[this.currentPage];
                 let request = <ICalendarUpdateRequest>{
                     event: dto,
+                    year: currentPage.year,
+                    month: currentPage.month,
                     filter: this.filtered(),
                     code: this.filterCode(),
                     repeatUpdateMode: repeatMode,
@@ -2218,15 +2244,13 @@ namespace QnutCalendar {
                     committees: this.getSelectedItemIds(this.eventForm.selectedCommittees)
                 };
 
-
                 // todo: test update service call
 
                 this.services.executeService('peanut.qnut-calendar::UpdateEvent', request,
                     (serviceResponse: Peanut.IServiceResponse) => {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetCalendarResponse>serviceResponse.Value;
-                            this.assignEventList(response);
-                            this.tab('calendar');
+                            this.refreshEvents(response);
                         }
                     })
                     .fail(() => {

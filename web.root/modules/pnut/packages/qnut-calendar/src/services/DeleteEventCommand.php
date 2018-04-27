@@ -48,10 +48,10 @@ class DeleteEventCommand extends TServiceCommand
         }
 
         $manager = new CalendarEventManager();
-        $eventId = $request->event->id;
-        $event = $manager->getEvent($request->event->id);
+        $eventId = $request->eventId;
+        $event = $manager->getEvent($request->eventId);
         if (!$event) {
-            $this->addErrorMessage('calendar-info-no-delete'); //todo: translate
+            $this->addErrorMessage('calendar-info-no-delete');
             return;
         }
 
@@ -71,17 +71,19 @@ class DeleteEventCommand extends TServiceCommand
                 $manager->deleteEvent($eventId);
                 break;
             case 'all' :
+                // todo: test delete all repeats
                 $manager->deleteRepeatingEvent($eventId);
                 break;
             case 'instance' :
+                // todo: test delete repeat instance
                 $manager->deleteRepeatInstance($eventId,$request->startDate,$this->getUser()->getUserName());
                 break;
         }
 
         // return events list
         $getEventsRequest = new \stdClass();
-        $getEventsRequest->year = date('Y', $startTime);
-        $getEventsRequest->month = date('m', $startTime);
+        $getEventsRequest->year = $request->year;
+        $getEventsRequest->month = $request->month;
         $getEventsRequest->filter = $request->filter;
         $getEventsRequest->code = $request->code;
         if (!isset($request->public)) {

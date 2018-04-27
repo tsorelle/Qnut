@@ -56,7 +56,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
      * @param $code
      * @param $startDate
      * @param $endDate
-     * @return FullCalendarEvent[]
+     * @return \stdClass
      */
     public function getFilteredEvents($startDate, $endDate, $filter='', $code='',$publicOnly=false)
     {
@@ -74,38 +74,43 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
                 $filters = '';
                 break;
         }
-
-        $params = [$startDate, $endDate, $endDate,$endDate, $startDate];
+        $eventParams = [$startDate,$endDate,$endDate];
+        $repeatParams = [$endDate,$startDate];
         if ($code) {
-            $params[] = $code;
+            $eventParams[] = $code;
+            $repeatParams[] = $code;
         }
 
-        $sql =
-            "SELECT e.id,title , e.active, " .
+        if ($publicOnly) {
+            $filters .= ' AND t.public = 1';
+        }
+
+
+        $header =
+            "SELECT e.id,title," .
             "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
             "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
-
             "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern, 0 AS occurance " .
-            // "IF (e.recurId IS NULL,'',CONCAT(e.recurId,',',DATE_FORMAT(e.recurInstance,'%Y-%m-%d'))) AS repeatInstance, 0 AS occurance ".
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .
+            "WHERE e.active = 1 AND ";
 
-            "WHERE ((e.recurPattern IS NULL AND ( DATE(e.`start`) >= ? ".
-            "AND DATE(e.`start`) < ? AND  (DATE(e.`end`) < ? OR e.`end` IS NULL))) ".
+            $eventSelector = "(( DATE(e.`start`) >= ? AND  DATE(e.`start`) < ?)  AND  (DATE(e.`end`) < ?  OR e.`end` IS NULL)) "; // start,end, end
 
-            "OR (e.recurPattern IS NOT NULL AND (DATE(e.`start`) <= ? ".
-            "AND (e.recurEnd IS NULL OR e.recurEnd > ?)))) ".
+            $repeatSelector = "(e.recurPattern IS NOT NULL AND (DATE(e.`start`) <= ?) AND (e.recurEnd IS NULL OR e.recurEnd > ?)) "; // end, start
 
-            $filters;
 
-        if ($publicOnly) {
-            $sql .= ' AND t.public = 1';
-        }
 
-        $stmt = $this->executeStatement($sql,$params);
-        $events = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
+        $result = new \stdClass();
+        $sql = $header.$eventSelector.$filters;
+        $stmt = $this->executeStatement($sql ,$eventParams);
+        $result->events = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
 
-        return $events;
+        $sql = $header.$repeatSelector.$filters;
+        $stmt = $this->executeStatement($sql,$repeatParams);
+        $result->repeats = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\FullCalendarEvent');
+
+        return $result;
     }
 
     public function getEventNotificationDays($eventId,$personId) {

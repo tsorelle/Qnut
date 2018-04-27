@@ -121,37 +121,26 @@ class CalendarEventManager
         $startDate = $calendarPage->start->format('Y-m-d');
         $endDate = $calendarPage->end->format('Y-m-d');
         $eventsRepository = $this->getEventsRepository();
-        $events = $eventsRepository->getFilteredEvents($startDate,$endDate,$filter,$code,$publicOnly);
+        $eventResults = $eventsRepository->getFilteredEvents($startDate,$endDate,$filter,$code,$publicOnly);
 
         /**
          * @var $repeats FullCalendarEvent[]
          */
-        $results = [];
+        $results = $eventResults->events;
         /**
          * @var $repeats FullCalendarEvent[]
          */
-        $repeats = [];
+        $repeats = $eventResults->repeats;
 
-        // divide repeat event templates from event instances
-        foreach ($events as $event) {
-            if ($event->repeatPattern == null) {
-                if ($event->active) {
-                    $results[] = $event;
-                }
-            } else {
-                $repeats[] = $event;
-            }
-        }
 
         // get repeating dates
         $repeater = new TDateRepeater();
-        foreach ($repeats as $event) {
+        foreach ($eventResults->repeats as $event) {
             $occurance = 0;
             $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
             $replacements = $eventsRepository->getRepeatReplacementDates($event->id);
             foreach ($dates as $date) {
                 // Check if a replacement event found for this instance
-                // if ($this->findRepeatInstance($events,$event->id,$date)) {
                 if (in_array($date,$replacements)) {
                     continue;
                 }
