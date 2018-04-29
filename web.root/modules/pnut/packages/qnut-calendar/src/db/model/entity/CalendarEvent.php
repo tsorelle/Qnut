@@ -33,4 +33,13 @@ class CalendarEvent  extends \Tops\db\TimeStampedEntity
         $types['recurInstance'] = \Tops\sys\TDataTransfer::dataTypeDate;
         return $types;
     }
+
+    public function assignFromObject($dto, $username = 'admin')
+    {
+        $result = parent::assignFromObject($dto, $username);
+        if (isset($result->recurPattern) && empty(trim($result->recurPattern))) {
+            $result->recurPattern = null;
+        }
+    }
+
 }

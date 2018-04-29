@@ -12,6 +12,7 @@ namespace Peanut\QnutCalendar\services;
 use Peanut\QnutCalendar\db\model\CalendarEventManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TDates;
+use Tops\sys\TLanguage;
 
 /**
  * Class DeleteEventCommand
@@ -79,6 +80,10 @@ class DeleteEventCommand extends TServiceCommand
                 $manager->deleteRepeatInstance($eventId,$request->startDate,$this->getUser()->getUserName());
                 break;
         }
+
+        $eventEntity = TLanguage::text('calendar-event-entity');
+
+        $this->addInfoMessage('calendar-event-removed');
 
         // return events list
         $getEventsRequest = new \stdClass();

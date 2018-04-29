@@ -13,6 +13,7 @@ use Peanut\QnutCalendar\db\model\CalendarEventManager;
 use Peanut\QnutCalendar\db\model\entity\CalendarEvent;
 use Tops\services\TServiceCommand;
 use Tops\sys\TDates;
+use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
 
 /**
@@ -25,6 +26,7 @@ use Tops\sys\TPermissionsManager;
  *          event: ICalendarDto;
  *          year: any;
  *          month: any;
+ *          repeatInstance;
  *          filter: string;
  *          code: string;
  *          repeatUpdateMode: string;
@@ -45,7 +47,6 @@ use Tops\sys\TPermissionsManager;
  *        recurPattern : string;
  *        recurEnd : any;
  *        recurId: any;
- *        recurInstance: any;
  *        notes: string;
  *        description: string;
  *    }
@@ -90,31 +91,61 @@ class UpdateEventCommand extends TServiceCommand
             return;
         }
 
-        //todo: test case: New repeating event
-        //todo: test case: Update repeating from first
-        //todo: test case: Update from repeat instance
-        //todo: test case: Update and remove recurrences
-        //todo: test case: Update and change recurrences
-        //todo: test case: Update post replacement for repeat instance
-
-        if (!empty($request->event->repeatPattern)) {
-            // todo: extract start end dates
-        }
+        //todo: test case: New no repeat - regression
+        //todo: test case: New repeating - regression
+        //todo: test case: Update no repeat - regression
+        //todo: test case: Update repeating , mode:all - regression
+        //todo: test case: Update repeating, mode:instance - regression
+        //todo: test case: Update replacement for repeat instance - regression
+        //todo: test case: Update and remove replacements - regression: should they be deleted?
 
         $manager = new CalendarEventManager();
         $id = $request->event->id;
         $isNew = ($id === 0);
+        $original = null;
         if ($isNew) {
             $event = new CalendarEvent();
         }
         else {
             $event = $manager->getEvent($request->event->id);
+            $original = clone $event;
+
         }
 
-        // todo: test2 - assert assignment correct - revist for recurrence test cases.
         $event->assignFromObject($request->event);
+        if($original != null && ($original->recurId != null && $event->recurPattern)) {
+            // if replacement for repeat instance, start new series
+            $event->recurId = null;
+            $event->recurInstance = null;
+            $request->repeateUpdateMode = 'none';
+        }
+
+        if (!$isNew) {
+            switch ($request->repeatUpdateMode) {
+                case 'all':
+                    if($original->recurPattern == $event->recurPattern) {
+                        $manager->truncateRepeatInstances($event->id,$event->recurEnd);
+                    }
+                    else {
+                        $manager->deleteRepeatingInstances($event->id);
+                    }
+                    break;
+                case 'instance' :
+                    $event->recurId = $event->id;
+                    $event->recurInstance = TDates::formatMySqlDate($request->repeatInstance);
+                    $event->recurEnd = null;
+                    $event->recurPattern = null;
+                    $event->id = 0;
+                    $isNew = true;
+                    break;
+                default: // 'none'
+
+                    break;
+            }
+        }
 
         $user = $this->getUser();
+
         if ($isNew) {
             $id = $manager->addEvent($event,$user->getUserName());
         }
@@ -138,9 +169,11 @@ class UpdateEventCommand extends TServiceCommand
             }
         }
 
+        $eventEntity = TLanguage::text('calendar-event-entity');
 
-        // todo: translate message
-        $this->addInfoMessage('Event updated');
+        $this->addInfoMessage(
+            $isNew ? 'service-added-entity' : 'service-updated-entity',
+            [$eventEntity,$event->title]);
 
 
         // return events list

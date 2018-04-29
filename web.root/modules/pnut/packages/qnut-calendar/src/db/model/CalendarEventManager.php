@@ -118,8 +118,8 @@ class CalendarEventManager
         $publicOnly = (!empty($request->public));
 
         $calendarPage = TCalendarPage::Create($year, $month, $pageDirection);
-        $startDate = $calendarPage->start->format('Y-m-d');
-        $endDate = $calendarPage->end->format('Y-m-d');
+        $startDate = (clone $calendarPage->start)->format('Y-m-d');
+        $endDate = (clone $calendarPage->end)->format('Y-m-d');
         $eventsRepository = $this->getEventsRepository();
         $eventResults = $eventsRepository->getFilteredEvents($startDate,$endDate,$filter,$code,$publicOnly);
 
@@ -135,7 +135,8 @@ class CalendarEventManager
 
         // get repeating dates
         $repeater = new TDateRepeater();
-        foreach ($eventResults->repeats as $event) {
+        $utc = new \DateTimeZone('UTC');
+        foreach ($repeats as $event) {
             $occurance = 0;
             $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
             $replacements = $eventsRepository->getRepeatReplacementDates($event->id);
@@ -148,18 +149,21 @@ class CalendarEventManager
                 // clone the event and update start and end dates
                 $repeat = clone $event;
                 $repeat->occurance = ++$occurance;
+                $repeat->recurInstance = $date;
                 $repeat->start = $date;
                 @list($datePart,$timePart) = explode('T',$event->start);
                 if ($timePart !== null) {
                     $repeat->start .= 'T'.$timePart;
                 }
                 if ($event->end !== null) {
-                    $start = new \DateTime($event->start);
-                    $end = new \DateTime($event->end);
+                    $start = new \DateTime($event->start,$utc);
+                    $end = new \DateTime($event->end,$utc);
+                    $test = $end->format(TDates::IsoDateTimeFormat);
+
                     $interval = $end->diff($start);
-                    $end = new \DateTime($repeat->start);
+                    $end = new \DateTime($repeat->start,$utc);
                     $end->add($interval);
-                    $repeat->end = $end->format(TDates::IsoDateTimeFormat);
+                    $repeat->end = str_replace('UTC','T',$end->format(TDates::IsoDateTimeFormat));
                 }
                 $results[] = $repeat;
             }
@@ -255,6 +259,18 @@ class CalendarEventManager
     {
         $this->getEventsRepository()->deleteRepeatInstances($eventId);
         $this->deleteEvent($eventId);
+    }
+
+    public function deleteRepeatingInstances($eventId)
+    {
+        $this->getEventsRepository()->deleteRepeatInstances($eventId);
+    }
+
+    public function truncateRepeatInstances($eventId,$date) {
+        if (!empty($date)) {
+            $this->getEventsRepository()->truncateRepeatInstances($eventId,$date);
+        }
+
     }
 
     /**

@@ -18,6 +18,7 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         return 'qnut_calendar_events';
     }
 
+
     protected function getDatabaseId() {
         return null;
     }
@@ -90,12 +91,12 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             "SELECT e.id,title," .
             "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
-            "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor," .
+            "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor, recurInstance," .
             "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern, 0 AS occurance " .
             "FROM qnut_calendar_events e JOIN qnut_calendar_event_types t ON e.eventTypeId = t.id $joins " .
             "WHERE e.active = 1 AND ";
 
-            $eventSelector = "(( DATE(e.`start`) >= ? AND  DATE(e.`start`) < ?)  AND  (DATE(e.`end`) < ?  OR e.`end` IS NULL)) "; // start,end, end
+            $eventSelector = "(e.recurPattern IS NULL AND (DATE(e.`start`) >= ? AND  DATE(e.`start`) < ?)  AND  (DATE(e.`end`) < ?  OR e.`end` IS NULL)) "; // start,end, end
 
             $repeatSelector = "(e.recurPattern IS NOT NULL AND (DATE(e.`start`) <= ?) AND (e.recurEnd IS NULL OR e.recurEnd > ?)) "; // end, start
 
@@ -176,6 +177,13 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         $sql = 'DELETE FROM '.$this->getTableName().' WHERE recurId = ?';
         $this->executeStatement($sql,[$eventId]);
     }
+
+    public function truncateRepeatInstances($eventId, $date)
+    {
+        $sql = 'DELETE FROM '.$this->getTableName().' WHERE recurId = ? and DATE(start) > ?';
+        $this->executeStatement($sql,[$eventId,$date]);
+    }
+
 
     public function getRepeatReplacementDates($recurId) {
         $sql = 'SELECT recurInstance FROM qnut_calendar_events WHERE recurId = ?';

@@ -36,6 +36,7 @@ class FullCalendarEvent
     public $borderColor;
     public $textColor;
     public $repeatPattern;
+    public $recurInstance;
     public $active;
 
 }

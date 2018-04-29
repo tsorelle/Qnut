@@ -38,7 +38,6 @@ namespace QnutCalendar {
     interface ICalendarEventObject {
         id : any;
         title : string;
-        occurance: any;
         start : Moment;
         end : Moment;
         allDay : boolean;
@@ -46,6 +45,7 @@ namespace QnutCalendar {
         url : string;
         eventType : string;
         repeatPattern : string;
+        recurInstance: any;
     }
 
     interface ICalendarDto {
@@ -60,7 +60,6 @@ namespace QnutCalendar {
         recurPattern : string;
         recurEnd : any;
         recurId: any;
-        recurInstance: any;
         notes: string;
         description: string;
     }
@@ -69,6 +68,7 @@ namespace QnutCalendar {
         event: ICalendarDto;
         year: any;
         month: any;
+        repeatInstance: any;
         filter: string;
         code: string;
         repeatUpdateMode: string;  // 'all' | 'instance'
@@ -1131,6 +1131,7 @@ namespace QnutCalendar {
         notificationDays = ko.observable(-1);
         sendNotifications = ko.observable(false);
         isVirtual = ko.observable(false);
+        recurInstance = ';'
 
         availableResources = ko.observableArray([]);
         selectedResources = ko.observableArray([]);
@@ -1352,6 +1353,7 @@ namespace QnutCalendar {
 
         };
 
+
 /*
         setEventType = (code? : any) => {
             let me = this;
@@ -1387,8 +1389,8 @@ namespace QnutCalendar {
             me.notesLines([]);
             me.changedBy('');
             me.setDescription('');
-            me.isVirtual(event.occurance > 1);
-
+            me.isVirtual(!!event.recurInstance);
+            me.recurInstance = event.recurInstance;
         };
 
         assignDetails = (event: ICalendarEventDetails) => {
@@ -1537,6 +1539,7 @@ namespace QnutCalendar {
         }
 
         validate() : boolean | ICalendarDto {
+            // todo: bug: start date for repeat is not assigned correctly
             let me = this;
             let valid = true;
             let title = me.title().trim();
@@ -1556,10 +1559,11 @@ namespace QnutCalendar {
             let endDate =  me.times.endDate;
             let repeatPattern = this.parseRepeatPattern(me.repeatPattern);
 
-            if (repeatPattern.pattern && repeatPattern.start) {
+            // todo: test this - error for repeat instance
+            if (repeatPattern.pattern && repeatPattern.start && me.repeatMode() !== 'instance') {
+                // if recurrence start date doesn't match start, adjust
                 let startDay = Momentito.momentFromString(repeatPattern.start); //  moment(repeatPattern.start);
                 let daysDiff = moment.duration(startDay.diff(me.times.startDate)).asDays();
-                // if recurrence start date doesn't match start, adjust
                 if (daysDiff != 0) {
                     startDate = startDay;
                     if (endDate) {
@@ -1591,7 +1595,6 @@ namespace QnutCalendar {
                 recurPattern : repeatPattern.pattern,
                 recurEnd : me.times.repeat.endDateBasis() == 'date' ? repeatPattern.endValue : null,
                 recurId: me.recurId,
-                recurInstance : null,
                 notes: me.notes(),
                 description: me.description(),
                 active: 1
@@ -1612,7 +1615,6 @@ namespace QnutCalendar {
             this.repeatPattern = this.times.repeat.getRepeatPattern();
             this.repeating(true);
             this.repeatText(this.getRepeatText(this.repeatPattern));
-            // todo: validate repeat pattern
             jQuery('#repeat-info-modal').modal('hide');
         };
 
@@ -1807,6 +1809,8 @@ namespace QnutCalendar {
             let responseEvents = response.events;
             response.events = [];
             me.lo.forEach(responseEvents,(value: any) => {
+                let x = moment(value.start);
+                x = moment(value.end);
                 value.allDay = value.allDay == '1';
                 response.events.push(value);
             });
@@ -2149,8 +2153,14 @@ namespace QnutCalendar {
 
         onUpdateEvent  = () => {
             if (this.eventForm.repeating()) {
-                this.eventForm.repeatMode('all');
-                jQuery('#repeat-mode-modal').modal('show');
+                if (this.eventForm.id() && !this.eventForm.recurId) {
+                    this.eventForm.repeatMode('all');
+                    jQuery('#repeat-mode-modal').modal('show');
+                }
+                else {
+                    this.eventForm.repeatMode('none');
+                    this.updateEvent();
+                }
             }
             else {
                 if (this.eventForm.repeatMode() === 'remove') {
@@ -2172,7 +2182,6 @@ namespace QnutCalendar {
         }
 
         deleteConfirmModal = (mode = 'show') => {
-            // todo: test case repeating event
             let deleteModalId = this.eventForm.repeating() ? '#repeat-mode-modal' : '#confirm-event-delete-modal';
             jQuery(deleteModalId).modal(mode);
         };
@@ -2194,7 +2203,6 @@ namespace QnutCalendar {
                 month: page.month
             };
 
-            // todo: test delete service
             this.services.executeService('peanut.qnut-calendar::DeleteEvent', request,
                 (serviceResponse: Peanut.IServiceResponse) => {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -2228,7 +2236,6 @@ namespace QnutCalendar {
 
             let dto = this.eventForm.validate();
 
-
             if (dto) {
                 let repeatMode = this.eventForm.repeating() ? this.eventForm.repeatMode() : '';
                 let currentPage = this.pages[this.currentPage];
@@ -2236,6 +2243,7 @@ namespace QnutCalendar {
                     event: dto,
                     year: currentPage.year,
                     month: currentPage.month,
+                    repeatInstance: this.eventForm.recurInstance,
                     filter: this.filtered(),
                     code: this.filterCode(),
                     repeatUpdateMode: repeatMode,
@@ -2243,8 +2251,6 @@ namespace QnutCalendar {
                     resources: this.getSelectedItemIds(this.eventForm.selectedResources),
                     committees: this.getSelectedItemIds(this.eventForm.selectedCommittees)
                 };
-
-                // todo: test update service call
 
                 this.services.executeService('peanut.qnut-calendar::UpdateEvent', request,
                     (serviceResponse: Peanut.IServiceResponse) => {
