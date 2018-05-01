@@ -139,6 +139,9 @@ class CalendarEventManager
         foreach ($repeats as $event) {
             $occurance = 0;
             $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
+            if (!is_array($dates)) {
+                continue;
+            }
             $replacements = $eventsRepository->getRepeatReplacementDates($event->id);
             foreach ($dates as $date) {
                 // Check if a replacement event found for this instance
@@ -280,16 +283,19 @@ class CalendarEventManager
      *
      * Insert a "cloned" event with active=0.  This supresses the generation of a "virtual" repeating event for that date.
      */
-    public function deleteRepeatInstance($event,$instanceDate,$username='system')
+    public function deleteRepeatInstance($eventId,$instanceDate,$username='system')
     {
-        $event->recurId = $event->id;
-        $event->id = 0;
-        $event->recurPattern = null;
-        $event->recurEnd = null;
-        $event->active = 0;
-        $event->start = $instanceDate;
-        $event->recurInstance = $instanceDate;
-        $this->getEventsRepository()->insert($event, $username);
+        $event = $this->getEventsRepository()->get($eventId);
+        if ($event) {
+            $event->recurId = $eventId;
+            $event->id = 0;
+            $event->recurPattern = null;
+            $event->recurEnd = null;
+            $event->active = 0;
+            $event->start = $instanceDate;
+            $event->recurInstance = $instanceDate;
+            $this->getEventsRepository()->insert($event, $username);
+        }
     }
 
 }

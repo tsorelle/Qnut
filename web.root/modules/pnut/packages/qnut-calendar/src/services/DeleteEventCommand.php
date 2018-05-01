@@ -72,11 +72,9 @@ class DeleteEventCommand extends TServiceCommand
                 $manager->deleteEvent($eventId);
                 break;
             case 'all' :
-                // todo: test delete all repeats
                 $manager->deleteRepeatingEvent($eventId);
                 break;
             case 'instance' :
-                // todo: test delete repeat instance
                 $manager->deleteRepeatInstance($eventId,$request->startDate,$this->getUser()->getUserName());
                 break;
         }

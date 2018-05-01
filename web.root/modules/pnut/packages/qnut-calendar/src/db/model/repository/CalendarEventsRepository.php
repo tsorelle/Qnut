@@ -86,10 +86,10 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             $filters .= ' AND t.public = 1';
         }
 
-
+        // todo: update test sql scripts
         $header =
             "SELECT e.id,title," .
-            "IF(`end` IS NULL,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
+            "IF(allDay = 1,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .
             "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, " .
             "allDay, location, e.url,t.code AS eventType,t.backgroundColor,t.borderColor,t.textColor, recurInstance," .
             "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern, 0 AS occurance " .

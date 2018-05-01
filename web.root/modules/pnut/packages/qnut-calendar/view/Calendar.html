@@ -39,7 +39,7 @@
                 </nav>
 
                  <div style="clear: both;" data-bind="style: {'padding-right': deviceSize() > 3 ? '5rem' : 0, 'padding-left': deviceSize() > 3 ? '5rem' : 0}" id="calendar"></div>
-                <p data-bind="text:deviceSize"></p>
+                <!-- p data-bind="text:deviceSize"></p -->
             </div>
         </div>
         <div class="row" id="edit-panel" data-bind="visible:tab() == 'edit'">
@@ -223,7 +223,17 @@
                                         <translate params="code:'calendar-notify-remind',case:'ucfirst',translator:self"></translate>
                                     </div>
                                     <div class="inline-formlet-block" data-bind="visible:eventForm.sendNotifications">
-                                        <input class="inline-formlet-number-input" data-bind="value:eventForm.notificationDays"/>
+                                        <select class="form-control" id="notificationdays-select"
+                                                data-bind="value:eventForm.notificationDays" >
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">8</option>
+                                            <option value="7">7</option>
+                                        </select>
                                     </div>
                                     <div class="inline-formlet-block" data-bind="visible:eventForm.sendNotifications">
                                         <translate params="code:'calendar-notify-when',translator:self"></translate>
@@ -326,8 +336,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bind="visible:userPermission() == 'edit', click: onEditEvent"><translate params="code:'label-edit',translator:self"></translate> </button>
-                        <button type="button" class="btn btn-primary" data-bind="visible:userPermission() == 'edit', click: onDeleteEvent"><translate params="code:'label-remove',translator:self"></translate> </button>
-                        <button type="button" class="btn btn-default btn-secondary"  data-dismiss="modal"><translate params="code:'label-close',translator:self"></translate></button>
+                        <button type="button" class="btn btn-secondary" data-bind="visible:userPermission() == 'edit', click: onDeleteEvent"><translate params="code:'label-remove',translator:self"></translate> </button>
+                        <button type="button" class="btn btn-default btn-link"  data-dismiss="modal"><translate params="code:'label-close',translator:self"></translate></button>
                     </div>
                 </form>
             </div><!-- /.modal-content -->
@@ -678,7 +688,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bind="click:updateEvent">
+                    <button type="button" class="btn btn-primary" data-bind="click:onUpdateConfirmed">
                         <translate params="code:'label-continue',translator:self"></translate>
                     </button>
                     <a href="#" data-dismiss="modal">
@@ -692,7 +702,5 @@
     <modal-confirm params="id:'confirm-repeat-delete-modal',headerText: 'calendar-confirm-removerepeat-header', bodyText: 'calendar-confirm-removerepeat-text', confirmClick: updateEvent, translator:self"></modal-confirm>
     <modal-confirm params="id:'confirm-event-delete-modal',headerText: 'calendar-confirm-delete-header', bodyText: 'calendar-confirm-delete-text', confirmClick: deleteEvent, translator:self"></modal-confirm>
 
-    <!-- todo: is this obsolete? -->
-    <modal-confirm params="id:'confirm-save-modal',headerText: 'calendar-confirm-saverepeat-header', bodyText: 'save-modal-message', confirmClick: test, translator:self"></modal-confirm>
 
 </div>

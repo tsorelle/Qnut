@@ -10,7 +10,31 @@
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
 namespace QnutCalendar {
+//todo: regression test - Different views: week, day
+//todo: regression test - Update replacement
+//todo: regression test - Update reaplacement with new recurrance
+//todo: regression test - Add/Remove notificatoins
+//todo: regression test - Add/Remove associations
 
+    /*
+        Use cases:
+            Show first page
+            Paging
+            Different views: week, day
+            New event
+            Edit recurrence
+            New recurring event
+            Update event
+            Update recurring -all
+            Update recurring -instance
+            Update replacement
+            Update reaplacement with new recurrance
+            Add/Remove notificatoins
+            Add/Remove associations
+            Delete single event
+            Delete recurring - instance
+            Delete recurring - all
+     */
 
     import ILookupItem = Peanut.ILookupItem;
 
@@ -127,7 +151,13 @@ namespace QnutCalendar {
         translations : string[];
         vocabulary: ICalendarTranslations;
     }
-    
+
+    interface IRepeatPattern {
+        pattern: string;
+        start: string;
+        endValue: string;
+    }
+
     interface IDateTime {
         date: Moment;
         time: number;
@@ -332,13 +362,15 @@ namespace QnutCalendar {
         monthDay = ko.observable<any>('');
         selectedWeekdays = ko.observable('');
         weekdaysMessage = ko.observable('');
-        endDateBasis = ko.observable();
+        endDateBasis = ko.observable('none');
         startOn = ko.observable('');
         isNew = ko.observable(false);
         endBy = ko.observable('');
         endOccurances = ko.observable<any>('');
         basisSubscription : any = null;
         endDateBasisSubscription: any = null;
+        recurEndDateSubscripton: any = null;
+        recurOccurencesSubscription: any = null;
 
         public initialize(vocabulary: ICalendarTranslations) {
             let me = this;
@@ -396,6 +428,10 @@ namespace QnutCalendar {
             if (me.endDateBasisSubscription !== null) {
                 me.endDateBasisSubscription.dispose();
                 me.endDateBasisSubscription = null;
+
+                me.recurEndDateSubscripton.dispose();
+                me.recurOccurencesSubscription.dispose();
+
             }
 
             me.setBasis('d');
@@ -452,6 +488,9 @@ namespace QnutCalendar {
                     }
                 }
                 me.endDateBasisSubscription = me.endDateBasis.subscribe(me.onEndDateBasisChange);
+                me.recurEndDateSubscripton =  me.endBy.subscribe(me.onEndByChange);
+                me.recurOccurencesSubscription = me.endOccurances.subscribe(me.onOccurencesChange)
+
             }
 
             let patternParts = repeatPattern.substring(2).split(',');
@@ -490,6 +529,14 @@ namespace QnutCalendar {
             }
 
         }
+
+        onOccurencesChange = (value: any) => {
+            this.endDateBasis( value ? "occurances" : 'none');
+        };
+
+        onEndByChange = (value: any) => {
+            this.endDateBasis( value ? "date" : 'none');
+        };
 
         onEndDateBasisChange = (value: any) => {
             switch (value) {
@@ -858,7 +905,7 @@ namespace QnutCalendar {
             let sameDay = this.endDate !== null && this.startDate.isSame(this.endDate);
             let newDate = Momentito.momentFromString(value);
             this.startDate = newDate;
-            if (sameDay || this.endDate.isBefore(newDate)) {
+            if ((this.endDate !== null) && (sameDay || this.endDate.isBefore(newDate))) {
                 this.setEndToStart();
             }
             return true;
@@ -1131,7 +1178,7 @@ namespace QnutCalendar {
         notificationDays = ko.observable(-1);
         sendNotifications = ko.observable(false);
         isVirtual = ko.observable(false);
-        recurInstance = ';'
+        // recurInstance = null;
 
         availableResources = ko.observableArray([]);
         selectedResources = ko.observableArray([]);
@@ -1390,7 +1437,7 @@ namespace QnutCalendar {
             me.changedBy('');
             me.setDescription('');
             me.isVirtual(!!event.recurInstance);
-            me.recurInstance = event.recurInstance;
+            // me.recurInstance = event.recurInstance;
         };
 
         assignDetails = (event: ICalendarEventDetails) => {
@@ -1518,28 +1565,26 @@ namespace QnutCalendar {
             let result = {
                 pattern: null,
                 start: null,
-                endValue: null
+                endValue: null,
             };
-            if (repeatPattern) {
-                let parts = repeatPattern.split(';');
-                if (parts.length > 0) {
-                    result.pattern = parts[0];
-                    if (parts.length > 1) {
-                        let dates = parts[1].split(',');
-                        if (dates.length > 0) {
-                            result.start = dates[0];
-                        }
-                        if (dates.length > 1) {
-                            result.endValue = dates[1];
-                        }
+            // let repeatPattern = this.repeatPattern;
+            let parts = repeatPattern == null ? [] : this.repeatPattern.split(';');
+            if (parts.length > 0) {
+                result.pattern = parts[0];
+                if (parts.length > 1) {
+                    let dates = parts[1].split(',');
+                    if (dates.length > 0) {
+                        result.start = dates[0];
+                    }
+                    if (dates.length > 1) {
+                        result.endValue = dates[1];
                     }
                 }
             }
             return result;
-        }
+        };
 
         validate() : boolean | ICalendarDto {
-            // todo: bug: start date for repeat is not assigned correctly
             let me = this;
             let valid = true;
             let title = me.title().trim();
@@ -1559,7 +1604,6 @@ namespace QnutCalendar {
             let endDate =  me.times.endDate;
             let repeatPattern = this.parseRepeatPattern(me.repeatPattern);
 
-            // todo: test this - error for repeat instance
             if (repeatPattern.pattern && repeatPattern.start && me.repeatMode() !== 'instance') {
                 // if recurrence start date doesn't match start, adjust
                 let startDay = Momentito.momentFromString(repeatPattern.start); //  moment(repeatPattern.start);
@@ -1583,6 +1627,8 @@ namespace QnutCalendar {
                 end = null;
             }
 
+            // let b = me.times.repeat.endDateBasis();
+            // let v = repeatPattern.endValue;
             let dto = <ICalendarDto> {
                 id : me.id(),
                 title : title,
@@ -1593,7 +1639,8 @@ namespace QnutCalendar {
                 url : null, // not inplemented yet
                 eventTypeId : me.selectedEventType().id,
                 recurPattern : repeatPattern.pattern,
-                recurEnd : me.times.repeat.endDateBasis() == 'date' ? repeatPattern.endValue : null,
+                // recurEnd : me.times.repeat.endDateBasis() == 'none' ? null : repeatPattern.endValue,
+                recurEnd : repeatPattern.endValue,
                 recurId: me.recurId,
                 notes: me.notes(),
                 description: me.description(),
@@ -1809,8 +1856,6 @@ namespace QnutCalendar {
             let responseEvents = response.events;
             response.events = [];
             me.lo.forEach(responseEvents,(value: any) => {
-                let x = moment(value.start);
-                x = moment(value.end);
                 value.allDay = value.allDay == '1';
                 response.events.push(value);
             });
@@ -2182,6 +2227,9 @@ namespace QnutCalendar {
         }
 
         deleteConfirmModal = (mode = 'show') => {
+            if (mode === 'show') {
+                this.eventForm.repeatMode('all');
+            }
             let deleteModalId = this.eventForm.repeating() ? '#repeat-mode-modal' : '#confirm-event-delete-modal';
             jQuery(deleteModalId).modal(mode);
         };
@@ -2243,7 +2291,6 @@ namespace QnutCalendar {
                     event: dto,
                     year: currentPage.year,
                     month: currentPage.month,
-                    repeatInstance: this.eventForm.recurInstance,
                     filter: this.filtered(),
                     code: this.filterCode(),
                     repeatUpdateMode: repeatMode,

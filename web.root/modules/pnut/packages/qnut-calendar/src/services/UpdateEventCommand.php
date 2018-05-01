@@ -12,6 +12,7 @@ namespace Peanut\QnutCalendar\services;
 use Peanut\QnutCalendar\db\model\CalendarEventManager;
 use Peanut\QnutCalendar\db\model\entity\CalendarEvent;
 use Tops\services\TServiceCommand;
+use Tops\sys\TDateRepeater;
 use Tops\sys\TDates;
 use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
@@ -91,14 +92,6 @@ class UpdateEventCommand extends TServiceCommand
             return;
         }
 
-        //todo: test case: New no repeat - regression
-        //todo: test case: New repeating - regression
-        //todo: test case: Update no repeat - regression
-        //todo: test case: Update repeating , mode:all - regression
-        //todo: test case: Update repeating, mode:instance - regression
-        //todo: test case: Update replacement for repeat instance - regression
-        //todo: test case: Update and remove replacements - regression: should they be deleted?
-
         $manager = new CalendarEventManager();
         $id = $request->event->id;
         $isNew = ($id === 0);
@@ -112,12 +105,18 @@ class UpdateEventCommand extends TServiceCommand
 
         }
 
+        $occurences = is_numeric($request->event->recurEnd) ? $request->event->recurEnd : null;
         $event->assignFromObject($request->event);
+
         if($original != null && ($original->recurId != null && $event->recurPattern)) {
             // if replacement for repeat instance, start new series
             $event->recurId = null;
             $event->recurInstance = null;
-            $request->repeateUpdateMode = 'none';
+            $request->repeatUpdateMode = 'none';
+        }
+
+        if ($isNew || $request->repeatUpdateMode !== 'instance') {
+            $this->calculateRecurEnd($event,$occurences);
         }
 
         if (!$isNew) {
@@ -139,7 +138,6 @@ class UpdateEventCommand extends TServiceCommand
                     $isNew = true;
                     break;
                 default: // 'none'
-
                     break;
             }
         }
@@ -189,5 +187,15 @@ class UpdateEventCommand extends TServiceCommand
         $manager = new CalendarEventManager();
         $response = $manager->getCalendarEvents($getEventsRequest);
         $this->setReturnValue($response);
+    }
+
+    private function calculateRecurEnd(CalendarEvent $event,$occurences)
+    {
+        if ((!empty($event->recurPattern)) && !empty($occurences)) {
+            $startDate = substr($event->start,0,10);
+            $repeater = new TDateRepeater();
+            $range = $repeater->getRepeatDateRange($event->recurPattern,$startDate,$occurences);
+            $event->recurEnd = sizeof($range > 1) ? $range[1] : null;
+        }
     }
 }
