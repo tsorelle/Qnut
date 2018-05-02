@@ -10,12 +10,6 @@
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
 namespace QnutCalendar {
-//todo: regression test - Different views: week, day
-//todo: regression test - Update replacement
-//todo: regression test - Update reaplacement with new recurrance
-//todo: regression test - Add/Remove notificatoins
-//todo: regression test - Add/Remove associations
-
     /*
         Use cases:
             Show first page
@@ -1178,7 +1172,7 @@ namespace QnutCalendar {
         notificationDays = ko.observable(-1);
         sendNotifications = ko.observable(false);
         isVirtual = ko.observable(false);
-        // recurInstance = null;
+        recurInstance = null;
 
         availableResources = ko.observableArray([]);
         selectedResources = ko.observableArray([]);
@@ -1437,7 +1431,7 @@ namespace QnutCalendar {
             me.changedBy('');
             me.setDescription('');
             me.isVirtual(!!event.recurInstance);
-            // me.recurInstance = event.recurInstance;
+                me.recurInstance = event.recurInstance;
         };
 
         assignDetails = (event: ICalendarEventDetails) => {
@@ -1627,8 +1621,6 @@ namespace QnutCalendar {
                 end = null;
             }
 
-            // let b = me.times.repeat.endDateBasis();
-            // let v = repeatPattern.endValue;
             let dto = <ICalendarDto> {
                 id : me.id(),
                 title : title,
@@ -1847,7 +1839,7 @@ namespace QnutCalendar {
                 plugins: "image imagetools link",
                 default_link_target: "_blank",
                 branding: false,
-                height: 200
+                height: 75
             });
         };
 
@@ -1873,6 +1865,7 @@ namespace QnutCalendar {
                             successFunction(response);
                         }
                     }
+                    jQuery(window).scrollTop(0);
                 })
                 .fail(() => {
                     let trace = me.services.getErrorInformation();
@@ -2256,8 +2249,8 @@ namespace QnutCalendar {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IGetCalendarResponse>serviceResponse.Value;
                         this.refreshEvents(response);
-
                     }
+                    jQuery(window).scrollTop(0);
                 })
                 .fail(() => {
                     let trace = this.services.getErrorInformation();
@@ -2283,7 +2276,7 @@ namespace QnutCalendar {
             }
 
             let dto = this.eventForm.validate();
-
+            jQuery(window).scrollTop(0);
             if (dto) {
                 let repeatMode = this.eventForm.repeating() ? this.eventForm.repeatMode() : '';
                 let currentPage = this.pages[this.currentPage];
@@ -2296,7 +2289,8 @@ namespace QnutCalendar {
                     repeatUpdateMode: repeatMode,
                     notificationDays: this.eventForm.sendNotifications() ? this.eventForm.notificationDays() : -1,
                     resources: this.getSelectedItemIds(this.eventForm.selectedResources),
-                    committees: this.getSelectedItemIds(this.eventForm.selectedCommittees)
+                    committees: this.getSelectedItemIds(this.eventForm.selectedCommittees),
+                    repeatInstance : this.eventForm.recurInstance
                 };
 
                 this.services.executeService('peanut.qnut-calendar::UpdateEvent', request,
@@ -2305,6 +2299,7 @@ namespace QnutCalendar {
                             let response = <IGetCalendarResponse>serviceResponse.Value;
                             this.refreshEvents(response);
                         }
+                        jQuery(window).scrollTop(0);
                     })
                     .fail(() => {
                         let trace = this.services.getErrorInformation();

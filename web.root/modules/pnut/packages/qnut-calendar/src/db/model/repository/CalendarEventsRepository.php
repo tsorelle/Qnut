@@ -86,7 +86,6 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
             $filters .= ' AND t.public = 1';
         }
 
-        // todo: update test sql scripts
         $header =
             "SELECT e.id,title," .
             "IF(allDay = 1,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`," .

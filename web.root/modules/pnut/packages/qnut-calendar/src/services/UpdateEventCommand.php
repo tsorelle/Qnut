@@ -131,7 +131,7 @@ class UpdateEventCommand extends TServiceCommand
                     break;
                 case 'instance' :
                     $event->recurId = $event->id;
-                    $event->recurInstance = TDates::formatMySqlDate($request->repeatInstance);
+                    $event->recurInstance = $request->repeatInstance;
                     $event->recurEnd = null;
                     $event->recurPattern = null;
                     $event->id = 0;

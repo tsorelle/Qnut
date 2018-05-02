@@ -287,6 +287,7 @@ class CalendarEventManager
     {
         $event = $this->getEventsRepository()->get($eventId);
         if ($event) {
+            $event->title = $event->title.' - removed';
             $event->recurId = $eventId;
             $event->id = 0;
             $event->recurPattern = null;
