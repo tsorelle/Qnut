@@ -107,6 +107,9 @@ class UpdateEventCommand extends TServiceCommand
 
         $occurences = is_numeric($request->event->recurEnd) ? $request->event->recurEnd : null;
         $event->assignFromObject($request->event);
+        if (empty($event->recurPattern)) {
+            $event->recurPattern = null;
+        }
 
         if($original != null && ($original->recurId != null && $event->recurPattern)) {
             // if replacement for repeat instance, start new series

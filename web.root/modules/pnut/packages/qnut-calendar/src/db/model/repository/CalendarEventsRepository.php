@@ -113,6 +113,35 @@ class CalendarEventsRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
+    public function getCalendarNotificationEvents($startDate, $endDate) {
+        $eventParams = [$startDate,$endDate,$endDate];
+        $repeatParams = [$endDate,$startDate];
+
+        $header =
+            "SELECT e.id,title,IFNULL(e.location,'') AS location, IFNULL(e.`description`,'') AS description, allDay, ".
+            "IF(allDay = 1,DATE_FORMAT(`start`,'%Y-%m-%d'),DATE_FORMAT(`start`,'%Y-%m-%dT%H:%i')) AS `start`, ".
+            "IF(`end` IS NULL OR `end` = `start`,NULL,DATE_FORMAT(`end`,'%Y-%m-%dT%H:%i')) AS `end`, ".
+            "CONCAT(e.recurPattern,';',DATE(e.`start`),IF (e.recurEnd IS NULL,'',CONCAT(',',e.recurEnd))) AS repeatPattern ".
+            "FROM qnut_calendar_events e ".
+            'WHERE e.active = 1 AND ';
+
+        $eventSelector = "(e.recurPattern IS NULL AND (DATE(e.`start`) >= ? AND  DATE(e.`start`) < ?)  AND  (DATE(e.`end`) < ?  OR e.`end` IS NULL)) "; // start,end, end
+
+        $repeatSelector = "(e.recurPattern IS NOT NULL AND (DATE(e.`start`) <= ?) AND (e.recurEnd IS NULL OR e.recurEnd > ?)) "; // end, start
+
+        $result = new \stdClass();
+        $sql = $header.$eventSelector;
+        $stmt = $this->executeStatement($sql ,$eventParams);
+        $result->events = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\CalendarNotification');
+
+        $sql = $header.$repeatSelector;
+        $stmt = $this->executeStatement($sql,$repeatParams);
+        $result->repeats = $stmt->fetchAll(PDO::FETCH_CLASS,'Peanut\QnutCalendar\db\model\entity\CalendarNotification');
+
+        return $result;
+
+    }
+
     public function getEventNotificationDays($eventId,$personId) {
         $sql = "SELECT COUNT(*) FROM qnut_notification_types WHERE code = 'calendar' AND active=1";
         $stmt = $this->executeStatement($sql,[$personId,$eventId]);

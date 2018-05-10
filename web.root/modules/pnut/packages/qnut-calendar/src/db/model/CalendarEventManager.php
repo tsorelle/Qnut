@@ -9,6 +9,7 @@
 namespace Peanut\QnutCalendar\db\model;
 
 use Peanut\QnutCalendar\db\model\entity\CalendarEvent;
+use Peanut\QnutCalendar\db\model\entity\CalendarSearchEvent;
 use Peanut\QnutCalendar\db\model\entity\FullCalendarEvent;
 use Peanut\QnutCalendar\db\model\entity\NotificationSubscription;
 use Peanut\QnutCalendar\db\model\repository\CalendarCommitteeAssociation;
@@ -104,6 +105,55 @@ class CalendarEventManager
         $this->getEventsRepository()->update($event,$username);
     }
 
+    public function getCalendarNotifications($startDate) {
+        $results = [];
+        $events = $this->getCalendarNotificationEvents($startDate);
+        $subscriptions = $this->getNotificationsRepository();
+        $start = new \DateTime(substr($startDate,0,10));
+        foreach ($events as $event) {
+             $id = $event->id;
+            $eventDate = new \DateTime(substr($event->start, 0,10));
+            $leadDays = $start->diff($eventDate);
+            $recipients =  $subscriptions->getEventNotificationRecipients($event->id,$leadDays);
+            if ($recipients) {
+                $result = new \stdClass();
+                $result->event = $event;
+                $result->recipients = $recipients;
+                $results[] = $result;
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * @param $startDate
+     * @return FullCalendarEvent[]
+     */
+    public function getCalendarNotificationEvents($startDate) {
+        $start = new \DateTime($startDate);
+        $end = (clone $start)->modify('+ 8 days');
+
+        $startMonth = $start->format('m');
+        $startYear =  $start->format('Y');
+        $calendars = [];
+        $calendar = TCalendarPage::Create($startYear,$startMonth);
+        $calendars[] = $calendar;
+        $calendarEndMonth = $calendar->end->format('m');
+        if ($end > $calendar->end) {
+            $endMonth = $end->format('m');
+            $endYear =  $end->format('Y');
+            $calendars[] = TCalendarPage::Create($endYear,$endMonth,'right');
+        }
+
+        $endDate = $end->format('Y-m-d');
+        $eventsRepository = $this->getEventsRepository();
+        $eventResults = $eventsRepository->getCalendarNotificationEvents($startDate,$endDate);
+
+        return $this->mergeRepeatingEvents($startDate, $endDate, $eventResults, $calendars);
+
+    }
+
+
     /**
      * @param $request
      * @return \stdClass
@@ -126,61 +176,7 @@ class CalendarEventManager
         /**
          * @var $repeats FullCalendarEvent[]
          */
-        $results = $eventResults->events;
-        /**
-         * @var $repeats FullCalendarEvent[]
-         */
-        $repeats = $eventResults->repeats;
-
-
-        // get repeating dates
-        $repeater = new TDateRepeater();
-        $utc = new \DateTimeZone('UTC');
-        foreach ($repeats as $event) {
-            $occurance = 0;
-            $dates = $repeater->getRepeatingDates($calendarPage,$event->repeatPattern);
-            if (!is_array($dates)) {
-                continue;
-            }
-            $replacements = $eventsRepository->getRepeatReplacementDates($event->id);
-            foreach ($dates as $date) {
-                // Check if a replacement event found for this instance
-                if (in_array($date,$replacements)) {
-                    continue;
-                }
-
-                // clone the event and update start and end dates
-                $repeat = clone $event;
-                $repeat->occurance = ++$occurance;
-                $repeat->recurInstance = $date;
-                $repeat->start = $date;
-                @list($datePart,$timePart) = explode('T',$event->start);
-                if ($timePart !== null) {
-                    $repeat->start .= 'T'.$timePart;
-                }
-                if ($event->end !== null) {
-                    $start = new \DateTime($event->start,$utc);
-                    $end = new \DateTime($event->end,$utc);
-                    $test = $end->format(TDates::IsoDateTimeFormat);
-
-                    $interval = $end->diff($start);
-                    $end = new \DateTime($repeat->start,$utc);
-                    $end->add($interval);
-                    $repeat->end = str_replace('UTC','T',$end->format(TDates::IsoDateTimeFormat));
-                }
-                $results[] = $repeat;
-            }
-        }
-
-        // sort by start time
-        uasort($results,function ($eventA,$eventB) {
-            $a = new \DateTime($eventA->start);
-            $b = new \DateTime($eventB->start);
-            if ($a == $b) {
-                return 0;
-            }
-            return ($a < $b) ? -1 : 1;
-        });
+        $results = $this->mergeRepeatingEvents($startDate,$endDate,$eventResults,[$calendarPage]);
 
         $response = new \stdClass();
         $response->events = $results;
@@ -297,6 +293,94 @@ class CalendarEventManager
             $event->recurInstance = $instanceDate;
             $this->getEventsRepository()->insert($event, $username);
         }
+    }
+
+    /**
+     * @param $startDate
+     * @param $endDate
+     * @param $eventResults
+     * @param $calendars
+     * @return array
+     */
+    private function mergeRepeatingEvents($startDate, $endDate, $eventResults, $calendars)
+    {
+        $eventsRepository = $this->getEventsRepository();
+
+        /**
+         * @var $repeats CalendarSearchEvent[]
+         */
+        $results = $eventResults->events;
+        /**
+         * @var $repeats CalendarSearchEvent[]
+         */
+        $repeats = $eventResults->repeats;
+
+        // get repeating dates
+        $repeater = new TDateRepeater();
+
+        foreach ($repeats as $event) {
+            $occurance = 0;
+            foreach ($calendars as $calendarPage) {
+                $dates = $repeater->getRepeatingDates($calendarPage, $event->repeatPattern);
+                if (is_array($dates)) {
+                    $replacements = $eventsRepository->getRepeatReplacementDates($event->id);
+                    foreach ($dates as $date) {
+                        if ($date >= $startDate && $date < $endDate) {
+                            // Check if a replacement event found for this instance
+                            if (!in_array($date, $replacements)) {
+                                $repeat = $this->cloneEvent($event, ++$occurance, $date);
+                                $results[] = $repeat;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // sort by start time
+        uasort($results, function ($eventA, $eventB) {
+            $a = new \DateTime($eventA->start);
+            $b = new \DateTime($eventB->start);
+            if ($a == $b) {
+                return 0;
+            }
+            return ($a < $b) ? -1 : 1;
+        });
+
+        return $results;
+    }
+
+
+
+    /**
+     * @param $event
+     * @param $occurance
+     * @param $date
+     * @return mixed
+     */
+    private function cloneEvent(CalendarSearchEvent $event, $occurance, $date)
+    {
+        // clone the event and update start and end dates
+        $repeat = clone $event;
+        $repeat->occurance = $occurance;
+        $repeat->recurInstance = $date;
+        $repeat->start = $date;
+        @list($datePart, $timePart) = explode('T', $event->start);
+        if ($timePart !== null) {
+            $repeat->start .= 'T' . $timePart;
+        }
+        if ($event->end !== null) {
+            $utc = new \DateTimeZone('UTC');
+            $start = new \DateTime($event->start, $utc);
+            $end = new \DateTime($event->end, $utc);
+            // $test = $end->format(TDates::IsoDateTimeFormat);
+
+            $interval = $end->diff($start);
+            $end = new \DateTime($repeat->start, $utc);
+            $end->add($interval);
+            $repeat->end = str_replace('UTC', 'T', $end->format(TDates::IsoDateTimeFormat));
+        }
+        return $repeat;
     }
 
 }

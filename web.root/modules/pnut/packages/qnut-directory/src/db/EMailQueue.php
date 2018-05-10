@@ -41,9 +41,9 @@ class EMailQueue
      * @var TProcessManager
      */
     private $process;
-    public static function QueueMessageList($messageDto, $username,$instance=null) {
+    public static function QueueMessageList($messageDto, $username, array $recipients=null) {
         $message = EmailMessage::Create($messageDto, $username);
-        return (self::getMessagesRepository())->queueMessageList($message);
+        return (self::getMessagesRepository())->queueMessageList($message,$recipients);
     }
 
     public static function QueueSingleMessage($messageDto, $toAddress, $toName, $username,$instance=null) {

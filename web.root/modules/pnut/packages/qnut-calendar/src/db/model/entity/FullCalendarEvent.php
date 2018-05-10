@@ -22,20 +22,14 @@ namespace Peanut\QnutCalendar\db\model\entity;
  *
  * Data retrieval example in Peanut\QnutCalendar\db\model\repository::getFilteredEvents
  */
-class FullCalendarEvent
+class FullCalendarEvent extends CalendarSearchEvent
 {
-    public $id;
-    public $title;
-    public $start;
-    public $end;
-    public $allDay;
-    public $location;
+
     public $url;
     public $eventType;
     public $backgroundColor;
     public $borderColor;
     public $textColor;
-    public $repeatPattern;
     public $recurInstance;
     public $active;
 

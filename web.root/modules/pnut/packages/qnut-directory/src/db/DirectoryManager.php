@@ -304,7 +304,7 @@ class DirectoryManager
     public function getEmailListLookup($translate = false)
     {
         $repository = new LookupTableRepository('qnut_email_lists');
-        return $repository->getLookupList($translate);
+        return $repository->getLookupList($translate,'cansubscribe=1');
     }
 
     public function getPostalListLookup($translate = false)

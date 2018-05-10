@@ -20,7 +20,9 @@
     }
   },
   "require": {
-    "phpunit/phpunit": "6.5.0"
+    "phpunit/phpunit": "6.5.0",
+    "mailgun/mailgun-php": "2.5.0",
+    "php-http/guzzle6-adapter": "v1.1.1"
   }
 
 }

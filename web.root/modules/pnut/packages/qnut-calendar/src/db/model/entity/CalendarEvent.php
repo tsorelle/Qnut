@@ -42,4 +42,7 @@ class CalendarEvent  extends \Tops\db\TimeStampedEntity
         }
     }
 
+    public function formatDateRange($startDate,$endDate) {
+        return '';
+    }
 }

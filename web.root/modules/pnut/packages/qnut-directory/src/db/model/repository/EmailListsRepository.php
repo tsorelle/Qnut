@@ -25,10 +25,13 @@ class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
         return 'Peanut\QnutDirectory\db\model\entity\EmailList';
     }
 
-    public function getLookupList() {
+    public function getLookupList($cansubscribeOnly = true) {
         $sql =
             'SELECT e.id,e.`code`,e.`name`,e.description,e.mailBox,m.displaytext AS mailboxName,e.active '.
             'FROM qnut_email_lists e JOIN tops_mailboxes m ON e.mailBox = m.mailboxcode ORDER BY e.`name`';
+        if ($cansubscribeOnly) {
+            $sql .= ' WHERE cansubscribe <> 0';
+        }
         $stmt = $this->executeStatement($sql);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
@@ -36,15 +39,16 @@ class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
     protected function getFieldDefinitionList()
     {
         return array(
-        'id'=>PDO::PARAM_INT,
-        'code'=>PDO::PARAM_STR,
-        'name'=>PDO::PARAM_STR,
-        'description'=>PDO::PARAM_STR,
-        'mailBox'=>PDO::PARAM_STR,
-        'createdby'=>PDO::PARAM_STR,
-        'createdon'=>PDO::PARAM_STR,
-        'changedby'=>PDO::PARAM_STR,
-        'changedon'=>PDO::PARAM_STR,
-        'active'=>PDO::PARAM_STR);
+            'id' => PDO::PARAM_INT,
+            'code' => PDO::PARAM_STR,
+            'name' => PDO::PARAM_STR,
+            'description' => PDO::PARAM_STR,
+            'mailBox' => PDO::PARAM_STR,
+            'cansubscribe' => PDO::PARAM_INT,
+            'createdby' => PDO::PARAM_STR,
+            'createdon' => PDO::PARAM_STR,
+            'changedby' => PDO::PARAM_STR,
+            'changedon' => PDO::PARAM_STR,
+            'active' => PDO::PARAM_STR);
     }
 }

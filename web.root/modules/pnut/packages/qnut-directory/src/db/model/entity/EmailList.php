@@ -12,4 +12,5 @@ use Tops\db\NamedEntity;
 class EmailList  extends NamedEntity
 {
     public $mailBox;
+    public $cansubscribe;
 }

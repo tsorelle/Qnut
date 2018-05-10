@@ -73,7 +73,7 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
-    public function queueMessageList(EmailMessage $message) {
+    public function queueMessageList(EmailMessage $message,array $recipients=null) {
         /**
          * @var $list EmailList
          */
@@ -83,19 +83,35 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         }
         $message->sender = $list->mailBox;
         $messageId = $this->insert($message);
-        $sql =
-            'INSERT INTO qnut_email_queue (mailMessageId,personId,toAddress,toName) '.
-            "SELECT $messageId AS mailMessageId, s.personId,p.email,p.fullName ".
-            'FROM qnut_email_subscriptions s JOIN qnut_persons p ON s.personId = p.id '.
-            'WHERE s.listId = ?';
+        $count = 0;
+        if ($recipients===null) {
+            $sql =
+                'INSERT INTO qnut_email_queue (mailMessageId,personId,toAddress,toName) ' .
+                "SELECT $messageId AS mailMessageId, s.personId,p.email,p.fullName " .
+                'FROM qnut_email_subscriptions s JOIN qnut_persons p ON s.personId = p.id ' .
+                'WHERE s.listId = ?';
 
-        $stmt = $this->executeStatement($sql, [$message->listId]);
-        $count = $stmt->rowCount();
+            $stmt = $this->executeStatement($sql, [$message->listId]);
+            $count = $stmt->rowCount();
+        }
+        else {
+            $sql =
+                'INSERT INTO qnut_email_queue (mailMessageId,personId,toAddress,toName) '.
+                'SELECT  '.$messageId.' AS mailMessageId, p.id AS personId, p.email,p.fullName '.
+                'FROM qnut_persons p WHERE p.id = ?';
+
+            foreach ($recipients as $recipientId) {
+                $stmt = $this->executeStatement($sql, [$recipientId]);
+                $count += $stmt->rowCount();
+            }
+        }
+
         if ($count == 0) {
-            // no subscribers, roll back
+            // no recipients, roll back
             $this->delete($messageId);
             return 0;
         }
+
         $sql = 'UPDATE qnut_email_messages SET recipientCount = ? WHERE id = ?';
         $stmt = $this->executeStatement($sql,[$count,$messageId]);
         $result = new \stdClass();
@@ -103,13 +119,6 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         $result->count = $count;
         return $result;
     }
-
-    /*
-     * SELECT m.`id`,m.`contentType`,m.`listId`, m.recipientCount, (m.recipientCount - COUNT(q.id)) AS sent
-FROM  qnut_email_messages m
-RIGHT OUTER JOIN qnut_email_queue q ON q.mailMessageId = m.id
-WHERE m.id = 40;
-     */
 
     /**
      * @return EmailMessage[]

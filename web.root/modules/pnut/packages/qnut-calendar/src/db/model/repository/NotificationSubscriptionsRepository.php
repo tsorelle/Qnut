@@ -54,10 +54,19 @@ class NotificationSubscriptionsRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
-    public function getSubscriptionTypeId($typeCode) {
-        $sql = 'SELECT id FROM '.self::notificationTypesTable.' WHERE code = ?';
-        $stmt = $this->executeStatement($sql,[$typeCode]);
-        return $stmt->fetch(PDO::FETCH_COLUMN);
+
+    private static $notificationTypes = [];
+    public function getSubscriptionTypeId($typeCode='') {
+        if (!isset(self::$notificationTypes[$typeCode])) {
+            $sql = 'SELECT id FROM '.self::notificationTypesTable.' WHERE code = ?';
+            $stmt = $this->executeStatement($sql,[$typeCode]);
+            $id = self::$notificationTypes[$typeCode] = $stmt->fetch(PDO::FETCH_COLUMN);
+            if (empty($id)) {
+                return false;
+            }
+            self::$notificationTypes[$typeCode] = $id;
+        }
+        return self::$notificationTypes[$typeCode];
     }
 
     public function deleteSubscriptions($typeCode,$itemId,$personId=0) {
@@ -71,4 +80,19 @@ class NotificationSubscriptionsRepository extends \Tops\db\TEntityRepository
         }
         $stmt = $this->executeStatement($sql,$args);
     }
+
+    /**
+     * @param $id
+     * @param $leadDays
+     * @return int[]
+     */
+    public function getEventNotificationRecipients($id, $leadDays,$typeCode='calendar')
+    {
+        $typeId = $this->getSubscriptionTypeId('calendar');
+        $sql = 'SELECT personId FROM qnut_notification_subscriptions WHERE notificationTypeId = ? AND itemId = ?';
+        $stmt = $this->executeStatement($sql,[$typeId,$id]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+
 }
