@@ -89,8 +89,8 @@ class NotificationSubscriptionsRepository extends \Tops\db\TEntityRepository
     public function getEventNotificationRecipients($id, $leadDays,$typeCode='calendar')
     {
         $typeId = $this->getSubscriptionTypeId('calendar');
-        $sql = 'SELECT personId FROM qnut_notification_subscriptions WHERE notificationTypeId = ? AND itemId = ?';
-        $stmt = $this->executeStatement($sql,[$typeId,$id]);
+        $sql = 'SELECT personId FROM qnut_notification_subscriptions WHERE notificationTypeId = ? AND itemId = ? AND leadDays = ?';
+        $stmt = $this->executeStatement($sql,[$typeId,$id,$leadDays]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 

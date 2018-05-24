@@ -13,6 +13,7 @@ use Peanut\QnutCalendar\db\model\CalendarEventManager;
 use Peanut\QnutCalendar\db\model\entity\CalendarNotification;
 use Peanut\QnutCalendar\db\model\entity\FullCalendarEvent;
 use Peanut\QnutDirectory\db\EMailQueue;
+use Peanut\QnutDirectory\db\model\entity\EmailList;
 use Peanut\QnutDirectory\db\model\entity\EmailMessage;
 use Tops\services\TServiceCommand;
 use Tops\sys\TDates;
@@ -22,9 +23,15 @@ use Tops\sys\TLanguage;
 class SendEventNotificationsCommand extends TServiceCommand
 {
 
+    /**
+     * @var EmailList
+     */
+    private $notificationsListInfo;
+
+
     protected function run()
     {
-        // TODO: Test SendEventNotificationsCommand .
+        // TODO: Test SendEventNotificationsCommand with email queue.
 
         $datearg = $this->getRequest();
         if (empty($datearg)) {
@@ -40,11 +47,16 @@ class SendEventNotificationsCommand extends TServiceCommand
         $this->addInfoMessage('Calendar notifications started: '.$rundate);
         $manager = new CalendarEventManager();
         $notifications = $manager->getCalendarNotifications($rundate);
+        if (empty($notifications)) {
+            $this->addInfoMessage('No calendar notifications were scheduled.');
+            return;
+        }
+        $this->notificationsListInfo = $manager->getNotificationListInfo();
         foreach ($notifications as $notification) {
             $message = $this->createMessage($notification->event, sizeof($notification->recipients));
             EMailQueue::QueueMessageList($message, $this->getUser()->getUserName(),$notification->recipients);
         }
-        $this->addInfoMessage('Calendar notifications completed ');
+        $this->addInfoMessage('Calendar notifications completed. '.sizeof($notifications).' messages queued.');
     }
 
     private function createMessage(CalendarNotification $event, $recipientCount, $format='html')
@@ -53,9 +65,9 @@ class SendEventNotificationsCommand extends TServiceCommand
         $today = new \DateTime();
         $message->postedDate = $today->format('Y-m-d H:i:s');
         $message->postedBy = $this->getUser()->getUserName();
-        $message->listId		= 1; // todo: get from database?
-        $message->sender       = 'notices'; // todo: from config?
-        $message->replyAddress = 'notices'; // todo: from config?
+        $message->listId		= $this->notificationsListInfo->id;
+        $message->sender       = $this->notificationsListInfo->mailBox;
+        $message->replyAddress = $this->notificationsListInfo->mailBox;
         $message->subject      = $event->title;
         $message->messageText  = sprintf(
             ($format=='html' ? '<p>%s<br>%s</p>' : "%s\n%s\n"),

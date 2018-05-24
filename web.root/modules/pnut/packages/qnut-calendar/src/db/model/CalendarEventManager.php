@@ -17,6 +17,8 @@ use Peanut\QnutCalendar\db\model\repository\CalendarEventsRepository;
 use Peanut\QnutCalendar\db\model\repository\CalendarResourceAssociation;
 use Peanut\QnutCalendar\db\model\repository\NotificationSubscriptionsRepository;
 use Peanut\QnutCalendar\db\model\repository\NotificationTypesRepository;
+use Peanut\QnutDirectory\db\model\entity\EmailList;
+use Peanut\QnutDirectory\db\model\repository\EmailListsRepository;
 use Tops\db\model\repository\LookupTableRepository;
 use Tops\db\NamedEntity;
 use Tops\sys\IUser;
@@ -36,6 +38,21 @@ class CalendarEventManager
             $this->eventsRepository = new CalendarEventsRepository();
         }
         return $this->eventsRepository;
+    }
+
+    /**
+     * @var EmailListsRepository $emailListsRepository
+     */
+    private $emailListsRepository;
+
+    /**
+     * @return EmailListsRepository
+     */
+    private function getEmailListsRepository() {
+        if (!isset($this->emailListsRepository)) {
+            $this->emailListsRepository = new EmailListsRepository();
+        }
+        return $this->emailListsRepository;
     }
 
     /**
@@ -113,7 +130,7 @@ class CalendarEventManager
         foreach ($events as $event) {
              $id = $event->id;
             $eventDate = new \DateTime(substr($event->start, 0,10));
-            $leadDays = $start->diff($eventDate);
+            $leadDays = $start->diff($eventDate)->d;
             $recipients =  $subscriptions->getEventNotificationRecipients($event->id,$leadDays);
             if ($recipients) {
                 $result = new \stdClass();
@@ -381,6 +398,19 @@ class CalendarEventManager
             $repeat->end = str_replace('UTC', 'T', $end->format(TDates::IsoDateTimeFormat));
         }
         return $repeat;
+    }
+
+    public function getNotificationListInfo()
+    {
+        $repository = $this->getEmailListsRepository();
+        $result = $repository->getEntityByCode('notify');
+        if (empty($result)) {
+            $result = new EmailList();
+            $result->code = 'notify';
+            $result->mailBox = 'notices';
+            $result->id = 1;
+        }
+        return $result;
     }
 
 }
