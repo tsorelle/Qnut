@@ -8,6 +8,7 @@
 namespace Peanut\QnutDocuments\services;
 
 use Peanut\QnutDocuments\db\model\DocumentIndexManager;
+use Tops\sys\TLanguage;
 
 class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
 {
@@ -16,7 +17,9 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
     {
         $manager = new DocumentIndexManager();
         $response = $manager->getMetaData();
-        $response->translations = []; // todo: add translations
+        $response->translations = TLanguage::getTranslations([
+            'document-search-dropdown-caption'
+        ]);
         $this->setReturnValue($response);
     }
 }

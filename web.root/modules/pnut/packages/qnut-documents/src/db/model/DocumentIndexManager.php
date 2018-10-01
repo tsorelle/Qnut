@@ -32,12 +32,10 @@ class DocumentIndexManager
     public function getMetaData() {
         $response = new \stdClass();
         $properties = $this->getDocumentsRepository()->getEntityProperties();
-        $response->propertyDefs = $properties->getDefinitions();
+        $response->properties = $properties->getLookupDefinitions(); // only lookup properties are supported at this time.
         $response->propertyLookups = $properties->getLookups();
         $response->documentStatusTypes = (new LookupTableRepository('qnut_document_status_types'))->getLookupList();
         $response->documentTypes = (new LookupTableRepository('qnut_document_types'))->getLookupList();
         return $response;
     }
-
-
 }

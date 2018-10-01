@@ -1,8 +1,82 @@
 <div id="documentsearch-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="documentsearch-view-container" class="row" style="display: none;margin-bottom: 10rem">
+    <form>
     <!-- todo: implement document search view -->
         <div class="col-md-12">
-            <h2 data-bind="text:test"></h2>
+            <fieldset style="margin-bottom: 15px" data-bind="visible:!searched()">
+                <label><translate params="code:'document-search-terms',translator:self"></translate></label>
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- Title -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- key words -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- full text? -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- doc type -->
+                    </div>
+                    <div class="col-md-12">
+                        <!-- file type -->
+                    </div>
+                    <div class="col-md-12">
+                        <!-- status -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- custom -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <!-- date search mode -->
+                    </div>
+                    <div class="col-md-4">
+                        <!-- date1 -->
+                    </div>
+                    <div class="col-md-4">
+                        <!-- date 2 -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-default" data-bind="click:clearForm">
+                            <translate params="code:'label-clear-form',translator:self"></translate>
+                        </button>
+                        <button type="button" class="btn btn-default" data-bind="click:executeSearch"><translate params="code:'label-search',translator:self"></translate>
+                            &nbsp;<span class="fa fa-search" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset data-bind="visible:searched">
+                <label><translate params="code:'search-results',translator:self"></translate></label>
+                <div data-bind="visible:searchResults.length == 0"><span>
+                    <translate params="code:'label-no-documents',translator:self"></translate>
+                </span></div>
+                <div>
+                    <button type="button" class="btn btn-default" data-bind="click:returnToSearchForm">
+                        <span class="fa fa-arrow-left"></span>&nbsp;
+                        <translate params="code:'document-search-return ',translator:self"></translate>
+                    </button>
+                </div>
+                <div data-bind="visible:searchResults.length">
+                    results here...
+                </div>
+            </fieldset>
         </div>
-
+    </form>
 </div>
