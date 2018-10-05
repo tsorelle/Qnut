@@ -53,14 +53,10 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
             'title'=>PDO::PARAM_STR,
             'filename'=>PDO::PARAM_STR,
             'location'=>PDO::PARAM_STR,
-            'filetype'=>PDO::PARAM_STR,
             'abstract'=>PDO::PARAM_STR,
             'keywords'=>PDO::PARAM_STR,
-            'documentTypeId'=>PDO::PARAM_INT,
-            'documentStatusId'=>PDO::PARAM_INT,
             'protected' =>PDO::PARAM_INT,
             'publicationDate'=>PDO::PARAM_STR,
-            'sessionId' =>PDO::PARAM_INT,
         );
     }
 

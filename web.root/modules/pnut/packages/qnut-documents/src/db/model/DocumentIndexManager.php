@@ -34,8 +34,8 @@ class DocumentIndexManager
         $properties = $this->getDocumentsRepository()->getEntityProperties();
         $response->properties = $properties->getLookupDefinitions(); // only lookup properties are supported at this time.
         $response->propertyLookups = $properties->getLookups();
-        $response->documentStatusTypes = (new LookupTableRepository('qnut_document_status_types'))->getLookupList();
-        $response->documentTypes = (new LookupTableRepository('qnut_document_types'))->getLookupList();
+        // $response->documentStatusTypes = (new LookupTableRepository('qnut_document_status_types'))->getLookupList();
+        // $response->documentTypes = (new LookupTableRepository('qnut_document_types'))->getLookupList();
         return $response;
     }
 }

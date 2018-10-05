@@ -12,12 +12,8 @@ class Document  extends \Tops\db\TimeStampedEntity
     public $title;
     public $filename;
     public $location;
-    public $filetype;
     public $abstract;
     public $keywords;
-    public $documentTypeId;
-    public $documentStatusId;
     public $protected;
     public $publicationDate;
-    public $sessionId;
 }

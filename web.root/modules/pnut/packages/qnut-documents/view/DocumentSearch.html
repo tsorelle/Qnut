@@ -8,49 +8,62 @@
                 <div class="row">
                     <div class="col-md-12">
                         <!-- Title -->
+                        <div class="form-group">
+                            <label class="control-label form-control-label" for="titleSearch" >
+                                <translate params="code:'label-title',translator:self"></translate> </label>
+                            <input type="text" class="form-control" id="titleSearch" data-bind="textInput: titleSearch, attr: { placeholder:defaultLookupCaption }">
+                        </div>
+
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
-                        <!-- key words -->
+                        <div class="form-group">
+                            <label class="control-label form-control-label" for="textSearch">
+                                <translate params="code:'label-key-words',translator:self"></translate> </label>
+                            <input type="text" class="form-control" id="textSearch" data-bind="textInput: textSearch, attr: { placeholder:defaultLookupCaption }" />
+                        </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
-                        <!-- full text? -->
+                        <div class="form-group">
+                            <input id="fulltext-check" type="checkbox" data-bind="checked:fullTextSearch"/>
+                            <label for="fulltext-check"  class="control-label" style="font-weight: normal">
+                                <translate params="code:'label-fulltext',translator:self"></translate> </label>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <!-- doc type -->
-                    </div>
-                    <div class="col-md-12">
-                        <!-- file type -->
-                    </div>
-                    <div class="col-md-12">
-                        <!-- status -->
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <!-- custom -->
-                    </div>
-                </div>
+
                 <div class="row">
                     <div class="col-md-4">
                         <!-- date search mode -->
+                        <div class="form-group">
+                            <label for="datemode"><translate params="code:'search-date-publication',translator:self"></translate></label>
+                            <select id="datemode" class="form-control"
+                                data-bind="options: dateSearchModes,optionsText:'Name',value:selectedDateSearchMode,optionsCaption:defaultLookupCaption">
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <!-- date1 -->
+                        <div class="form-group"  data-bind="visible:selectedDateSearchMode">
+                            <label for="startdate"><translate params="code:'label-date',translator:self"></translate></label>
+                                <input class="form-control datepicker" type="text" id="startdate"
+                                       data-bind="value:startDate"/>
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        <!-- date 2 -->
+                        <div class="form-group" data-bind="visible:showSecondDate">
+                            <label for="startdate"><translate params="code:'label-end-date',translator:self"></translate></label>
+                                <input class="form-control datepicker" type="text" id="enddate"
+                                       data-bind="value:endDate"/>
+                        </div>
                     </div>
                 </div>
+
+                <entity-properties params="controller:propertiesController,columns:4, colwidth:'sm'" ></entity-properties>
+
                 <div class="row">
                     <div class="col-md-12">
                         <button type="button" class="btn btn-default" data-bind="click:clearForm">
