@@ -11,8 +11,7 @@ namespace QnutDocuments {
     interface IDocumentSearchInitResponse {
         properties : Peanut.IPropertyDefinition[];
         propertyLookups: Peanut.ILookupItem[];
-        // documentStatusTypes: Peanut.ILookupItem[];
-        // documentTypes: Peanut.ILookupItem[];
+        fullTextSupported : boolean;
         translations : any[];
     }
 
@@ -63,8 +62,11 @@ namespace QnutDocuments {
         titleSearch = ko.observable('');
         textSearch = ko.observable('');
         fullTextSearch = ko.observable(true);
+        fullTextSupported = ko.observable(false);
         publicationDate = ko.observable('');
-
+        searchResultMessage = ko.observable('');
+        noSearchResultsText = '';
+        searchResultsFormat = '';
         defaultLookupCaption = ko.observable('');
         searched = ko.observable(false);
 
@@ -101,6 +103,19 @@ namespace QnutDocuments {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IDocumentSearchInitResponse>serviceResponse.Value;
                         me.addTranslations(response.translations);
+                        me.noSearchResultsText = me.translate('document-search-not-found');
+                        me.searchResultsFormat = me.translate('document-search-found');
+
+                        me.fullTextSupported(response.fullTextSupported);
+                        me.dateSearchModes([
+                            // {Name: me.defaultLookupCaption(), Value: 1},
+                            {Name: me.translate('date-search-mode-on'), Value: 1},
+                            {Name: me.translate('date-search-mode-before'), Value: 2},
+                            {Name: me.translate('date-search-mode-after'), Value: 3},
+                            {Name: me.translate('date-search-mode-between'), Value: 4}
+                        ]);
+                        me.selectedDateSearchMode.subscribe(me.onDateModeChange);
+                        let test = me.dateSearchModes();
                         let defaultLookupCaption = me.translate('document-search-dropdown-caption','(any)');
                         me.propertiesController = new Peanut.entityPropertiesController(response.properties,
                             response.propertyLookups,defaultLookupCaption,true);
@@ -116,14 +131,6 @@ namespace QnutDocuments {
                         //     ]);
                         // let test = me.documentFileTypes();
 
-                        me.dateSearchModes([
-                            // {Name: me.defaultLookupCaption(), Value: 1},
-                            {Name: me.translate('date-seach-mode-on'), Value: 1},
-                            {Name: me.translate('date-seach-mode-before'), Value: 2},
-                            {Name: me.translate('date-seach-mode-after'), Value: 3},
-                            {Name: me.translate('date-seach-mode-between'), Value: 4}
-                        ]);
-                        me.selectedDateSearchMode.subscribe(me.onDateModeChange);
                     }
                     else {
                     }
@@ -168,6 +175,14 @@ namespace QnutDocuments {
 
         executeSearch = () => {
             // todo: implement executeSearch
+
+
+            let resultCount = 0;
+            this.searchResultMessage (
+                resultCount ? this.searchResultsFormat.replace('%s',resultCount.toString()) : this.noSearchResultsText
+            );
+
+            let test = this.searchResultMessage();
             this.searched(true);
         };
 
