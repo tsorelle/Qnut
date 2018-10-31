@@ -19,14 +19,16 @@ namespace QnutDocuments {
         id: any,
         title: string,
         publicationDate: string,
-        documentType: string,
-        fileType: string,
+        uri: string,
+        editUrl: string,
+        documentType: string
     }
 
     interface IDocumentSearchRequest {
-        title: '',
-        keywords: '',
-        fulltext: false,
+        title: string,
+        keywords: string,
+        fulltext: boolean,
+        literal: boolean,
         dateSearchMode: any,
         firstDate: any,
         secondDate: any,
@@ -35,22 +37,11 @@ namespace QnutDocuments {
 
     export class DocumentSearchViewModel extends Peanut.ViewModelBase {
         // observables
-        test = ko.observable('DocumentSearchViewModel loaded');
-
         searchResults = ko.observableArray<IDocumentSearchResult>([]);
         resultCount = ko.observable(0);
-        tab = ko.observable('search');
         propertiesController : Peanut.entityPropertiesController;
 
-        statusTypes = ko.observableArray<Peanut.ILookupItem>([]);
-        selectedStatusType = ko.observable<Peanut.ILookupItem>(null);
-
-        // documentTypes = ko.observableArray<Peanut.ILookupItem>([]);
-        // selectedDocumentType = ko.observable<Peanut.ILookupItem>(null);
-
-        // documentFileTypes = ko.observableArray([]);
-        // selectedFileType = ko.observable(null);
-
+        textOption = ko.observable('keywords');
         dateSearchModes = ko.observableArray<Peanut.INameValuePair>([]);
         selectedDateSearchMode = ko.observable<Peanut.INameValuePair>();
         showSecondDate = ko.observable(false);
@@ -69,6 +60,11 @@ namespace QnutDocuments {
         searchResultsFormat = '';
         defaultLookupCaption = ko.observable('');
         searched = ko.observable(false);
+
+        docViewLinkTitle = ko.observable('View document');
+        docDownloadLinkTitle = ko.observable('Download document');
+        docEditLinkTitle = ko.observable('Edit document information');
+
 
         init(successFunction?: () => void) {
             let me = this;
@@ -120,16 +116,9 @@ namespace QnutDocuments {
                         me.propertiesController = new Peanut.entityPropertiesController(response.properties,
                             response.propertyLookups,defaultLookupCaption,true);
                         me.defaultLookupCaption(defaultLookupCaption);
-                        // me.documentTypes(response.documentTypes);
-                        // me.statusTypes(response.documentStatusTypes);
-
-                        // todo: translate
-                        // me.documentFileTypes([
-                        //     {Name: me.defaultLookupCaption(), Value: ''},
-                        //     {Name: me.translate('document-type-label-pdf'), Value: 'pdf'},
-                        //     {Name: me.translate('document-type-label-word'), Value: 'doc'},
-                        //     ]);
-                        // let test = me.documentFileTypes();
+                        me.docViewLinkTitle(me.translate('document-icon-label-view'));
+                        me.docDownloadLinkTitle(me.translate('document-icon-label-download'));
+                        me.docEditLinkTitle(me.translate('document-icon-label-edit'));
 
                     }
                     else {
@@ -147,47 +136,68 @@ namespace QnutDocuments {
         }
 
         clearForm = () => {
-            this.selectedStatusType(null);
-//            this.selectedDocumentType(null);
             this.fullTextSearch(true);
             this.titleSearch('');
             this.textSearch('');
             this.selectedDateSearchMode(null);
             this.publicationDate('');
-  //          this.selectedFileType(null);
             this.propertiesController.clearValues();
             this.searchResults([]);
             this.resultCount(0);
-            this.tab('search');
         };
 
         onDateModeChange = (selected: INameValuePair) => {
             this.showSecondDate(selected && selected.Value == 4);
         };
 
-        showSearchForm  = () => {
-            this.tab('search');
-        };
-
-        showResults  = () => {
-            this.tab('results');
-        };
-
         executeSearch = () => {
-            // todo: implement executeSearch
+            // todo: impliement paging
+            let me = this;
+            let request = <IDocumentSearchRequest>{
+                title: me.titleSearch(),
+                keywords: me.textSearch(),
+                literal: (me.textOption() == 'literal'),
+                fulltext: me.fullTextSearch(),
+                dateSearchMode: me.selectedDateSearchMode() ? me.selectedDateSearchMode().Value : null,
+                firstDate: me.startDate(),
+                secondDate: me.endDate(),
+                properties: this.propertiesController.getValues()
+            };
+
+            me.application.hideServiceMessages();
+            me.showLoadWaiter();
+            me.services.executeService('peanut.qnut-documents::FindDocuments',request,
+                function(serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let response = <IDocumentSearchResult[]>serviceResponse.Value;
+                        me.searchResults(response);
+                        let resultCount = response.length;
+                        me.searchResultMessage (
+                            resultCount ? me.searchResultsFormat.replace('%s',resultCount.toString()) : me.noSearchResultsText
+                        );
+                        me.searched(true);
+                    }
+                    else {
+                    }
+                })
+                .fail(function () {
+                    let trace = me.services.getErrorInformation();
+                })
+                .always(function () {
+                    me.application.hideWaiter();
+                });
 
 
-            let resultCount = 0;
-            this.searchResultMessage (
-                resultCount ? this.searchResultsFormat.replace('%s',resultCount.toString()) : this.noSearchResultsText
-            );
+        };
 
-            let test = this.searchResultMessage();
-            this.searched(true);
+        downloadDocument = (doc : IDocumentSearchResult) => {
+            // todo: implement downDocument
+            alert('downDocument')
         };
 
         newDocument = () => {
             // todo: implement newDocument
+            alert('newDocument')
         };
 
         returnToSearchForm = () => {

@@ -11,6 +11,8 @@ namespace Peanut\qnut\cms;
 //include __DIR__."/Autoloader.php";
 // require_once str_replace('\\','/',realpath(__DIR__.'../../../')). '/vendor/autoload.php';
 
+use Peanut\QnutDocuments\db\model\entity\Document;
+use Peanut\QnutDocuments\DocumentManager;
 use Peanut\sys\ViewModelPageBuilder;
 use PeanutTest\WebTester;
 use Tops\services\DownloadServiceFactory;
@@ -83,6 +85,8 @@ class CmsController
         session_start();
         TSession::Initialize();
 
+        $docUri = DocumentManager::getDocumentsUri();
+
         if (strtolower($uri) == '/index.php') {
             $routePath = 'home';
         }
@@ -92,6 +96,12 @@ class CmsController
             WebTester::run($testname);
             exit;
         }
+
+        else if(strpos($uri,$docUri) === 0) {
+            DocumentManager::returnDocumentContent($uri);
+            exit;
+        }
+
         else {
             $routePath = ViewModelManager::ExtractVmName($uri);
             if (empty($routePath)) {
@@ -178,4 +188,6 @@ class CmsController
     public function getScriptDebug() {
         return $this->scriptDebug;
     }
+
+
 }

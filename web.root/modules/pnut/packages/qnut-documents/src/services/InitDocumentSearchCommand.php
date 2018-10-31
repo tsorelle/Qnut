@@ -7,7 +7,8 @@
  */
 namespace Peanut\QnutDocuments\services;
 
-use Peanut\QnutDocuments\db\model\DocumentIndexManager;
+use Peanut\QnutDocuments\DocumentManager;
+use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
 
 class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
@@ -15,7 +16,7 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
 
     protected function run()
     {
-        $manager = new DocumentIndexManager();
+        $manager = new DocumentManager();
         $response = $manager->getMetaData();
         $response->translations = TLanguage::getTranslations([
             'committee-entity',
@@ -33,14 +34,21 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
             'document-search-return',
             'document-search-terms',
             'document-search-text',
+            'document-search-keyword-option',
+            'document-search-literal-option',
             'document-status-type',
+            'document-icon-label-view',
+            'document-icon-label-download',
+            'document-icon-label-edit',
             'label-clear-form',
+            'label-publication-date',
+            'label-doc-type',
             'label-date',
             'label-end-date',
             'label-fulltext',
             'label-title'
         ]);
-        $response->fullTextSupported = true; // todo: configure full text support
+        $response->fullTextSupported = TConfiguration::getBoolean('fulltext','documents',true);
         $this->setReturnValue($response);
     }
 }

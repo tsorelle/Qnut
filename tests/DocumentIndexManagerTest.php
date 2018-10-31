@@ -6,7 +6,7 @@
  * Time: 6:04 AM
  */
 
-use Peanut\QnutDocuments\db\model\DocumentIndexManager;
+use Peanut\QnutDocuments\DocumentManager;
 use PHPUnit\Framework\TestCase;
 
 class DocumentIndexManagerTest extends TestCase
@@ -19,9 +19,8 @@ class DocumentIndexManagerTest extends TestCase
 
     public function testGetMetaData()
     {
-        $manager = new DocumentIndexManager();
+        $manager = new DocumentManager();
         $actual = $manager->getMetaData();
         $this->assertNotNull($actual);
-
     }
 }

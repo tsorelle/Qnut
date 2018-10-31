@@ -14,6 +14,7 @@ class InitDocumentFormCommand extends TServiceCommand
 {
     protected function run()
     {
-        // TODO: Implement run() method.
+        $response = new \stdClass();
+        $response->maxFileSize = ini_get('upload_max_filesize');
     }
 }
