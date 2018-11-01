@@ -93,22 +93,45 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
      *         secondDate: any,
      *         properties: INameValuePair[]
      *         literal: boolean
+     *         sortOrder: any,
+     *         sortDescending: boolean,
+     *         pageNumber: any,
+     *         itemsPerPage: any
+     *         recordCount: any
      *       }
      */
     public function searchDocuments($request,$uri,$literal=false) {
-        $vmPath = '/'; // todo: ger from configuration
+        $vmPath = '/'; // todo: get from configuration
         $vmPath .= 'document?id=';
+        $sortOrder = empty($request->sortOrder) ? 1 : $request->sortOrder;
+        switch($sortOrder) {
+            case 1 : $sortBy = 'publicationDate'; break;
+            case 2 : $sortBy = 'title'; break;
+            default : $sortBy = 'id';
+        }
 
-        $sql = 'SELECT doc.id,title,publicationDate, '.
-            "CONCAT('$uri',doc.id) AS uri , CONCAT('$vmPath',doc.id) AS editUrl ,UPPER( SUBSTRING_INDEX(filename,'.',-1)) AS documentType ".
-            'FROM qnut_documents doc ';
+        if (!empty($request->sortDesending)) {
+            $sortBy .= ' DESC ';
+        }
+
+        $itemsPerPage = empty($request->itemsPerPage) ? 0 : $request->itemsPerPage;
+        $pageNo = empty($request->pageNumber) ? 1 : $request->pageNumber;
+        $offset =  $itemsPerPage > 0 ?  (($pageNo - 1) * $itemsPerPage) : 0;
+
         $whereStatements = array();
         $parameters = array();
         $filterProperties = is_array($request->properties) ? $request->properties : array();
+
+        $sqlHeader = 'SELECT doc.id,title,publicationDate, '.
+            "CONCAT('$uri',doc.id) AS uri , CONCAT('$vmPath',doc.id) AS editUrl ,UPPER( SUBSTRING_INDEX(filename,'.',-1)) AS documentType ";
+
+        $sql =  ' FROM qnut_documents doc ';
+
         if (!empty($filterProperties)) {
             // todo: test after adding properties to test data
             $sql .= 'JOIN  tops_entity_property_values pv ON doc.id = pv.instanceId '.
                     'JOIN tops_entity_properties props ON pv.`entityPropertyId` = props.id ';
+
             foreach ($filterProperties as $property) {
                 $whereStatements[] = "(props.key = ? AND pv.value = ?)";
                 $parameters[] = $property->Key;
@@ -150,9 +173,28 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
         if (!empty($whereStatements)) {
             $sql .= ' WHERE ' . implode(' OR ',$whereStatements);
         }
-        $stmt = $this->executeStatement($sql,$parameters);
-        return $stmt->fetchAll(PDO::FETCH_OBJ);
 
+        $response = new \stdClass();
+        if (empty($request->recordCount)) {
+            $stmt = $this->executeStatement("SELECT COUNT(*) $sql");
+            $result = $stmt->fetch();
+            $response->recordCount = (empty($result) ?  0 : $result[0]);
+        }
+        else {
+            $response->recordCount = $request->recordCount;
+        }
+
+        if (!empty($sortBy)) {
+            $sql .= " ORDER BY $sortBy ";
+        }
+
+        if (!empty($itemsPerPage)) {
+            $sql .= " LIMIT $offset, $itemsPerPage";
+        }
+
+        $stmt = $this->executeStatement($sqlHeader.$sql,$parameters);
+        $response->searchResults = $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $response;
     }
 
 }

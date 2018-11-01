@@ -27,6 +27,7 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
             'document-doc-type',
             'document-file-type',
             'document-search-button',
+            'document-new-button',
             'document-search-found',
             'document-search-not-found',
             'document-search-dropdown-caption',

@@ -24,6 +24,10 @@ namespace QnutDocuments {
         documentType: string
     }
 
+    interface IDocumentSearchResponse {
+        searchResults: any;
+        recordCount: any;
+    }
     interface IDocumentSearchRequest {
         title: string,
         keywords: string,
@@ -32,7 +36,12 @@ namespace QnutDocuments {
         dateSearchMode: any,
         firstDate: any,
         secondDate: any,
-        properties: string[]
+        properties: string[],
+        sortOrder: any,
+        sortDescending: boolean,
+        pageNumber: any,
+        itemsPerPage: any,
+        recordCount: any
     }
 
     export class DocumentSearchViewModel extends Peanut.ViewModelBase {
@@ -49,7 +58,8 @@ namespace QnutDocuments {
         endDate = ko.observable('');
         startDateVisible = ko.observable(false);
         endDateVisible = ko.observable(false);
-
+        sortOrder = ko.observable(1);
+        sortDescending = ko.observable(true);
         titleSearch = ko.observable('');
         textSearch = ko.observable('');
         fullTextSearch = ko.observable(true);
@@ -60,6 +70,9 @@ namespace QnutDocuments {
         searchResultsFormat = '';
         defaultLookupCaption = ko.observable('');
         searched = ko.observable(false);
+        recordCount = ko.observable(0);
+        currentPage = ko.observable(1);
+        maxPages = ko.observable(2);
 
         docViewLinkTitle = ko.observable('View document');
         docDownloadLinkTitle = ko.observable('Download document');
@@ -81,7 +94,7 @@ namespace QnutDocuments {
                     jQuery(".datepicker").datepicker();
                 });
 
-                me.application.registerComponents('@pnut/entity-properties', () => {
+                me.application.registerComponents('@pnut/entity-properties,@pnut/pager', () => {
                     me.getInitializations(() => {
                         me.bindDefaultSection();
                         successFunction();
@@ -150,9 +163,13 @@ namespace QnutDocuments {
             this.showSecondDate(selected && selected.Value == 4);
         };
 
-        executeSearch = () => {
-            // todo: impliement paging
+        executeSearch = (isNew = true) => {
             let me = this;
+            if (isNew) {
+                me.recordCount(0);
+                me.currentPage(1);
+            }
+
             let request = <IDocumentSearchRequest>{
                 title: me.titleSearch(),
                 keywords: me.textSearch(),
@@ -161,7 +178,12 @@ namespace QnutDocuments {
                 dateSearchMode: me.selectedDateSearchMode() ? me.selectedDateSearchMode().Value : null,
                 firstDate: me.startDate(),
                 secondDate: me.endDate(),
-                properties: this.propertiesController.getValues()
+                properties: this.propertiesController.getValues(),
+                sortOrder: me.sortOrder(),
+                sortDescending: me.sortDescending(),
+                pageNumber: me.currentPage(),
+                itemsPerPage: 4,
+                recordCount: me.recordCount()
             };
 
             me.application.hideServiceMessages();
@@ -169,12 +191,14 @@ namespace QnutDocuments {
             me.services.executeService('peanut.qnut-documents::FindDocuments',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        let response = <IDocumentSearchResult[]>serviceResponse.Value;
-                        me.searchResults(response);
-                        let resultCount = response.length;
+
+                        let response = <IDocumentSearchResponse>serviceResponse.Value;
+                        me.searchResults(response.searchResults);
+                        let resultCount = response.recordCount;
                         me.searchResultMessage (
                             resultCount ? me.searchResultsFormat.replace('%s',resultCount.toString()) : me.noSearchResultsText
                         );
+                        me.recordCount(resultCount);
                         me.searched(true);
                     }
                     else {
@@ -187,21 +211,20 @@ namespace QnutDocuments {
                     me.application.hideWaiter();
                 });
 
-
         };
 
         downloadDocument = (doc : IDocumentSearchResult) => {
-            // todo: implement downDocument
-            alert('downDocument')
-        };
-
-        newDocument = () => {
-            // todo: implement newDocument
-            alert('newDocument')
+            window.location.href=doc.uri + '/download';
         };
 
         returnToSearchForm = () => {
             this.searched(false);
-        }
+        };
+
+        changePage = (move: number) => {
+            let current = this.currentPage() + move;
+            this.currentPage(current);
+            this.executeSearch(false);
+        };
     }
 }

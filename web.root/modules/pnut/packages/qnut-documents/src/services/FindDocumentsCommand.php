@@ -27,6 +27,8 @@ use Tops\sys\TNameValuePair;
  *         firstDate: any,
  *         secondDate: any,
  *         properties: string[]
+ *         pageNumber: any,
+ *          itemsPerPage: any
  *         }
  *   Response:
  *       Array of interface IDocumentSearchResult {

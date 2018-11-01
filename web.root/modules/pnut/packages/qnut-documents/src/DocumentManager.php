@@ -33,8 +33,6 @@ class DocumentManager
         return self::$documentsUri;
     }
 
-
-
     /**
      * @var DocumentsRepository
      */
@@ -115,16 +113,18 @@ class DocumentManager
             global $_SERVER;
             $uri = $_SERVER['REQUEST_URI'];
         }
-        // $p = stripos($uri,DocumentManager::documentsUri) + strlen(DocumentManager::documentsUri);
         $docsUri = DocumentManager::getDocumentsUri();
         $args =  explode('/',substr($uri,strlen($docsUri)));
         $argc = count($args);
+        $download = false;
+        if ($argc > 1 && strtolower($args[$argc - 1]) === 'download') {
+            $download = true;
+            array_pop($args);
+            $argc--;
+        }
         if ($argc == 0) {
             self::exitNotFound();
         }
-        $folder = '';
-        $filename = '';
-
         if (is_numeric($args[0])) {
             $document = self::getInstance()->getDocument($args[0]);
             if (empty($document)) {
@@ -146,7 +146,7 @@ class DocumentManager
                 $private = file_exists($filepath);
             }
         }
-        self::openDocument($filename,$folder,$private);
+        self::openDocument($filename,$folder,$private,$download);
     }
 
     public static function exitNotFound()
