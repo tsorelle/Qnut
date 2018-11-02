@@ -156,7 +156,9 @@ namespace QnutDocuments {
             this.publicationDate('');
             this.propertiesController.clearValues();
             this.searchResults([]);
-            this.resultCount(0);
+            this.recordCount(0);
+            this.currentPage(1);
+            this.maxPages(0);
         };
 
         onDateModeChange = (selected: INameValuePair) => {
@@ -194,11 +196,14 @@ namespace QnutDocuments {
 
                         let response = <IDocumentSearchResponse>serviceResponse.Value;
                         me.searchResults(response.searchResults);
-                        let resultCount = response.recordCount;
-                        me.searchResultMessage (
-                            resultCount ? me.searchResultsFormat.replace('%s',resultCount.toString()) : me.noSearchResultsText
-                        );
-                        me.recordCount(resultCount);
+                        if (isNew) {
+                            let resultCount = response.recordCount;
+                            me.recordCount(resultCount);
+                            me.searchResultMessage(
+                                resultCount ? me.searchResultsFormat.replace('%s', resultCount.toString()) : me.noSearchResultsText
+                            );
+                            me.maxPages(Math.ceil(resultCount / request.itemsPerPage));
+                        }
                         me.searched(true);
                     }
                     else {

@@ -11,6 +11,7 @@ namespace Peanut\QnutDocuments;
 
 use Peanut\QnutDocuments\db\model\entity\Document;
 use Peanut\QnutDocuments\db\model\repository\DocumentsRepository;
+use Peanut\sys\ViewModelManager;
 use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
 use Tops\sys\TNameValuePair;
@@ -238,6 +239,7 @@ class DocumentManager
     }
 
     public function searchDocuments($request) {
-        return $this->getDocumentsRepository()->searchDocuments($request,self::getDocumentsUri());
+        $docpage = ViewModelManager::getVmUrl('Document','qnut-documents');
+        return $this->getDocumentsRepository()->searchDocuments($request,self::getDocumentsUri(),$docpage);
     }
 }

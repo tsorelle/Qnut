@@ -100,9 +100,8 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
      *         recordCount: any
      *       }
      */
-    public function searchDocuments($request,$uri,$literal=false) {
-        $vmPath = '/'; // todo: get from configuration
-        $vmPath .= 'document?id=';
+    public function searchDocuments($request,$uri,$docPage) {
+        $docPage .= '?id=';
         $sortOrder = empty($request->sortOrder) ? 1 : $request->sortOrder;
         switch($sortOrder) {
             case 1 : $sortBy = 'publicationDate'; break;
@@ -123,7 +122,7 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
         $filterProperties = is_array($request->properties) ? $request->properties : array();
 
         $sqlHeader = 'SELECT doc.id,title,publicationDate, '.
-            "CONCAT('$uri',doc.id) AS uri , CONCAT('$vmPath',doc.id) AS editUrl ,UPPER( SUBSTRING_INDEX(filename,'.',-1)) AS documentType ";
+            "CONCAT('$uri',doc.id) AS uri , CONCAT('$docPage',doc.id) AS editUrl ,UPPER( SUBSTRING_INDEX(filename,'.',-1)) AS documentType ";
 
         $sql =  ' FROM qnut_documents doc ';
 
