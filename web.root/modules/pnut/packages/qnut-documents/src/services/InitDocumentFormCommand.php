@@ -89,13 +89,24 @@ class InitDocumentFormCommand extends TServiceCommand
             'label-publication-date',
             'label-doc-type',
             'label-publication-date',
+            'label-save-changes',
             'label-title',
             'document-label-abstract',
             'document-label-upload',
             'document-label-replace',
             'document-label-folder',
             'document-label-protected',
-            'document-label-existing-file',
+            'document-label-replace-file',
+            'document-file-name',
+            'document-label-file-folder',
+            'document-label-access',
+            'document-access-protected',
+            'document-access-public',
+            'document-label-abstract',
+            'form-error-message',
+            'document-label-upload-file',
+            'document-label-assign-file',
+            'document-label-select-file'
 
         ]);
 

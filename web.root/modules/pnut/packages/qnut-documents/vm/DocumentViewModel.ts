@@ -137,6 +137,8 @@ namespace QnutDocuments {
         documentForm : documentObservable;
         downloadHref = ko.observable('');
         viewPdfHref = ko.observable('');
+        currentFileName = ko.observable('');
+        replaceFile = ko.observable(false);
 
         init(successFunction?: () => void) {
             let me = this;
@@ -191,7 +193,8 @@ namespace QnutDocuments {
                             me.viewPdfHref(ext == 'pdf' ? href : '');
                             me.downloadHref(href + '/download');
                             me.loadDocument(response.document,
-                                response.fileNeeded && response.canEdit ? 'upload' : 'none');
+                                // response.fileNeeded &&
+                                response.canEdit ? 'upload' : 'none');
                         }
 
                         // me.docViewLinkTitle(me.translate('document-icon-label-view'));
@@ -219,6 +222,9 @@ namespace QnutDocuments {
 
             me.documentId(document.id);
             me.fileDisposition(fileDisposition);
+            me.currentFileName(document.filename);
+            // me.currentFileName('');
+            me.replaceFile(false);
             me.documentForm.assign(document);
             me.tab('view');
         };
@@ -249,7 +255,7 @@ namespace QnutDocuments {
         getFilesForUpload() {
             let disposition = this.fileDisposition();
             let files = null;
-            if (disposition === 'upload' || disposition == 'replace') {
+            if (disposition === 'upload' || disposition == 'assign') {
                 let files = Peanut.Helper.getSelectedFiles('#documentFile');
                 if (!files) {
                     // todo: no files warning
@@ -277,9 +283,6 @@ namespace QnutDocuments {
             return valid ? request : false;
 
         };
-        uploadFile() {
-            // placeholder
-        }
         updateDocument = () => {
             let me = this;
             let files = me.getFilesForUpload();

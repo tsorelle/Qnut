@@ -1,10 +1,18 @@
+<style>
+    #viewtab .row,
+    #editTab .row
+    {
+        margin-top: 3ex;
+    }
+</style>
 <div id="document-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="document-view-container" class="row" style="display: none;margin-bottom: 10rem">
     <div class="col-md-12">
         <div class="row" id="viewtab" data-bind="visible:tab() == 'view'">
             <div class="col-md-12">
-                <div class="row" data-bind="visible: documentId() > 0" style="margin-bottom: 1ex">
+                <div class="row">
                     <div class="col-md-2">
+                        <!-- todo: error doesn't appear for protected docs -->
                         <a href="#" target="_blank" data-bind="visible: viewPdfHref, attr: {href: viewPdfHref}">
                             <span class="fa fa-file-text-o" aria-hidden="true"></span> <translate params="code:'document-icon-label-view',translator:self"></translate></a>
                     </div>
@@ -27,13 +35,13 @@
                 </div>
                 <div class="row">
                     <!-- todo: complete view tab -->
-                    <div class="col-md-6">
+                    <div class="col-md-8">
                         <label>
                             <translate params="code:'label-title',translator:self"></translate>
                         </label>
                         <div><span data-bind="text:documentForm.title"></span></div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label>
                             <translate params="code:'label-publication-date',translator:self"></translate>
                         </label>
@@ -41,32 +49,183 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-12" style="margin-top:3ex">
-                        <entity-properties params="controller:documentForm.propertiesController, readOnly:1, columns:4, colwidth:'sm'" ></entity-properties>
+                    <div class="col-md-4">
+                        <label>
+                            <translate params="code:'document-file-name',translator:self"></translate>
+                        </label>
+                        <div><span data-bind="text:documentForm.filename"></span></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label>
+                            <translate params="code:'document-label-file-folder',translator:self"></translate>
+                        </label>
+                        <div><span data-bind="text:documentForm.folder"></span></div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <label>
+                            <translate params="code:'document-label-access',translator:self"></translate>
+                        </label>
+                        <div>
+                            <span data-bind="visible:documentForm.protected">
+                                <translate params="code:'document-access-protected',translator:self"></translate>
+                            </span>
+                            <span data-bind="visible:!documentForm.protected()">
+                                <translate params="code:'document-access-public',translator:self"></translate>
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 1ex">
+                    <div class="col-md-12">
+                        <entity-properties params="controller:documentForm.propertiesController, readOnly:1, columns:3, colwidth:'sm'" ></entity-properties>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <label>
+                            <translate params="code:'document-label-abstract',translator:self"></translate>
+                        </label>
+                        <div>
+                            <textarea style="width: 100%" readonly data-bind="value:documentForm.abstract"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!--
-                filename : string;
-                folder : string;
-                abstract : string;
-                protected : boolean;
-                properties : Peanut.IKeyValuePair[];
-
-            -->
         </div>
 
         <div class="row" id="edittab" data-bind="visible:tab() == 'edit'">
             <!-- todo: complete edit tab -->
             <div class="col-md-12">
                 <form>
-                    <div>
-                        <input type="file" id="documentFile" id="documentFile" placeholder="Select a file or drag from explorer"/>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <!-- todo: controls here -->
+                        </div>
                     </div>
-                    <div>
-                        <button data-bind="click:uploadFile">Upload file</button>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-danger" role="alert" data-bind="visible:documentForm.hasErrors">
+                                <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
+                                <span class="sr-only"><translate params="code:'label-error',translator:self"></translate> :</span>
+                                <translate params="code:'form-error-message',translator:self"></translate>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-8 form-group" >
+                            <label for="edit-title">
+                                <translate params="code:'label-title',translator:self"></translate>
+                            </label>
+                            <input class="form-control" id="edit-title" data-bind="value:documentForm.title"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="edit-date">
+                                <translate params="code:'label-publication-date',translator:self"></translate>
+                            </label>
+                            <input class="form-control datepicker" id="edit-date" data-bind="value:documentForm.publicationDate"/>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 1ex">
+                        <div class="col-md-12">
+                            <entity-properties params="controller:documentForm.propertiesController, columns:3, colwidth:'sm'" ></entity-properties>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 form-group">
+                            <label for="edit-abstract">
+                                <translate params="code:'document-label-abstract',translator:self"></translate>
+                            </label>
+                            <div>
+                                <textarea class="form-control"  id="edit-abstract" style="width: 100%" data-bind="value:documentForm.abstract"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- todo: fix file upload controls -->
+                    <div class="row">
+                        <div class="col-md-4 form-group" data-bind="visible:!currentFileName()">
+                            <label>
+                                <translate params="code:'document-file-name',translator:self"></translate>
+                            </label>
+                            <div ><translate params="code:'document-file-not-assigned',translator:self"></translate></div>
+
+                        </div>
+                        <div class="col-md-4 form-group" data-bind="visible:currentFileName">
+                            <label>
+                                <translate params="code:'document-file-name',translator:self"></translate>
+                            </label>
+                            <div ><span data-bind="text:currentFileName"></span></div>
+                            <div  data-bind="visible:currentFileName"  class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checked:replaceFile"> Replace File
+                                </label>
+                            </div>
+
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="edit-folder">
+                                <translate params="code:'document-label-file-folder',translator:self"></translate>
+                            </label>
+                            <input class="form-control" id="edit-folder" data-bind="value:documentForm.folder"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label>Access</label>
+                            <div>
+                                <div class="radio-inline">
+                                    <label><input type="radio" name="protected" value="0" data-bind="checked: documentForm.protected">
+                                        <translate params="code:'document-access-public',translator:self"></translate> </label>
+                                </div>
+                                <div class="radio-inline">
+                                    <label><input type="radio" name="protected" value="1" data-bind="checked: documentForm.protected">
+                                        <translate params="code:'document-access-protected',translator:self"></translate> </label>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 ">
+                        </div>
+                    </div>
+                    <div class="row" data-bind="visible:replaceFile() || !currentFileName() ">
+                        <div class="col-md-4" data-bind="visible:replaceFile() || !currentFileName() ">
+                            <div class="radio">
+                                <label><input type="radio" name="disposition" value="upload" data-bind="checked:fileDisposition">
+                                    <translate params="code:'document-label-upload-file',translator:self"></translate> </label>
+                            </div>
+                            <div class="radio">
+                                <label><input type="radio" name="disposition" value="assign" data-bind="checked:fileDisposition">
+                                    <translate params="code:'document-label-assign-file',translator:self"></translate> </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 form-group" data-bind="visible:fileDisposition() == 'assign'">
+                            <label for="edit-file">
+                                <translate params="code:'document-file-name',translator:self"></translate>
+                            </label>
+                            <input class="form-control" id="edit-file" data-bind="value:documentForm.filename"/>
+                        </div>
+                        <div class="col-md-8 form-group" data-bind="visible:fileDisposition() == 'upload'">
+                            <label for="documentFile"><translate params="code:'document-label-select-file',translator:self"></translate> </label>
+                            <input type="file" class="btn btn-default" id="documentFile" id="documentFile" placeholder="Select a file or drag from explorer"/>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-12 form-group">
+                            <button class="btn btn-primary" data-bind="click:updateDocument">
+                                <translate params="code:'label-save-changes',translator:self"></translate>
+
+                            </button>
+                        </div>
+                    </div>
+
                 </form>
             </div>
         </div>
