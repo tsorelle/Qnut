@@ -1,15 +1,81 @@
 <div id="document-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="document-view-container" class="row" style="display: none;margin-bottom: 10rem">
-    <!-- todo: implement document view -->
     <div class="col-md-12">
-        <h3 data-bind="text:test"></h3>
-        <form>
-            <div>
-            <input type="file" id="documentFile" id="documentFile" placeholder="Select a file or drag from explorer"/>
+        <div class="row" id="viewtab" data-bind="visible:tab() == 'view'">
+            <div class="col-md-12">
+                <div class="row" data-bind="visible: documentId() > 0" style="margin-bottom: 1ex">
+                    <div class="col-md-2">
+                        <a href="#" target="_blank" data-bind="visible: viewPdfHref, attr: {href: viewPdfHref}">
+                            <span class="fa fa-file-text-o" aria-hidden="true"></span> <translate params="code:'document-icon-label-view',translator:self"></translate></a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="#" data-bind="visible: downloadHref, attr: {href: downloadHref}">
+                            <span class="fa fa-download" aria-hidden="true"></span> <translate params="code:'document-icon-label-download',translator:self"></translate></a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" data-bind="visible:canEdit, click:editDocument">
+                            <span class="fa fa-pencil" aria-hidden="true"></span> <translate params="code:'document-icon-label-edit',translator:self"></translate></a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" data-bind="visible:canEdit, click:newDocument">
+                            <span class="fa fa-upload" aria-hidden="true"></span> <translate params="code:'document-icon-label-add',translator:self"></translate></a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/document-search" >
+                            <span class="fa fa-search" aria-hidden="true"></span> <translate params="code:'document-icon-label-search',translator:self"></translate></a>
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- todo: complete view tab -->
+                    <div class="col-md-6">
+                        <label>
+                            <translate params="code:'label-title',translator:self"></translate>
+                        </label>
+                        <div><span data-bind="text:documentForm.title"></span></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label>
+                            <translate params="code:'label-publication-date',translator:self"></translate>
+                        </label>
+                        <div><span data-bind="text:documentForm.publicationDate"></span></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" style="margin-top:3ex">
+                        <entity-properties params="controller:documentForm.propertiesController, readOnly:1, columns:4, colwidth:'sm'" ></entity-properties>
+                    </div>
+                </div>
             </div>
-            <div>
-                <button data-bind="click:uploadFile">Upload file</button>
+
+            <!--
+                filename : string;
+                folder : string;
+                abstract : string;
+                protected : boolean;
+                properties : Peanut.IKeyValuePair[];
+
+            -->
+        </div>
+
+        <div class="row" id="edittab" data-bind="visible:tab() == 'edit'">
+            <!-- todo: complete edit tab -->
+            <div class="col-md-12">
+                <form>
+                    <div>
+                        <input type="file" id="documentFile" id="documentFile" placeholder="Select a file or drag from explorer"/>
+                    </div>
+                    <div>
+                        <button data-bind="click:uploadFile">Upload file</button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
+        <div class="row" id="errortab" data-bind="visible:tab() == 'error'">
+            <!-- todo: complete error tab -->
+            <div class="col-md-12">
+                Error
+            </div>
+        </div>
+
     </div>
 </div>

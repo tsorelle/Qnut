@@ -11,6 +11,21 @@ use Peanut\QnutDocuments\DocumentManager;
 use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
 
+/**
+ * Class InitDocumentSearchCommand
+ * @package Peanut\QnutDocuments\services
+ *
+ * Contract:
+ *    Response:
+ *
+ *      interface IDocumentSearchInitResponse {
+ *          properties : Peanut.IPropertyDefinition[];
+ *          propertyLookups: Peanut.ILookupItem[];
+ *          fileTypes: ILookupItem[];
+ *          fullTextSupported : boolean;
+ *          translations : any[];
+ *      }
+ */
 class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
 {
 
@@ -18,6 +33,7 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
     {
         $manager = new DocumentManager();
         $response = $manager->getMetaData();
+        $response->fileTypes = $manager->getFileTypesLookup();
         $response->translations = TLanguage::getTranslations([
             'committee-entity',
             'date-search-mode-after',
@@ -40,7 +56,7 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
             'document-status-type',
             'document-icon-label-view',
             'document-icon-label-download',
-            'document-icon-label-edit',
+            'document-icon-label-open',
             'label-clear-form',
             'label-publication-date',
             'label-doc-type',

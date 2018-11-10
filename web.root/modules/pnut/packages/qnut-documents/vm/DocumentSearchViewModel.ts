@@ -7,10 +7,12 @@
 namespace QnutDocuments {
 
     import INameValuePair = Peanut.INameValuePair;
+    import ILookupItem = Peanut.ILookupItem;
 
     interface IDocumentSearchInitResponse {
         properties : Peanut.IPropertyDefinition[];
         propertyLookups: Peanut.ILookupItem[];
+        fileTypes: ILookupItem[];
         fullTextSupported : boolean;
         translations : any[];
     }
@@ -30,6 +32,7 @@ namespace QnutDocuments {
     }
     interface IDocumentSearchRequest {
         title: string,
+        fileType: string,
         keywords: string,
         fulltext: boolean,
         literal: boolean,
@@ -51,6 +54,8 @@ namespace QnutDocuments {
         propertiesController : Peanut.entityPropertiesController;
 
         textOption = ko.observable('keywords');
+        fileTypes = ko.observableArray<ILookupItem>();
+        selectedFileType = ko.observable<ILookupItem>();
         dateSearchModes = ko.observableArray<Peanut.INameValuePair>([]);
         selectedDateSearchMode = ko.observable<Peanut.INameValuePair>();
         showSecondDate = ko.observable(false);
@@ -111,6 +116,8 @@ namespace QnutDocuments {
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IDocumentSearchInitResponse>serviceResponse.Value;
+                        me.fileTypes(response.fileTypes);
+                        me.selectedFileType(null);
                         me.addTranslations(response.translations);
                         me.noSearchResultsText = me.translate('document-search-not-found');
                         me.searchResultsFormat = me.translate('document-search-found');
@@ -131,7 +138,7 @@ namespace QnutDocuments {
                         me.defaultLookupCaption(defaultLookupCaption);
                         me.docViewLinkTitle(me.translate('document-icon-label-view'));
                         me.docDownloadLinkTitle(me.translate('document-icon-label-download'));
-                        me.docEditLinkTitle(me.translate('document-icon-label-edit'));
+                        me.docEditLinkTitle(me.translate('document-icon-label-open'));
 
                     }
                     else {
@@ -150,6 +157,7 @@ namespace QnutDocuments {
 
         clearForm = () => {
             this.fullTextSearch(true);
+            this.selectedFileType(null);
             this.titleSearch('');
             this.textSearch('');
             this.selectedDateSearchMode(null);
@@ -174,6 +182,7 @@ namespace QnutDocuments {
 
             let request = <IDocumentSearchRequest>{
                 title: me.titleSearch(),
+                fileType: me.selectedFileType() ? me.selectedFileType().code : null,
                 keywords: me.textSearch(),
                 literal: (me.textOption() == 'literal'),
                 fulltext: me.fullTextSearch(),

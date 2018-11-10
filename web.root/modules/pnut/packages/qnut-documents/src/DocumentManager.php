@@ -12,6 +12,7 @@ namespace Peanut\QnutDocuments;
 use Peanut\QnutDocuments\db\model\entity\Document;
 use Peanut\QnutDocuments\db\model\repository\DocumentsRepository;
 use Peanut\sys\ViewModelManager;
+use Tops\db\model\repository\LookupTableRepository;
 use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
 use Tops\sys\TNameValuePair;
@@ -236,6 +237,10 @@ class DocumentManager
         $response->properties = $properties->getLookupDefinitions(); // only lookup properties are supported at this time.
         $response->propertyLookups = $properties->getLookups();
         return $response;
+    }
+
+    public function getFileTypesLookup() {
+        return (new LookupTableRepository('qnut_document_file_types'))->getLookupList(LookupTableRepository::noTranslation,null,LookupTableRepository::noSort);
     }
 
     public function searchDocuments($request) {

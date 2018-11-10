@@ -86,6 +86,7 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
      * @param $searchRequest
      *     interface IDocumentSearchRequest {
      *         title: string,
+     *          fileType: string,
      *         keywords: string,
      *         fulltext: boolean,
      *         dateSearchMode: any,
@@ -142,6 +143,7 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
             $whereStatements[] = "(doc.title like ?)";
             $parameters[] =  '%'.$request->title.'%';
         }
+
         if (!empty($request->keywords)) {
             $request->keywords = str_replace('%','&percnt;',$request->keywords);
             if ($request->literal) {
@@ -173,9 +175,20 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
             $sql .= ' WHERE ' . implode(' OR ',$whereStatements);
         }
 
+        if (!empty($request->fileType)) {
+            if (empty($whereStatements)) {
+                $sql .= ' WHERE ';
+            }
+            else {
+                $sql .= ' AND ';
+            }
+            $sql .= ' doc.filename like ? ';
+                $parameters[] =  '%'.$request->fileType;
+        }
+
         $response = new \stdClass();
         if (empty($request->recordCount)) {
-            $stmt = $this->executeStatement("SELECT COUNT(*) $sql");
+            $stmt = $this->executeStatement("SELECT COUNT(*) $sql",$parameters);
             $result = $stmt->fetch();
             $response->recordCount = (empty($result) ?  0 : $result[0]);
         }

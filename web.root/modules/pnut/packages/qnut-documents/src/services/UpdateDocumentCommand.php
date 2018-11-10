@@ -20,6 +20,8 @@ class UpdateDocumentCommand extends TServiceCommand
 
     protected function run()
     {
+
+
         $request = $this->getRequest();
         if (!$request) {
             $this->addErrorMessage('No request received');

@@ -1,16 +1,24 @@
 <div id="documentsearch-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="documentsearch-view-container" class="row" style="display: none;margin-bottom: 10rem">
     <form>
-        <div class="col-md-12">
+        <div class="col-md-9">
             <fieldset style="margin-bottom: 15px" data-bind="visible:!searched()">
                 <label><translate params="code:'document-search-terms',translator:self"></translate></label>
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-9">
                         <!-- Title -->
                         <div class="form-group">
                             <label class="control-label form-control-label" for="titleSearch" >
                                 <translate params="code:'label-title',translator:self"></translate> </label>
                             <input type="text" class="form-control" id="titleSearch" data-bind="textInput: titleSearch, attr: { placeholder:defaultLookupCaption }">
+                        </div>
+
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>File type</label>
+                            <select class="form-control"
+                                    data-bind="options: fileTypes,optionsText:'name',value:selectedFileType,optionsCaption:defaultLookupCaption"></select>
                         </div>
 
                     </div>
@@ -28,7 +36,8 @@
                     <div class="col-md-12">
                         <div class="form-group">
                             <div class="radio">
-                                <label><input type="radio" name="textoption" value="keywords" data-bind="checked: textOption"><translate params="code:'document-search-keyword-option',translator:self"></translate> </label>
+                                <label><input type="radio" name="textoption" value="keywords" data-bind="checked: textOption">
+                                    <translate params="code:'document-search-keyword-option',translator:self"></translate> </label>
                             </div>
                             <div class="radio">
                                 <label><input type="radio" name="textoption" value="literal" data-bind="checked: textOption"><translate params="code:'document-search-literal-option',translator:self"></translate> </label>
@@ -73,7 +82,7 @@
                     </div>
                 </div>
 
-                <entity-properties params="controller:propertiesController,columns:4, colwidth:'sm'" ></entity-properties>
+                <entity-properties params="controller:propertiesController,columns:3, colwidth:'sm'" ></entity-properties>
 
                 <div class="row">
                     <div class="col-md-12">
