@@ -24,6 +24,7 @@ class DocumentManager
 {
 
     const defaultDocumentsUri = '/documents/';
+    const defaultSearchUri = '/document-search/';
     private static $documentsUri;
     public static function getDocumentsUri() {
         if (!isset(self::$documentsUri)) {
@@ -34,6 +35,18 @@ class DocumentManager
         }
         return self::$documentsUri;
     }
+
+    private static $searchUri;
+    public static function getSearchUri() {
+        if (!isset(self::$searchUri)) {
+            self::$searchUri = TConfiguration::getValue('uri','documents',self::defaultSearchUri);
+            if (substr(self::$searchUri,strlen(self::$searchUri) - 1) !== '/') {
+                self::$searchUri .= '/';
+            }
+        }
+        return self::$searchUri;
+    }
+
 
     /**
      * @var DocumentsRepository
@@ -85,6 +98,10 @@ class DocumentManager
             $result .= "/$fileName";
         }
         return $result;
+    }
+
+    public function getDocumentPath($document) {
+        return self::getDocumentDir($document->protected,$document->folder,$document->filename);
     }
 
     private static function getMimeType($ext) {
@@ -213,9 +230,10 @@ class DocumentManager
     }
 
     public function updateDocument(Document $document,$propertyValues,$userName) {
-        if (empty($documentId)) {
+        if (empty($document->id)) {
             $documentId = $this->documentsRepository->insert($document, $userName);
         } else {
+            $documentId = $document->id;
             $this->documentsRepository->update($document, $userName);
         }
 
@@ -226,8 +244,14 @@ class DocumentManager
         return $this->documentsRepository->get($documentId);
     }
 
+    public function checkDuplicateFiles($document) {
+        $filename = TPath::normalizeFileName($document->filename);
+        $dupes = $this->documentsRepository->findDuplicates($filename,$document->folder,$document->protected,$document->id);
+        return $dupes;
+    }
+
     public function documentFileExists(Document $document) {
-        $filepath = self::getDocumentDir($document->protected,trim($document->folder));
+        $filepath = self::getDocumentDir($document->protected,trim($document->folder),$document->filename);
         return file_exists($filepath);
     }
 
@@ -246,5 +270,11 @@ class DocumentManager
     public function searchDocuments($request) {
         $docpage = ViewModelManager::getVmUrl('Document','qnut-documents');
         return $this->getDocumentsRepository()->searchDocuments($request,self::getDocumentsUri(),$docpage);
+    }
+
+    public function deleteDocument($id)
+    {
+        $this->properties->dropValues($id);
+        $this->documentsRepository->delete($id);
     }
 }

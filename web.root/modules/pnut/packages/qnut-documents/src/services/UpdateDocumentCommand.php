@@ -13,40 +13,62 @@ use Tops\services\TServiceCommand;
 use Peanut\QnutDocuments\db\model\entity\Document;
 use Peanut\QnutDocuments\DocumentManager;
 use Tops\services\TUploadHelper;
+use Tops\sys\TKeyValuePair;
 use Tops\sys\TLanguage;
+use Tops\sys\TPath;
 
+/**
+ * Class UpdateDocumentCommand
+ * @package Peanut\QnutDocuments\services
+ *
+ * Contract:
+ *  Request;
+ *     interface IDocumentUpdateRequest {
+ *          document: IDocumentRecord;
+ *          fileDisposition: string;
+ *          propertyValues: KVPair[]
+ *     }
+ */
 class UpdateDocumentCommand extends TServiceCommand
 {
 
     protected function run()
     {
-
+        // validate request
 
         $request = $this->getRequest();
         if (!$request) {
-            $this->addErrorMessage('No request received');
+            $this->addErrorMessage('service-no-request');
             return;
         }
 
-        if (!isset($request->documentId)) {
+        if (!isset($request->document)) {
+            $this->addErrorMessage('document-error-no-document');
+            return;
+        }
+
+        if (!isset($request->document->id)) {
             $this->addErrorMessage('error-no-id');
             return;
         }
-        $documentId = $request->documentId;
-        $isNew = empty($documentId);
-        $protected = isset($request->protected) ? $request->protected : false;
-        $folder = isset($request->folder) ? $request->folder : '';
-        if (empty($request->title)) {
+
+        if (empty($request->document->title)) {
             $this->addErrorMessage('document-update-error-no-title');
             return;
         }
 
-        $propertyValues = isset($request->propertyValues) ? $request->propertyValues : null;
+        $request->document->folder = isset($request->document->folder) ?
+            TPath::normalizeFilePath($request->document->folder) : '';
+
+        $propertyValues = isset($request->propertyValues) ?
+            TKeyValuePair::FlattenArray($request->propertyValues) :
+            array();
+
         $documentManager = new DocumentManager();
 
-        if ($propertyValues !== null) {
+        if (!empty($propertyValues)) {
             $errors = $documentManager->validatePropertyValues($propertyValues);
-            if (!empty($errors)) {
+            if ($errors !== true) {
                 foreach ($errors as $error) {
                     $this->addErrorMessage($error);
                 }
@@ -54,58 +76,112 @@ class UpdateDocumentCommand extends TServiceCommand
             }
         }
 
+        // get document and current location
 
-        $documentEntityName = TLanguage::text('document-entity');
-
-        /**
-         * @var Document $document
-         */
-        $document = null;
-        $fileCount = TUploadHelper::filesReady($this->getMessages());
-        if ($this->hasErrors()) {
-            return;
-        }
-
-        if ($isNew) {
+        $documentId = $request->document->id;
+        if (empty($documentId)) {
             $document = new Document();
+            $currentFileLocation = '';
         } else {
             $document = $documentManager->getDocument($documentId);
             if (empty($document)) {
+                $documentEntityName = TLanguage::text('document-entity');
                 $this->addErrorMessage('error-entity-id-not-found', [$documentEntityName, $documentId]);
                 return;
             }
+            $currentFileLocation = $documentManager->getDocumentPath($document);
         }
 
-        if ($fileCount) {
-            if (!$isNew) {
-                // replacing current file
-                $currentFile = DocumentManager::getDocumentDir($document->protected, $document->location, $document->filename);
-                unlink($currentFile);
-            }
-            $documentDir = DocumentManager::getDocumentDir($protected, $folder);
+        // get uploaded file name
 
-            $uploadedFiles = TUploadHelper::upload($this->getMessages(), $documentDir);
-            if ($this->hasErrors()) {
-                return;
-            }
-            $fileName = array_shift($uploadedFiles);
-            if (!$fileName) {
-                $this->addErrorMessage('SYSTEM ERROR: Cannot get uploaded file name');
-                return;
-            }
-            $document->filename = $fileName;
-        } else if ($isNew) {
-            $this->addErrorMessage('document-update-error-no-upload');
+        $fileNames = TUploadHelper::filesReady($this->getMessages());
+        if ($this->hasErrors()) {
+            return;
+        }
+        $fileCount = count($fileNames);
+        if ($fileCount) {
+            $request->document->filename =  $fileNames[0];
+        }
+
+        // get new file location
+
+        $request->document->filename = TPath::normalizeFileName($request->document->filename);
+        $newFileLocation = $documentManager->getDocumentPath($request->document);
+
+        // check for existing conflicts
+
+        $duplicates = $documentManager->checkDuplicateFiles($request->document);
+        if (!empty($duplicates)) {
+            $this->addErrorMessage('document-error-conflicts');
+            $response = new \stdClass();
+            $response->conflicts = $duplicates;
+            $this->setReturnValue($response);
             return;
         }
 
-        $document->assignFromObject($request);
-        if ($documentManager->documentFileExists($document)) {
-            $document = $documentManager->updateDocument($document,$propertyValues,$this->getUser()->getUserName());
-            $this->setReturnValue($document);
+        // make document dir
+
+        $documentDir = DocumentManager::getDocumentDir($request->document->protected, $request->document->folder);
+        if (!is_dir($documentDir)) {
+            if (!@mkdir($documentDir, 0777, true)) {
+                    $this->addErrorMessage('document-error-mkdir-failed');
+                    return;
+            };
         }
-        else {
+
+        // check for moving target
+        $fileMoved = (!empty($currentFileLocation)) && ($currentFileLocation != $newFileLocation) ;
+
+        // place file in expected location
+        switch($request->fileDisposition) {
+            case 'replace' :
+            case 'upload' :
+                if ($fileCount < 1) {
+                    $this->addErrorMessage('document-update-error-no-upload');
+                    return;
+                }
+                $uploadedFiles = TUploadHelper::upload($this->getMessages(), $documentDir);
+                if ($this->hasErrors()) {
+                    return;
+                }
+                if (empty($uploadedFiles)) {
+                    $this->addErrorMessage('SYSTEM ERROR: Cannot get uploaded file');
+                    return;
+                }
+                break;
+            case 'assign' :
+                // no action, file should exist in new location
+                if ($fileCount) {
+                    $this->addWarningMessage('document-warning-unexpected-upload');
+                }
+                break;
+            default : // 'none'
+                if ($fileCount) {
+                    $this->addWarningMessage('document-warning-unexpected-upload');
+                }
+                if ($fileMoved && file_exists($currentFileLocation)) {
+                    rename($currentFileLocation, $newFileLocation);
+                }
+                break;
+        }
+
+        // confirm that the file is in its expected location.
+        if (!file_exists($newFileLocation)) {
             $this->addErrorMessage('document-update-error-no-file');
+            return;
         }
+
+        // update and refresh document data
+        $document->assignFromObject($request->document);
+        $response = $documentManager->updateDocument($document,$propertyValues,$this->getUser()->getUserName());
+        $properties = $documentManager->getDocumentPropertyValues($documentId);
+        $response->properties = TKeyValuePair::ExpandArray($properties);
+
+        // clean up, delete unused file
+        if ($fileMoved) {
+            @unlink($currentFileLocation);
+        }
+
+        $this->setReturnValue($response);
     }
 }

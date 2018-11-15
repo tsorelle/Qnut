@@ -6,7 +6,9 @@
 
 namespace Peanut\QnutDocuments\db\model\entity;
 
-class Document  extends \Tops\db\TimeStampedEntity
+use Tops\db\TEntity;
+
+class Document  extends TEntity
 {
     public $id;
     public $title;

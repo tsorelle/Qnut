@@ -13,6 +13,29 @@ use Tops\sys\TStringTokenizer;
 
 class DocumentsRepository extends \Tops\db\TEntityRepository
 {
+    /**
+     * @param $fileName
+     * @param $folder
+     * @param $protected
+     * @param int $excludeId
+     * @return \Peanut\QnutDocuments\db\model\entity\Document[]
+     */
+    public function findDuplicates($fileName, $folder, $protected, $excludeId = 0)
+    {
+        $protected = empty($protected) || $protected === '0' ? 0 : 1;
+        $sql = 'SELECT * FROM '.$this->getTableName().
+            ' WHERE filename = ? AND folder = ? AND protected = ? AND id <> ?';
+        $stmt = $this->executeStatement($sql, [$fileName,$folder,$protected,$excludeId]);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $stmt->setFetchMode(PDO::FETCH_CLASS, 'Peanut\QnutDocuments\db\model\entity\Document');
+
+        /**
+         *  @var $result \Peanut\QnutDocuments\db\model\entity\Document[]
+         */
+        $result = $stmt->fetchAll();
+        return $result;
+    }
+
     private function getSearch()
     {
         return new TEntitySearch(self::EntityCode,$this->getTableName(),$this->getDatabaseId());
@@ -55,9 +78,13 @@ class DocumentsRepository extends \Tops\db\TEntityRepository
             'filename'=>PDO::PARAM_STR,
             'folder'=>PDO::PARAM_STR,
             'abstract'=>PDO::PARAM_STR,
-            'keywords'=>PDO::PARAM_STR,
             'protected' =>PDO::PARAM_INT,
             'publicationDate'=>PDO::PARAM_STR,
+            'createdby'=>PDO::PARAM_STR,
+            'createdon'=>PDO::PARAM_STR,
+            'changedby'=>PDO::PARAM_STR,
+            'changedon'=>PDO::PARAM_STR,
+            'active'=>PDO::PARAM_STR
         );
     }
 

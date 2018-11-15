@@ -27,8 +27,8 @@ use Tops\sys\TLanguage;
  *     		    translations : any[];
  *     		    canEdit: boolean;
  *     		    maxFileSize: any;
- *              documentUri: string;
- *     		    fileNeeded: boolean;
+ *     		    documentsUri: string;
+ *     		    searchUri: string,
  *     		    document: IDocumentRecord;
  *     		        interface IDocumentRecord {
  *     		            id : any;
@@ -52,12 +52,12 @@ class InitDocumentFormCommand extends TServiceCommand
         // $response->canEdit = false;
         $response->canEdit = $this->getUser()->isAuthorized('manage-document-library');
         $documentId = $this->getRequest();
+        $response->searchUri = DocumentManager::getSearchUri();
         if (empty($documentId)) {
             $response->document = null;
             $response->fileNeeded = true;
             $response->documentsUri = '';
-        }
-        else {
+        } else {
             $response->documentsUri = DocumentManager::getDocumentsUri();
             $response->document = $manager->getDocument($documentId);
             if (empty($response->document)) {
@@ -65,7 +65,7 @@ class InitDocumentFormCommand extends TServiceCommand
                 return;
             }
             $properties = $manager->getDocumentPropertyValues($documentId);
-            $response->document->properties = TKeyValuePair::ArrayToKVPairs($properties);
+            $response->document->properties = TKeyValuePair::ExpandArray($properties);
             $response->fileNeeded = !$manager->documentFileExists($response->document);
             if ($response->fileNeeded) {
                 $response->document->filename = '';
@@ -77,6 +77,8 @@ class InitDocumentFormCommand extends TServiceCommand
             'document-entity',
             'committee-entity',
             'document-doc-type',
+            'document-access-error',
+            'document-error-page',
             'document-file-type',
             'document-new-button',
             'document-status-type',
@@ -85,12 +87,21 @@ class InitDocumentFormCommand extends TServiceCommand
             'document-icon-label-edit',
             'document-icon-label-add',
             'document-icon-label-search',
+            'document-file-not-assigned',
+            'document-confirm-delete',
+            'document-conflict',
+            'document-search-button',
+            'document-edit-return',
+            'document-conflicts',
             'label-clear-form',
             'label-publication-date',
             'label-doc-type',
             'label-publication-date',
             'label-save-changes',
             'label-title',
+            'label-cancel',
+            'label-delete',
+            'document-label-access',
             'document-label-abstract',
             'document-label-upload',
             'document-label-replace',
@@ -106,13 +117,21 @@ class InitDocumentFormCommand extends TServiceCommand
             'form-error-message',
             'document-label-upload-file',
             'document-label-assign-file',
-            'document-label-select-file'
+            'document-label-select-file',
+            'document-error-title',
+            'document-error-publicationdate',
+            'document-error-abstract',
+            'document-error-file-select',
+            'document-error-filename',
+            'wait-action-update',
+            'wait-action-delete',
+            'wait-action-add',
+            'wait-action-remove',
 
         ]);
 
 
         $this->setReturnValue($response);
-
 
 
     }
