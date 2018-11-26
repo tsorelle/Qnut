@@ -121,7 +121,6 @@ namespace QnutCommittees {
                     });
                     // todo: replace ckeditor from fma example with tinymce
                     // See example in packages/qnut-directory/vm/MailingFormViewModel.ts
-                    me.initEditor('#full-description');
                     me.termOfServiceForm = new termOfServiceObservable(me);
                     me.committeeForm = new committeeObservable(me);
                     me.committeeSelector = new Peanut.selectListObservable(me.selectCommittee, []);

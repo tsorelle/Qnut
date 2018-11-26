@@ -166,6 +166,7 @@ namespace QnutCommittees {
     }
 
     export class committeeObservable extends editPanel {
+
         committeeId = ko.observable(0);
 
         description = ko.observable('');
@@ -185,6 +186,7 @@ namespace QnutCommittees {
 
 // todo: type needed?
         descriptionEditor: any;
+        notesEditor: any;
         //descriptionEditor: CKEditorControl;
 
 
@@ -192,21 +194,24 @@ namespace QnutCommittees {
 
         public initialize(finalFunction: () => void) {
             let me = this;
-            jQuery.getScript("//cdn.ckeditor.com/4.5.9/standard/ckeditor.js")
-                .done(function () {
-                    // todo: assign description editor
-                    // me.descriptionEditor = new CKEditorControl(me.description, 'committee-description');
-
-                    me.view();
-                    if (finalFunction) {
-                        finalFunction();
-                    }
-                })
-                .fail(function () {
-                    alert("ckeditor load failed.");
-                });
-
+            me.initEditor('#committee-full-description');
+            me.descriptionEditor = tinymce.get('committee-full-description');
+            me.initEditor('#committee-notes');
+            me.notesEditor = tinymce.get('committee-notes');
+            finalFunction();
         }
+
+        initEditor = (selector: string) => {
+            tinymce.init({
+                selector: selector,
+                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
+                plugins: "image imagetools link",
+                default_link_target: "_blank",
+                branding: false,
+                height: 75
+            });
+        };
+
 
         public clear() {
             let me = this;
@@ -238,7 +243,9 @@ namespace QnutCommittees {
             me.membershipRequired(committee.membershipRequired == 1);
             me.description(committee.description);
             me.fulldescription(committee.fulldescription);
+            me.descriptionEditor.setContent(committee.fulldescription || '');
             me.notes(committee.notes);
+            me.notesEditor.setContent(committee.notes ||'');
             me.dateAdded(committee.createdon);
             me.dateUpdated(committee.changedon);
             me.hasErrors(false);
@@ -258,7 +265,11 @@ namespace QnutCommittees {
 
         public getValues = (): ICommitteeUpdate => {
             let me = this;
+            tinymce.triggerSave(); // todo: test!!
+            me.fulldescription(jQuery('#committee-full-description').val());
+            me.notes(jQuery('#committee-notes').val());
             let description = me.descriptionEditor.getValue();
+            let notes = me.notesEditor.getValue();
             me.description(description);
             let result: ICommitteeUpdate = {
                 id: me.committeeId(),
@@ -270,7 +281,7 @@ namespace QnutCommittees {
                 name: me.name(),
                 notes: me.notes(),
                 description: description,
-                fulldescription: null, // todo: support fulldescription
+                fulldescription: me.fulldescription(),
                 code : null, // todo: add code observable
                 organizationId: null // todo: support organizaiton id field.
             };
