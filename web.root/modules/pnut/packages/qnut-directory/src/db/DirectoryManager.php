@@ -23,6 +23,7 @@ use Tops\sys\TLanguage;
 
 class DirectoryManager
 {
+    const manageDirectoryPermission='administer directory';
     const includeRelated = true;
     const includeAddress = true;
     const parentClassOnly = false;
@@ -477,4 +478,5 @@ class DirectoryManager
     public function removeOrganization($organizationId) {
         $this->getOrganizationsRepository()->deleteOrganization($organizationId);
     }
+
 }

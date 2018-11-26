@@ -1,0 +1,602 @@
+<div id="committees-view-container" class="row" style="display: none">
+    <div class="col-md-12">
+        <div class="row" data-bind="visible:pageView()=='forms'">
+            <div class="col-md-6">
+                <form>
+                    <fieldset>
+                        <!-- committee drop-down -->
+                        <legend class="dropdown-legend">
+                            <select style="width: 100%;"
+                                    data-bind="options: committeeSelector.options,
+                                   optionsText: 'Name',
+                                   value: committeeSelector.selected,
+                                   optionsCaption: '-- Select a committee --'">
+                            </select>
+                        </legend>
+
+                        <!-- view panel -->
+                        <div data-bind="visible:committeeSelector.selected">
+                            <div id="contact-view-panel" data-bind="visible:committeeForm.viewState() != 'edit'">
+                                <div class="row" data-bind="visible:!committeeForm.active()">
+                                    <div class="col-md-12">
+                                        <label><translate params="code:'committee-label-inactive',translator:self"></translate></label>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12" >
+                                        <div class="form-group">
+                                            <label class="control-label"><translate params="code:'label-description',translator:self"></translate>: </label>
+                                            <span data-bind="html:committeeForm.description"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" id="full-description" data-bind="visible:committeeForm.fulldescription">
+                                    <div class="col-md-12" >
+                                        <div class="form-group">
+                                            <!-- todo: consider link to modal -->
+                                            <label class="control-label"><translate params="code:'label-full-description',translator:self"></translate>:</label>
+                                            <div data-bind="html:committeeForm.fulldescription"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" data-bind="visible=committeeForm.mailbox">
+                                    <div class="col-md-12" >
+                                        <div class="form-group">
+                                            <label class="control-label"><translate params="code:'mailbox-entity',case:'ucfirst',translator:self"></translate>:</label>
+                                            <span data-bind="text:committeeForm.mailbox"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row"  data-bind="visible:committeeForm.notes">
+                                    <div class="col-md-12" >
+                                        <!-- todo: consider link to modal -->
+                                        <div class="form-group">
+                                            <label class="control-label"><translate params="code:'label-notes',translator:self"></translate>:</label>
+                                            <div data-bind="html:committeeForm.notes"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" >
+                                    <div class="col-md-12">
+                                        <span data-bind="visible:!committeeForm.isStanding() == 1" style="font-style: italic"><translate params="code:'committee-label-adhoc',translator:self"></translate><br></span>
+                                        <span data-bind="visible:committeeForm.isLiaison() == 1" style="font-style: italic"><translate params="code:'committee-label-liaison-appointment',translator:self"></translate><br></span>
+                                        <span data-bind="visible:committeeForm.membershipRequired() == 1" style="font-style: italic"><translate params="code:'committee-membership-required-verbose',translator:self"></translate><br></span>
+                                    </div>
+                                </div>
+                                <div id="contact-view-buttons" class="row"  data-bind="visible:canEdit" style="margin-top:4px">
+                                    <div class="col-md-12">
+                                        <button class="btn btn-sm btn-primary" data-bind="click:editCommittee"><translate params="code:'label-edit',translator:self"></translate></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- edit panel -->
+                        <div id="committee-edit-panel" data-bind="visible:committeeForm.viewState() == 'edit'">
+                            <!-- errors display -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="committee-errors" class="alert alert-danger" role="alert"
+                                         data-bind="visible:committeeForm.hasErrors">
+                                        <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
+                                        <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
+                                        <translate params="code:'form-error-message',translator:self"></translate>
+                                    </div>
+
+                                    <!-- see scym YmRegistraionView.html contact form for examples of error messages -->
+                                </div>
+                            </div>
+
+                            <!-- Name : new only --> <!-- todo: consider allowing name changes -->
+                            <div class="row">
+                                <div class="form-group col-md-9" data-bind="visible:committeeForm.committeeId()==0, css:{'has-error': committeeForm.nameError}">
+                                    <label for name-input class="control-label">
+                                        <translate params="code:'label-name',translator:self"></translate>
+                                        <span data-bind="visible:committeeForm.nameError">
+                                            <translate params="code:'committee-name-error',translator:self"></translate>
+                                        </span>
+                                    </label>
+                                    <input class="form-control" id="name-input" data-bind="value:committeeForm.name">
+                                </div>
+                                <div class="col-md-3 checkbox"  data-bind="style:{paddingTop: committeeForm.committeeId()==0 ? '15px' : '0' }"  >
+                                    <label >
+                                        <input type="checkbox" data-bind="checked: committeeForm.active"><translate params="code:'label-active',translator:self"></translate>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 form-group" data-bind="css:{'has-error': committeeForm.descriptionError}">
+                                    <label class="control-label" for="committee-description">
+                                        <translate params="code:'label-short-description',translator:self"></translate>: <span data-bind="visible:committeeForm.descriptionError"></span></label>
+                                    <input class="form-control" id="committee-description" data-bind="value:committeeForm.description">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="committee-full-description"><translate params="code:'label-full-description',translator:self"></translate>:</label>
+                                        <textarea id="committee-full-description" class="form-control" rows="3" data-bind="value:committeeForm.notes"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for name-input class="control-label">
+                                        <translate params="code:'mailbox-entity',case:'ucfirst',translator:self"></translate>
+                                    </label>
+                                    <input class="form-control" id="mailbox-input" data-bind="value:committeeForm.mailbox">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="checkbox">
+                                        <label >
+                                            <input type="checkbox" data-bind="checked: committeeForm.isStanding"><translate params="code:'committee-type-standing',translator:self"></translate>?
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label >
+                                            <input type="checkbox" data-bind="checked: committeeForm.isLiaison"><translate params="code:'committee-type-liaison',translator:self"></translate>?
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label >
+                                            <input type="checkbox" data-bind="checked: committeeForm.membershipRequired"><translate params="code:'committee-membership-required',translator:self"></translate>?
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="committee-notes"><translate params="code:'label-notes',translator:self"></translate>:</label>
+                                        <textarea id="committee-notes" class="form-control" rows="3" data-bind="value:committeeForm.notes"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="committee-edit-buttons">
+                                <div class="col-md-12">
+                                    <button class="btn btn-sm btn-primary" data-bind="click:saveCommittee">
+                                        <translate params="code:'label-save',translator:self"></translate>
+                                    </button>
+                                    <button class="btn btn-sm btn-default" data-bind="click:cancelCommitteeChanges">
+                                        <translate params="code:'label-cancel',translator:self"></translate>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </fieldset>
+                </form>
+
+                <!-- new committee form -->
+                <form data-bind="visible:committeeForm.viewState() != 'edit'">
+                    <fieldset>
+                        <div class="row">
+                            <div class="checkbox col-md-12">
+                                <label>
+                                    <input type="checkbox" id='filter-committees-checkbox' data-bind="click:resetCommitteeList"
+                                        > <translate params="code:'committees-show-inactive',translator:self"></translate>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4" style="padding-top: 10px" data-bind="visible:canEdit">
+                                <a href="#" data-bind="click:newCommittee">
+                                    <translate params="code:'committees-add-committee',translator:self"></translate></a>
+                            </div>
+                            <div class="col-md-4" style="padding-top: 10px">
+                                <a href="#" data-bind="click:runReport">
+                                    <translate params="code:'committees-show-report',translator:self"></translate>
+                                </a>
+                            </div>
+                            <div class="col-md-4" style="padding-top: 10px">
+                                    <span class="fa fa-question-circle" aria-hidden="true"></span> <a href="/help-committees" target="_blank">
+                                    <translate params="code:'label-help',translator:self"></translate>
+                                </a>
+                            </div>
+
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+
+            <!-- members column -->
+            <div class="col-md-6">
+                <fieldset data-bind="visible:committeeSelector.selected">
+                    <legend  class="dropdown-legend" >
+                        <select style="width: 100%" data-bind="options: committeeMemberFilter.options,
+                optionsText: 'Name',
+           value: committeeMemberFilter.selected"></select>
+
+                    </legend>
+                    <div class="row">
+                        <div class="col-md-12" style="text-align: right">
+                            <a href="#" data-bind="click:showPersonSearch"><translate params="code:'committee-label-add-member',translator:self"></translate></a>
+                        </div>
+                    </div>
+                    <table class="table table-bordered" data-bind="visible:members().length > 0">
+                        <thead>
+                        <tr>
+                            <th><translate params="code:'label-name',translator:self"></translate></th>
+                            <th><translate params="code:'committee-label-term',translator:self"></translate></th>
+                            <th style="text-align: center"><translate params="code:'label-email',translator:self"></translate></th>
+                        </tr>
+                        </thead>
+                        <tbody data-bind="foreach:members">
+                        <tr>
+                            <td>
+                                <a href="#" data-bind="click:$parent.selectMember"><span data-bind="text:name"></span></a>
+                                <span data-bind="text:role"></span>
+                            </td>
+                            <td>
+                                <span data-bind="text:termOfService"></span>
+                            </td>
+                            <td style="text-align: center">
+                                <a data-bind="visible:email, attr: {href: 'mailto:'+email}"><span class="fa fa-envelope-o" aria-hidden="true"></span></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </fieldset>
+                <!-- committee member list -->
+            </div>
+        </div>
+
+        <!-- reports section -->
+        <div class="row" data-bind="visible:pageView()=='reports'">
+            <div class="col-md-12">
+                <div data-bind="text:reportDate"></div>
+                <div class="row hidden-print" style="margin: 10px; border: 1px dotted firebrick">
+                    <div class="col-md-6">
+                        <a href="#" data-bind="click:showReportOptions">Change report options</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="#" data-bind="click:closeReport">Close Report</a>
+                    </div>
+                </div>
+                <div class="row" data-bind="visible:reportOptions.currentMembers">
+                    <div class="col-md-12">
+                        <h3>Committees</h3>
+                        <div class="row" data-bind="foreach:report.current">
+                            <div class="col-md-12">
+                                <h4 data-bind="text:committeeName"></h4>
+                                <table class="table table-condensed">
+                                    <thead>
+                                    <tr>
+                                        <th class="col-md-6"><translate params="code:'label-name',translator:self"></translate></th>
+                                        <th data-bind="visible:$parent.reportOptions.phones" class="col-md-2">Phone</th>
+                                        <th data-bind="visible:$parent.reportOptions.emails" class="col-md-2">Email</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach:members">
+                                    <tr>
+                                        <td>
+                                            <span data-bind="text:memberName"></span>
+                                            <span data-bind="text:role"></span>
+                                        </td>
+                                        <td data-bind="visible:$parents[1].reportOptions.phones, text:phone"></td>
+                                        <td data-bind="visible:$parents[1].reportOptions.emails,text:email"></td>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" data-bind="visible:reportOptions.nominations">
+                    <div class="col-md-12" data-bind="visible:report.nominated().length>0">
+                        <h3><translate params="code:'committee-label-nominations',translator:self"></translate></h3>
+                        <div class="row" data-bind="foreach:report.nominated">
+                            <div class="col-md-12">
+                                <h4 data-bind="text:committeeName"></h4>
+                                <table class="table table-condensed">
+                                    <thead>
+                                    <tr>
+                                        <th class="col-md-6"><translate params="code:'label-name',translator:self"></translate></th>
+                                        <th><translate params="code:'label-status',translator:self"></translate></th>
+                                        <th class="col-md-2" data-bind="visible:$parent.reportOptions.phones">
+                                            <translate params="code:'label-phone',translator:self"></translate>
+                                        </th>
+                                        <th class="col-md-2" data-bind="visible:$parent.reportOptions.emails">
+                                            <translate params="code:'label-email',translator:self"></translate>
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach:members">
+                                    <tr>
+                                        <td>
+                                            <span data-bind="text:memberName"></span>
+                                            <span data-bind="text:role"></span>
+                                        </td>
+                                        <td data-bind="text:nominationStatus"></td>
+                                        <td data-bind="visible:$parents[1].reportOptions.phones, text:phone"></td>
+                                        <td data-bind="visible:$parents[1].reportOptions.emails,text:email"></td>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- search panel --> <!-- todo: consider personSelector component -->
+        <div id="person-search-panel"  data-bind="visible:pageView() == 'search'">
+            <form>
+                <fieldset id="person-search-fields">
+                    <legend><translate params="code:'label-find',translator:self"></translate>  <translate params="code:'dir-entity-label-person',translator:self"></translate></legend>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search" data-bind="value: personsList.searchValue">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-default btn-secondary" data-bind="click:findPersons" title="Search"><span class="fa fa-search"></span> </button>
+                            <button class="btn btn-default btn-secondary" data-bind="click:cancelPersonSearch" title="Cancel"><span class="fa fa-remove"></span></button>
+                        </div>
+                    </div>
+                    <div id="findPersonResults"  class="row found well" data-bind="visible:personsList.selectionCount">
+                        <div id="persons-found-header" class="row">
+                            <div class="col-md-12">
+                                <translate params="code:'label-found',translator:self"></translate>: <span data-bind="text: personsList.selectionCount"></span> <translate params="code:'dir-person-entity-plural',translator:self"></translate>.
+                            </div>
+
+                        </div>
+                        <div id="persons-found-nav" class="row">
+                            <div class="col-md-6" style="padding-right: 3px" data-bind="visible:personsList.hasPrevious">
+                                <a href="#"  data-bind="click:personsList.previousPage"><span class="fa fa-backward"></span> <translate params="code:'nav-previous',translator:self"></translate></a>
+                            </div>
+                            <div class="col-md-6" style="padding-right: 3px" data-bind="visible:personsList.hasMore">
+                                <a href="#" data-bind="click:personsList.nextPage"><translate params="code:'nav-more',translator:self"></translate>&nbsp;<span class="fa fa-forward"></span></a>
+                            </div>
+                        </div> <!-- end found header -->
+
+                        <div class="row" id="persons-found-list">
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" data-bind="foreach: personsList.selectionList[1]">
+                                <div class="link-list-item">
+                                    <a href="#" data-bind="click:$parent.createMembershipTerm"><span data-bind="text: Name"></span></a>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" data-bind="foreach: personsList.selectionList[2]">
+                                <div class="link-list-item">
+                                    <a href="#" data-bind="click:$parent.createMembershipTerm"><span data-bind="text: Name"></span></a>
+                                </div>
+                            </div>
+                        </div> <!-- end found list -->
+
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+
+        <!-- term detail model -->
+        <div class="modal" id="term-detail-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" data-bind="text: termOfServiceForm.name"></h4>
+                        <p data-bind="text: termOfServiceForm.committeeName"></p>
+                    </div>
+                    <div class="modal-body">
+                        <form data-bind="visible:termOfServiceForm.viewState() == 'view'">
+                            <div class="row">
+                                <div class="col-md-4" >
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <translate params="code:'label-status',translator:self"></translate>:
+                                        </label>
+                                        <span data-bind="text:termOfServiceForm.status.selected().Name"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" >
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <translate params="code:'committee-label-role',translator:self"></translate>:
+                                        </label>
+                                        <span data-bind="text:termOfServiceForm.role.selected().Name"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4"><!-- placeholder --></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label for="service-start" class="control-label">
+                                        <translate params="code:'committee-label-start-service',translator:self"></translate>:
+                                    </label>
+                                    <div data-bind="text:termOfServiceForm.startOfService"></div>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="service-start" class="control-label">
+                                        <translate params="code:'committee-label-start-service',translator:self"></translate>:
+                                    </label>
+                                    <div data-bind="text:termOfServiceForm.endOfService"></div>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="service-relieved" class="control-label">
+                                        <translate params="code:'committee-label-relieved-service',translator:self"></translate>:
+                                    </label>
+                                    <div data-bind="text:termOfServiceForm.dateRelieved"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4" data-bind="visible:termOfServiceForm.email">
+                                    <div class="form-group">
+                                        <a data-bind="attr: {href: 'mailto:'+ termOfServiceForm.email()}">
+                                            <translate params="code:'committee-label-send-email',translator:self"></translate> <span class="fa fa-envelope-o" aria-hidden="true"></span></a>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <!-- todo: consider using configured directory URL -->
+                                        <a target="_blank" data-bind="attr: {href: '/directory?pid=' + termOfServiceForm.personId()}">
+                                            <translate params="code:'committee-label-show-in-directory',translator:self"></translate></a>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" data-bind="visible:termOfServiceForm.phone">
+                                    <div class="form-group">
+                                        <label class="control-label"><translate params="code:'label-phone',translator:self"></translate>:</label>
+                                        <span data-bind="html:termOfServiceForm.phone"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12" >
+                                    <div class="form-group">
+                                        <label class="control-label"><translate params="code:'label-notes',translator:self"></translate>:</label>
+                                        <div data-bind="html:termOfServiceForm.notes"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form data-bind="visible:termOfServiceForm.viewState() == 'edit'">
+                            <div class="alert alert-danger" role="alert" data-bind="visible:termOfServiceForm.hasErrors">
+                                <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
+                                <span class="sr-only"><translate params="code:'label-error',translator:self"></translate>:</span>
+                                <translate params="code:'form-error-message',translator:self"></translate>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label for="member-status" class="control-label"><translate params="code:'label-status',translator:self"></translate>:</label>
+                                    <select id="member-status" style="width: 100%;"
+                                            data-bind="options: termOfServiceForm.status.options,
+                                   optionsText: 'Name',
+                                   value: termOfServiceForm.status.selected"></select>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="member-role" class="control-label"><translate params="code:'committee-label-role',translator:self"></translate>:</label>
+                                    <select id="member-role" style="width: 100%;"
+                                            data-bind="options: termOfServiceForm.role.options,
+                                       optionsText: 'Name',
+                                       value: termOfServiceForm.role.selected"></select>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <!-- place holder -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 form-group" data-bind="css:{'has-error': termOfServiceForm.dateError}">
+                                    <label for="service-start" class="control-label">
+                                        <translate params="code:'committee-label-start-service',translator:self"></translate>:
+                                            <span data-bind="visible:termOfServiceForm.dateError">
+                                                <translate params="code:'committee-start-date-error',translator:self"></translate>
+                                            </span>
+                                    </label>
+                                    <input class="form-control datepicker" id="service-start" data-bind="value:termOfServiceForm.startOfService">
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="service-start" class="control-label">
+                                        <translate params="code:'committee-label-end-service',translator:self"></translate>
+                                    </label>
+                                    <input class="form-control datepicker" id="service-end" data-bind="value:termOfServiceForm.endOfService">
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="service-relieved" class="control-label">
+                                        <translate params="code:'committee-label-relieved-service',translator:self"></translate>
+                                    </label>
+                                    <input class="form-control datepicker" type="text" id="service-relieved" data-bind="value:termOfServiceForm.dateRelieved">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 form-group">
+                                    <label for="member-notes"><translate params="code:'label-notes',translator:self"></translate>:</label>
+                                    <textarea id="member-notes" class="form-control" rows="3" data-bind="value:termOfServiceForm.notes"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- see examples in scym MeetingsView.html -->
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="visible:termOfServiceForm.viewState() != 'edit' && canEdit,click: editTerm">
+                            <translate params="code:'label-edit',translator:self"></translate></button>
+                        <button type="button" class="btn btn-default" data-bind="visible:termOfServiceForm.viewState() != 'edit'" data-dismiss="modal">
+                            <translate params="code:'label-close',translator:self"></translate></button>
+                        <button type="button" class="btn btn-primary" data-bind="visible:termOfServiceForm.viewState() == 'edit',click: updateTerm">
+                            <translate params="code:'label-save-changes',translator:self"></translate></button>
+                        <button type="button" data-bind="visible:termOfServiceForm.viewState() == 'edit',click:cancelTermEdit" class="btn btn-default" >
+                            <translate params="code:'label-cancel',translator:self"></translate>
+                        </button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <!-- report options modal -->
+        <div class="modal" id="report-options-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title"><translate params="code:'committee-label-report-options',translator:self"></translate></h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6" data-bind="visible:committeeForm.name">
+                                    <fieldset>
+                                        <legend><translate params="code:'committee-entity-plural',case:'usfirst',translator:self"></translate></legend>
+                                        <div class="checkbox">
+                                            <label class="radio" >
+                                                <input type="radio" value="all" name="committeeoption" data-bind="checked:reportOptions.committeeFilter"> All committees
+                                            </label>
+                                            <label class="radio" style="margin-top: 10px">
+                                                <input type="radio" value="current" name="committeeoption" data-bind="checked:reportOptions.committeeFilter">
+                                                <span data-bind="text:committeeForm.name"></span>
+                                            </label>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div data-bind="css: reportOptionsColumnClass">
+                                    <fieldset>
+                                        <legend>Options</legend>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" data-bind="checked:reportOptions.currentMembers"> <translate params="code:'committee-label-current-members',translator:self"></translate>
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label >
+                                                <input type="checkbox" data-bind="checked:reportOptions.nominations"> <translate params="code:'committee-label-nominations',translator:self"></translate>
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label >
+                                                <input type="checkbox" data-bind="checked:reportOptions.emails"> <translate params="code:'committee-label-emails',translator:self"></translate>
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label >
+                                                <input type="checkbox" data-bind="checked:reportOptions.phones"> <translate params="code:'committee-label-phones',translator:self"></translate>
+                                            </label>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bind="click: applyReportOptions">
+                            <translate params="code:'committee-label-show-report',translator:self"></translate>
+                        </button>
+                        <button type="button"  data-dismiss="modal" class="btn btn-default" >
+                            <translate params="code:'label-cancel',translator:self"></translate>
+                        </button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+    </div>
+</div>

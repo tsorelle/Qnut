@@ -4,11 +4,14 @@
 /// <reference path='../../../../typings/jqueryui/jqueryui.d.ts' />
 /// <reference path='../../../../typings/jqueryui/jqueryui.d.ts' />
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
-/// <reference path='../../../../typings/lodash/first/index.d.ts' />
+/// <reference path='../../../../typings/lodash/find/index.d.ts' />
+
 /// <reference path='../js/DirectoryEntities.ts' />
 /// <reference path='../js/AddressObservable.ts' />
 
 namespace QnutDirectory {
+
+    import ILookupItem = Peanut.ILookupItem;
 
     interface IOrganization extends Peanut.INamedEntity {
         addressId : any;
@@ -127,7 +130,12 @@ namespace QnutDirectory {
             me.createdon(organization.createdon);
             me.changedby(organization.changedby);
             me.changedon(organization.changedon);
-            this.selectedOrganizationType(_.find(this.organizationTypes(),{id: organization.organizationType }));
+            // todo: retest this
+            this.selectedOrganizationType(_.find(
+                this.organizationTypes(),
+                    function (i: ILookupItem) {
+                        return i.id == organization.organizationType
+                }));
             me.active(!!organization.active);
         }
 

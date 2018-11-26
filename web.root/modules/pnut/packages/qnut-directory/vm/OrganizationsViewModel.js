@@ -92,7 +92,9 @@ var QnutDirectory;
             me.createdon(organization.createdon);
             me.changedby(organization.changedby);
             me.changedon(organization.changedon);
-            this.selectedOrganizationType(_.find(this.organizationTypes(), { id: organization.organizationType }));
+            this.selectedOrganizationType(_.find(this.organizationTypes(), function (i) {
+                return i.id == organization.organizationType;
+            }));
             me.active(!!organization.active);
         };
         organizationObservable.prototype.validate = function () {

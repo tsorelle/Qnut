@@ -23,6 +23,7 @@ use Tops\sys\TUser;
 class DocumentManager
 {
 
+    const manageLibraryPermission='manage-document-library';
     const defaultDocumentsUri = '/documents/';
     const defaultSearchUri = '/document-search/';
     private static $documentsUri;

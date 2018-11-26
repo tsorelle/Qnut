@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/peanut-tasks/src" isTestSource="false" packagePrefix="Peanut\PeanutTasks" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-calendar/src" isTestSource="false" packagePrefix="Peanut\QnutCalendar" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-documents/src" isTestSource="false" packagePrefix="Peanut\QnutDocuments" />
+      <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-committees/src" isTestSource="false" packagePrefix="Peanut\QnutCommittees" />
       <excludeFolder url="file://$MODULE_DIR$/backup/tops-changed-2017-11-09" />
       <excludeFolder url="file://$MODULE_DIR$/doc/examples" />
       <excludeFolder url="file://$MODULE_DIR$/doc/examples/config" />
@@ -57,7 +58,9 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/recursion-context" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/resource-operations" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/version" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/smalot/pdfparser" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/options-resolver" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/tecnickcom/tcpdf" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/theseer/tokenizer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/webmozart/assert" />
       <excludeFolder url="file://$MODULE_DIR$/web.root/application/documents" />

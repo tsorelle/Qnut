@@ -268,28 +268,30 @@ var QnutDirectory;
                 '@lib:jqueryui-js',
                 '@lib:lodash',
                 '@pnut/ViewModelHelpers',
+                '@pnut/editPanel',
                 '@pnut/searchListObservable',
-                '@pkg/qnut-directory/DirectoryEntities'
             ], function () {
-                me.application.loadResources([
-                    '@pkg/qnut-directory/PersonObservable',
-                    '@pkg/qnut-directory/AddressObservable'
-                ], function () {
-                    me.familiesList = new Peanut.searchListObservable(6, 10);
-                    me.personsList = new Peanut.searchListObservable(2, 12);
-                    me.addressesList = new Peanut.searchListObservable(2, 12);
-                    me.personForm = new QnutDirectory.personObservable(me);
-                    me.addressForm = new QnutDirectory.addressObservable(me);
-                    me.personFormHeader = ko.computed(me.computePersonFormHeader);
-                    me.showEditButton = ko.computed(me.computeShowEditButton);
-                    me.showAddPersonButton = ko.computed(me.computeShowAddPersonButton);
-                    me.showPersonViewButtons = ko.computed(me.computeShowPersonViewButtons);
-                    jQuery(function () {
-                        jQuery(".datepicker").datepicker();
-                    });
-                    me.getInitializations(function () {
-                        me.bindDefaultSection();
-                        successFunction();
+                me.application.loadResources(['@pkg/qnut-directory/DirectoryEntities'], function () {
+                    me.application.loadResources([
+                        '@pkg/qnut-directory/PersonObservable',
+                        '@pkg/qnut-directory/AddressObservable'
+                    ], function () {
+                        me.familiesList = new Peanut.searchListObservable(6, 10);
+                        me.personsList = new Peanut.searchListObservable(2, 12);
+                        me.addressesList = new Peanut.searchListObservable(2, 12);
+                        me.personForm = new QnutDirectory.personObservable(me);
+                        me.addressForm = new QnutDirectory.addressObservable(me);
+                        me.personFormHeader = ko.computed(me.computePersonFormHeader);
+                        me.showEditButton = ko.computed(me.computeShowEditButton);
+                        me.showAddPersonButton = ko.computed(me.computeShowAddPersonButton);
+                        me.showPersonViewButtons = ko.computed(me.computeShowPersonViewButtons);
+                        jQuery(function () {
+                            jQuery(".datepicker").datepicker();
+                        });
+                        me.getInitializations(function () {
+                            me.bindDefaultSection();
+                            successFunction();
+                        });
                     });
                 });
             });

@@ -50,7 +50,7 @@ class InitDocumentFormCommand extends TServiceCommand
         $response = $manager->getMetaData();
         $response->maxFileSize = ini_get('upload_max_filesize');
         // $response->canEdit = false;
-        $response->canEdit = $this->getUser()->isAuthorized('manage-document-library');
+        $response->canEdit = $this->getUser()->isAuthorized(DocumentManager::manageLibraryPermission);
         $documentId = $this->getRequest();
         $response->searchUri = DocumentManager::getSearchUri();
         if (empty($documentId)) {

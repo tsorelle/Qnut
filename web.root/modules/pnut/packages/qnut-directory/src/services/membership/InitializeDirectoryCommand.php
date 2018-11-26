@@ -8,6 +8,7 @@
 
 namespace Peanut\QnutDirectory\services\membership;
 
+use Peanut\QnutDocuments\DocumentManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
 use Tops\sys\TPermissionsManager;
@@ -54,7 +55,7 @@ class InitializeDirectoryCommand extends TServiceCommand
         $manager = new DirectoryManager($this->getMessages());
         $user = TUser::getCurrent();
 
-        $result->canEdit = $user->isAuthorized('administer directory');
+        $result->canEdit = $user->isAuthorized(DirectoryManager::manageDirectoryPermission);
 
         $result->organizations = $manager->getOrganizationsLookupList(DirectoryManager::listDefaultFirst);
 

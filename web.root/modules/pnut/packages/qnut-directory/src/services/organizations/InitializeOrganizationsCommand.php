@@ -44,7 +44,7 @@ class InitializeOrganizationsCommand extends TServiceCommand
 
         $user = TUser::getCurrent();
 
-        $response->canEdit = $user->isAuthorized('administer directory');
+        $response->canEdit = $user->isAuthorized(DirectoryManager::manageDirectoryPermission);
         $response->listingTypes = $manager->getDirectoryListingTypeList();
         $response->addressTypes = $manager->getAddressTypeList();
         $response->affiliationRoles = $manager->getAffiliationRolesList();

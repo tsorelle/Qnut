@@ -110,40 +110,46 @@ namespace QnutDirectory {
 
         init(successFunction?: () => void) {
             let me = this;
+
             console.log('Directory Init');
-
             me.application.loadResources([
-                '@lib:jqueryui-css',
-                '@lib:jqueryui-js',
-                '@lib:lodash',
-                '@pnut/ViewModelHelpers',
-                '@pnut/searchListObservable',
-                '@pkg/qnut-directory/DirectoryEntities'], () => {
-                me.application.loadResources([
-                    '@pkg/qnut-directory/PersonObservable',
-                    '@pkg/qnut-directory/AddressObservable'], () => {
-                    me.familiesList = new Peanut.searchListObservable(6, 10);
-                    me.personsList = new Peanut.searchListObservable(2, 12);
-                    me.addressesList = new Peanut.searchListObservable(2, 12);
-                    me.personForm = new personObservable(me);
-                    me.addressForm = new addressObservable(me);
-                    me.personFormHeader = ko.computed(me.computePersonFormHeader);
-                    me.showEditButton = ko.computed(me.computeShowEditButton);
-                    me.showAddPersonButton = ko.computed(me.computeShowAddPersonButton);
-                    me.showPersonViewButtons = ko.computed(me.computeShowPersonViewButtons);
+                // Load libraries and core components
+                    '@lib:jqueryui-css',
+                    '@lib:jqueryui-js',
+                    '@lib:lodash',
+                    '@pnut/ViewModelHelpers',
+                    '@pnut/editPanel',
+                    '@pnut/searchListObservable',
+                ], () => {
+                    // load classes that depend on Peanut core components
+                    me.application.loadResources(['@pkg/qnut-directory/DirectoryEntities'], () => {
+                        // load remaining dependent classes and start initializations
+                        me.application.loadResources( [
+                            '@pkg/qnut-directory/PersonObservable',
+                            '@pkg/qnut-directory/AddressObservable'], () => {
 
-                    // initialize date popups
-                    jQuery(function () {
-                        jQuery(".datepicker").datepicker();
+                            me.familiesList = new Peanut.searchListObservable(6, 10);
+                            me.personsList = new Peanut.searchListObservable(2, 12);
+                            me.addressesList = new Peanut.searchListObservable(2, 12);
+                            me.personForm = new personObservable(me);
+                            me.addressForm = new addressObservable(me);
+                            me.personFormHeader = ko.computed(me.computePersonFormHeader);
+                            me.showEditButton = ko.computed(me.computeShowEditButton);
+                            me.showAddPersonButton = ko.computed(me.computeShowAddPersonButton);
+                            me.showPersonViewButtons = ko.computed(me.computeShowPersonViewButtons);
+
+                            // initialize date popups
+                            jQuery(function () {
+                                jQuery(".datepicker").datepicker();
+                            });
+                            me.getInitializations(() => {
+                                me.bindDefaultSection();
+                                successFunction();
+                            });
+                        });
                     });
-                    me.getInitializations(() => {
-                        me.bindDefaultSection();
-                        successFunction();
-                    });
-                });
             });
         }
-
 
         getInitializations(doneFunction?: () => void) {
             let me = this;

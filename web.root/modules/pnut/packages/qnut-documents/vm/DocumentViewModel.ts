@@ -450,7 +450,5 @@ namespace QnutDocuments {
                     me.application.hideWaiter();
                 });
         };
-
-        // todo: delete button and event
     }
 }
