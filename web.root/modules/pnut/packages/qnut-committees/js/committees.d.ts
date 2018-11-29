@@ -8,6 +8,11 @@ interface ICommittee extends ICommitteeUpdate {
     changedon : string;
 }
 
+interface ICommitteeView extends ICommittee {
+    fulldescriptionTeaser: string;
+    notesTeaser: string;
+}
+
 interface ICommitteeUpdate {
     id : any;
     name  : string;
@@ -43,9 +48,10 @@ interface ITermOfServiceListItem extends ITermOfService {
     termOfService: string;
     dateAdded : string;
     dateUpdated : string;
+    href: string;
 }
 
 interface IGetCommitteeResponse {
-    committee: ICommittee;
+    committee: ICommitteeView;
     members : ITermOfServiceListItem[];
 }

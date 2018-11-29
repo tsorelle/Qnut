@@ -6,14 +6,8 @@
 ///<reference path='../../../../typings/knockout/knockout.d.ts' />
 ///<reference path='../../../../typings/jquery/jquery.d.ts' />
 /// <reference path='../../../../pnut/js/selectListObservable.ts' />
+/// <reference path="../../../../pnut/core/ViewModelBase.ts" />
 /// <reference path="committees.d.ts"/>
-
-
-/*
-// todo: refactor replacements    
-///<reference path="CKEditorControl.ts"/>
-*/
-
 /// <reference path='../../../../pnut/js/searchListObservable.ts' />
 
 namespace QnutCommittees {
@@ -35,6 +29,7 @@ namespace QnutCommittees {
         name = ko.observable('');
         email = ko.observable('');
         phone = ko.observable('');
+        href = ko.observable('');
         startOfService = ko.observable('');
         endOfService = ko.observable('');
         dateRelieved = ko.observable('');
@@ -50,7 +45,7 @@ namespace QnutCommittees {
         backup: ITermOfServiceListItem = null;
 
         public constructor(owner : ViewModelBase) {
-            super(owner);  // todo: get owner argument
+            super(owner);
             let me = this;
             me.role = new selectListObservable(null, [
                 {Name: 'member', Value: '1'},
@@ -82,6 +77,7 @@ namespace QnutCommittees {
             me.dateRelieved('');
             me.notes('');
             me.dateAdded('');
+            me.href('');
             me.dateUpdated('');
             me.hasErrors(false);
             me.dateError(false);
@@ -97,13 +93,11 @@ namespace QnutCommittees {
             me.name(term.name);
             me.email(term.email);
             me.phone(term.phone);
+            me.href(term.href);
 
-            // todo: refactor date routines
-            /*
-            me.startOfService(Dates.formatDateString(term.startOfService, 'usdate'));
-            me.endOfService(Dates.formatDateString(term.endOfService, 'usdate'));
-            me.dateRelieved(Dates.formatDateString(term.dateRelieved, 'usdate'));
-            */
+            me.startOfService(me.owner.isoToShortDate(term.startOfService));
+            me.endOfService(me.owner.isoToShortDate(term.endOfService));
+            me.dateRelieved(me.owner.isoToShortDate(term.dateRelieved));
 
             me.notes(term.notes);
             me.dateAdded(term.dateAdded);
@@ -113,7 +107,6 @@ namespace QnutCommittees {
 
             me.role.setValue(term.roleId);
             me.status.setValue(term.statusId);
-
 
             me.isAssigned = true;
         };
@@ -148,16 +141,9 @@ namespace QnutCommittees {
                 committeeMemberId: me.committeeMemberId,
                 personId: me.personId(),
                 statusId: statusId,
-
-// todo: refactor date routines
-                startOfService: null,
-                endOfService: null,
-                dateRelieved: null,
-                /*
-                    startOfService: Dates.formatDateString(me.startOfService(), 'isodate'),
-                    endOfService: Dates.formatDateString(me.endOfService(), 'isodate'),
-                    dateRelieved: Dates.formatDateString(me.dateRelieved(), 'isodate'),
-                    */
+                startOfService: me.owner.shortDateToIso(me.startOfService()),
+                endOfService: me.owner.shortDateToIso(me.endOfService()),
+                dateRelieved: me.owner.shortDateToIso(me.dateRelieved()),
                 roleId: roleId,
                 notes: me.notes()
             };
@@ -180,17 +166,16 @@ namespace QnutCommittees {
         notes = ko.observable('');
         dateAdded = ko.observable('');
         dateUpdated = ko.observable('');
+        fulldescriptionTeaser = ko.observable('');
+        notesTeaser = ko.observable('');
+
 
         nameError = ko.observable(false);
         descriptionError = ko.observable(false);
+        descriptionEditor: any; // tinymce
+        notesEditor: any; // tinymce
 
-// todo: type needed?
-        descriptionEditor: any;
-        notesEditor: any;
-        //descriptionEditor: CKEditorControl;
-
-
-        private backup: ICommittee = null;
+        private backup: ICommitteeView = null;
 
         public initialize(finalFunction: () => void) {
             let me = this;
@@ -204,8 +189,10 @@ namespace QnutCommittees {
         initEditor = (selector: string) => {
             tinymce.init({
                 selector: selector,
-                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
-                plugins: "image imagetools link",
+                menubar: false,
+                // toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
+                toolbar: "styleselect | bold italic | bullist numlist outdent indent | cut copy paste | image link",
+                plugins: "image imagetools link lists",
                 default_link_target: "_blank",
                 branding: false,
                 height: 75
@@ -221,7 +208,7 @@ namespace QnutCommittees {
             me.name('');
             me.mailbox('');
             me.isLiaison(false);
-            me.isStanding(false);
+            me.isStanding(true);
             me.membershipRequired(false);
             me.notes('');
             me.dateUpdated('');
@@ -229,9 +216,13 @@ namespace QnutCommittees {
             me.hasErrors(false);
             me.nameError(false);
             me.descriptionError(false);
+            me.fulldescriptionTeaser('');
+            me.notesTeaser('');
+            me.fulldescription('');
+            me.notes('');
         }
 
-        public assign(committee: ICommittee) {
+        public assign(committee: ICommitteeView) {
             let me = this;
             me.backup = committee;
             me.committeeId(committee.id);
@@ -251,6 +242,8 @@ namespace QnutCommittees {
             me.hasErrors(false);
             me.nameError(false);
             me.descriptionError(false);
+            me.fulldescriptionTeaser(committee.fulldescriptionTeaser);
+            me.notesTeaser(committee.notesTeaser);
         }
 
         public rollback() {
@@ -265,12 +258,9 @@ namespace QnutCommittees {
 
         public getValues = (): ICommitteeUpdate => {
             let me = this;
-            tinymce.triggerSave(); // todo: test!!
+            tinymce.triggerSave();
             me.fulldescription(jQuery('#committee-full-description').val());
             me.notes(jQuery('#committee-notes').val());
-            let description = me.descriptionEditor.getValue();
-            let notes = me.notesEditor.getValue();
-            me.description(description);
             let result: ICommitteeUpdate = {
                 id: me.committeeId(),
                 active: me.active() ? 1 : 0,
@@ -280,7 +270,7 @@ namespace QnutCommittees {
                 membershipRequired: me.membershipRequired()  ? 1 : 0,
                 name: me.name(),
                 notes: me.notes(),
-                description: description,
+                description: me.description(),
                 fulldescription: me.fulldescription(),
                 code : null, // todo: add code observable
                 organizationId: null // todo: support organizaiton id field.
@@ -301,8 +291,7 @@ namespace QnutCommittees {
                 me.nameError(false);
             }
 
-            let description = me.descriptionEditor.getValue();
-            if (description.trim() === '') {
+            if (me.description().trim() === '') {
                 me.descriptionError(true);
                 me.hasErrors(true);
             }

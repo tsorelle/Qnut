@@ -13,8 +13,10 @@ use Peanut\QnutCommittees\db\model\entity\Committee;
 use Peanut\QnutCommittees\db\model\entity\CommitteeMember;
 use Peanut\QnutCommittees\db\model\repository\CommitteeMembersRepository;
 use Peanut\QnutCommittees\db\model\repository\CommitteesRepository;
+use Peanut\sys\ViewModelManager;
 use Tops\sys\TL;
 use Tops\sys\TLanguage;
+use Tops\sys\TStrings;
 
 class CommitteeManager
 {
@@ -51,6 +53,16 @@ class CommitteeManager
         return self::getCommitteesRepository()->get($committeeId);
     }
 
+    public function getCommitteeView($committeeId)
+    {
+        $committee = self::getCommitteesRepository()->get($committeeId);
+        if (!empty($committee)) {
+            $committee->fulldescriptionTeaser = TStrings::getTeaser($committee->fulldescription);
+            $committee->notesTeaser = TStrings::getTeaser($committee->notes);
+        }
+        return $committee;
+    }
+
     public function getMembersList($committeeId)
     {
         $items = self::getCommitteeMembersRepository()->getMembersList($committeeId);
@@ -63,6 +75,9 @@ class CommitteeManager
         $present = TLanguage::text('committee-date-present');
         $current = TLanguage::text('committee-current');
         $unknown = TLanguage::text('committee-dates-unknown');
+        $directoryUrl = ViewModelManager::getVmUrl('Directory','qnut-directory');
+
+
         foreach($items as $item) {
             if (!empty($item->email)) {
                 $item->email = $item->name.'<'.$item->email.'>';
@@ -81,6 +96,8 @@ class CommitteeManager
                     $item->termOfService = "$item->startOfService $conjunctionTo $endDate";
                 }
             }
+
+            $item->href = empty($directoryUrl) ? '' : $directoryUrl.'?pid='.$item->personId;
 
             array_push($result,$item );
         }

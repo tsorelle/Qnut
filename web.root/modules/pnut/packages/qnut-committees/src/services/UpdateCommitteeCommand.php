@@ -5,6 +5,8 @@ use Peanut\QnutCommittees\CommitteeManager;
 use Peanut\QnutCommittees\db\model\entity\Committee;
 use Tops\services\TServiceCommand;
 
+
+
 /**
  * Class UpdateCommitteeCommand
  * @package Peanut\QnutCommittees\services
@@ -50,8 +52,6 @@ class UpdateCommitteeCommand extends TServiceCommand
             }
         }
 
-        // todo: clean input from notes and full description
-
         $committee->assignFromObject($committeeUpdate);
         if($committeeId == 0) {
             $manager->addCommittee($committee,$this->getUser()->getUserName());
@@ -60,7 +60,7 @@ class UpdateCommitteeCommand extends TServiceCommand
             $manager->updateCommittee($committee, $this->getUser()->getUserName());
         };
 
-        $committee = $manager->getCommittee($committeeId);
+        $committee = $manager->getCommitteeView($committeeId);
         $this->setReturnValue($committee);
     }
 }

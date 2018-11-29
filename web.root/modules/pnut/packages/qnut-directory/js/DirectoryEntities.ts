@@ -98,7 +98,7 @@ namespace QnutDirectory {
         }
         protected getDirectoryListingItem = () => {
             let me = this;
-            let lookup =  me.owner.directoryListingTypes(); // me.listingTypes();
+            let lookup =  (<DirectoryViewModel>me.owner).directoryListingTypes(); // me.listingTypes();
             let id = me.directoryListingTypeId();
             if (!id) {
                 id = 0;

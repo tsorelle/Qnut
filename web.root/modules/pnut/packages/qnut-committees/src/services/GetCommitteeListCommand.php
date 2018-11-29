@@ -2,7 +2,9 @@
 namespace Peanut\QnutCommittees\services;
 
 use Peanut\QnutCommittees\CommitteeManager;
+use Peanut\sys\ViewModelManager;
 use Tops\services\TServiceCommand;
+use Tops\sys\TL;
 use Tops\sys\TLanguage;
 
 /**
@@ -18,6 +20,8 @@ use Tops\sys\TLanguage;
  *                  active: any;
  *              }
  *          canEdit: boolean;
+ *          helpUrl: string;
+ *          directoryUrl: string;
  *          translations: string[];
  *     }
  */
@@ -34,12 +38,16 @@ class GetCommitteeListCommand extends TServiceCommand
         $manager = new CommitteeManager();
         $result = new \stdClass();
 
-        // todo: get person url
-        // todo: get help url
-
+        $helpUrl = TLanguage::text('committee-help-page','not found');
+        $result->helpUrl = $helpUrl == 'not found' ? '' : $helpUrl;
         $result->list = $manager->getCommitteeList();
         $result->canEdit = $user->isAuthorized(CommitteeManager::manageCommitteesPermission);
         $result->translations = TLanguage::getTranslations([
+            'dir-no-person-found',
+            'dir-one-person-found',
+            'dir-persons-found',
+            'dir-show-more',
+            'dir-find-person',
             'committee-description-error',
             'committee-entity',
             'committee-entity-plural',
@@ -69,6 +77,9 @@ class GetCommitteeListCommand extends TServiceCommand
             'committees-add-committee',
             'committees-show-inactive',
             'committees-show-report',
+            'committee-members-page-heading',
+            'committee-running-report',
+            'committee-update-term',
             'form-error-message',
             'label-active',
             'label-cancel',
@@ -84,6 +95,7 @@ class GetCommitteeListCommand extends TServiceCommand
             'label-phone',
             'label-save',
             'label-save-changes',
+            'label-see-more',
             'label-short-description',
             'label-status',
             'mailbox-entity',

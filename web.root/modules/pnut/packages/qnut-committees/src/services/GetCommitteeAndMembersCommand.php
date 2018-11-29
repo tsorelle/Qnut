@@ -4,7 +4,7 @@ namespace Peanut\QnutCommittees\services;
 
 use Peanut\QnutCommittees\CommitteeManager;
 use Tops\services\TServiceCommand;
-
+use Tops\sys\TStrings;
 
 
 /**
@@ -23,10 +23,12 @@ use Tops\services\TServiceCommand;
  *      				description  : string;
  *      				organizationId : any;
  *      				fulldescription : string;
+ *                      fulldescriptionTeaser: string
  *      				mailbox : string;
  *      				isStanding : any;
  *      				isLiaison  : any;
  *      				membershipRequired  : any;
+ *                      notesTeaser: string;
  *      				notes : string;
  *      				active: any;
  *      				createdby : string;
@@ -43,11 +45,13 @@ use Tops\services\TServiceCommand;
  *      				termOfService: string;
  *      				dateAdded : string;
  *      				dateUpdated : string;
+ *                      href: string;
  *      			}
  *      	}
  */
 class GetCommitteeAndMembersCommand extends TServiceCommand
 {
+
 
     protected function run()
     {
@@ -59,7 +63,7 @@ class GetCommitteeAndMembersCommand extends TServiceCommand
         $result = new \stdClass();
 
         $manager = new CommitteeManager();
-        $result->committee = $manager->getCommittee($committeeId);
+        $result->committee = $manager->getCommitteeView($committeeId);
         if ($result->committee == null) {
             $this->AddErrorMessage("Committee not found for id $committeeId");
             return;

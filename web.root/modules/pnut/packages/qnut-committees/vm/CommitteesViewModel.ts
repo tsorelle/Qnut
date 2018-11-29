@@ -8,13 +8,12 @@
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
 /// <reference path='../../../../typings/jqueryui/jqueryui.d.ts' />
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
+/// <reference path='../../qnut-directory/js/Directory.d.ts' />
 
-
-// todo: support editor
-// todo: test updates
-// todo: test filters
+// todo: imlement person select
+// todo: test member term update
 // todo: add and test members
-// todo: support help or remove
+// todo: implement report
 
 namespace QnutCommittees {
     import selectListObservable = Peanut.selectListObservable;
@@ -26,6 +25,7 @@ namespace QnutCommittees {
     interface IGetCommitteeListResponse {
         list: ICommitteeListItem[],
         canEdit: boolean;
+        helpUrl: string;
         translations: string[];
     }
 
@@ -52,24 +52,26 @@ namespace QnutCommittees {
         canEdit = ko.observable(false);
         pageView = ko.observable('forms');
         reportDate = ko.observable('');
+        // personsUrl = ko.observable('');
+        helpUrl = ko.observable('');
         activeFilter = true;
         currentMemberFilter = 'current';
 
         userIsAuthorized = ko.observable(false);
-        committeeName = ko.observable(null); // todo: refactor from original
-
+        committeeName = ko.observable(null); // todo: see where this is used
 
         committeeForm: committeeObservable;
         termOfServiceForm: termOfServiceObservable;
         personsList: Peanut.searchListObservable;
         committeeList: ICommitteeListItem[];
         committeeSelector: selectListObservable;
+        personSelector : QnutDirectory.personSelectorComponent;
         memberList: ITermOfServiceListItem[];
         members: KnockoutObservableArray<ITermOfServiceListItem> = ko.observableArray([]);
         committeeMemberFilter: selectListObservable;
+        textViewContent = ko.observable('');
+        textViewTitle = ko.observable('');
 
-        // todo: adapt for timymce
-        // descriptionEditor : CKEditorControl;
         datePickerInitialized = false;
 
         reportResponse: ICommitteeReportItem[] = [];
@@ -97,7 +99,6 @@ namespace QnutCommittees {
                 '@pkg:qnut-committees'
             ]);
 
-            // todo: refactor dependencies
             me.application.loadResources([
                 '@lib:jqueryui-css',
                 '@lib:jqueryui-js',
@@ -106,7 +107,7 @@ namespace QnutCommittees {
                 '@pnut/ViewModelHelpers',
                 '@pnut/editPanel',
                 '@pnut/searchListObservable',
-                '@pnut/selectListObservable',
+                '@pnut/selectListObservable'
             ], () => {
                 me.application.loadResources([
                     '@pkg/qnut-committees/CommitteeEntities',
@@ -119,8 +120,6 @@ namespace QnutCommittees {
                     jQuery(function () {
                         jQuery(".datepicker").datepicker();
                     });
-                    // todo: replace ckeditor from fma example with tinymce
-                    // See example in packages/qnut-directory/vm/MailingFormViewModel.ts
                     me.termOfServiceForm = new termOfServiceObservable(me);
                     me.committeeForm = new committeeObservable(me);
                     me.committeeSelector = new Peanut.selectListObservable(me.selectCommittee, []);
@@ -132,23 +131,13 @@ namespace QnutCommittees {
                     me.committeeForm.initialize(function () {
                         me.getInitializations(() => {
                             me.bindDefaultSection();
-                            successFunction();
+                            me.attachPersonSelector(successFunction);
+                            // successFunction();
                         });
                     });
                 });
             });
         }
-
-        initEditor = (selector: string) => {
-            tinymce.init({
-                selector: selector,
-                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image",
-                plugins: "image imagetools link",
-                default_link_target: "_blank",
-                branding: false
-            });
-
-        };
 
         getInitializations(doneFunction?: () => void) {
             let me = this;
@@ -158,6 +147,7 @@ namespace QnutCommittees {
                         let response = <IGetCommitteeListResponse>serviceResponse.Value;
                         me.addTranslations(response.translations);
                         me.committeeList = response.list;
+                        me.helpUrl(response.helpUrl);
                         me.canEdit(response.canEdit);
                         let filtered = me.filterCommitteeList(true);
                         me.committeeSelector.setOptions(filtered);
@@ -190,7 +180,7 @@ namespace QnutCommittees {
             }
             else {
                 return _.filter(me.committeeList,function (item: ICommitteeListItem) {
-                    return item.active;
+                    return item.active == 1 || item.active == true;
                 });
             }
         }
@@ -225,8 +215,7 @@ namespace QnutCommittees {
                 let request = selected.Value;
                 me.committeeForm.view();
                 me.application.hideServiceMessages();
-                me.showLoadWaiter(); // todo: better message?
-                // me.showActionWaiter('action','endity');
+                me.showActionWaiter('loading','committee-entity');
                 me.services.executeService('peanut.qnut-committees::GetCommitteeAndMembers',request,
                     function(serviceResponse: Peanut.IServiceResponse) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -267,7 +256,7 @@ namespace QnutCommittees {
                 if (item.statusId != 3) {
                     return false;
                 }
-                let today = me.getTodayString('iso'); // todo: test iso current date.
+                let today = me.getTodayString('iso');
                     // Dates.getCurrentDateString('isodate');
                 if (filter == 'current' && item.dateRelieved) {
                     return item.dateRelieved >= today;
@@ -282,7 +271,7 @@ namespace QnutCommittees {
         onMemberFilterChange = (selected: INameValuePair) => {
             let me = this;
             me.filterMemberList(selected.Value);
-        }
+        };
 
         resetCommitteeList = () => {
             let me = this;
@@ -322,7 +311,7 @@ namespace QnutCommittees {
             let isNew = request.id == 0;
             me.application.hideServiceMessages();
 
-            me.showActionWaiter('update', 'committee-entity'); // todo: add committee-entity translation
+            me.showActionWaiter('update', 'committee-entity');
             me.services.executeService('peanut.qnut-committees::UpdateCommittee', request,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -366,11 +355,34 @@ namespace QnutCommittees {
             me.committeeForm.view();
         };
 
-        showPersonSearch = () => {
+        attachPersonSelector = (final: () => void) => {
             let me = this;
-            // todo: show search page
+            me.application.attachComponent(
+                // component name
+                '@pkg/qnut-directory/person-selector',
+                // vm factory function
+                (returnFuncton: (vm: any) => void) => {
+                    console.log('attachComponent - returnFunction');
+                    this.application.loadComponents('@pkg/qnut-directory/person-selector', () => {
+                        console.log('loaded person-selector');
+                        // return instance via the final function.
+                        me.personSelector = new QnutDirectory.personSelectorComponent(me);
+                        returnFuncton(me.personSelector);
+                    })
+                },
+
+                final
+                // this.personSelector.show
+                // me.showPersonSearchModal
+            );
+
         };
 
+        showPersonSearch = () => {
+            this.personSelector.show();
+            // let msg = this.personSelector ? 'Person Selector loaded' : 'Person Selector NOT LOADED';
+            // alert(msg);
+        };
 
         updateTerm = () => {
             let me = this;
@@ -386,7 +398,7 @@ namespace QnutCommittees {
             jQuery("#term-detail-modal").modal('hide');
             let isNew = request.committeeMemberId == 0;
             me.application.hideServiceMessages();
-            me.showLoadWaiter(); // todo: better message?
+            me.showLoadWaiter('committee-update-term');
             me.services.executeService('peanut.qnut-committees::ServiceName',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -437,14 +449,11 @@ namespace QnutCommittees {
             let me = this;
             me.pageView(view);
             if (view == 'forms') {
-               // me.application.setPageHeading('Committees');
-                // todo: set page heading
-
+                me.setPageHeading('committee-entity-plural')
             }
             else {
-                // me.application.setPageHeading('Committee Members and Nominations');
-                // todo: set page heading
-                me.reportDate( // Dates.getCurrentDateString()
+                me.setPageHeading('committee-members-page-heading');
+                me.reportDate(
                     me.getTodayString('iso')
                     );
             }
@@ -454,7 +463,7 @@ namespace QnutCommittees {
             let me = this;
 
             me.application.hideServiceMessages();
-            me.showLoadWaiter('committee-running-report'); // todo: add translation
+            me.showLoadWaiter('committee-running-report');
             me.services.executeService('peanut.qnut-committees::ServiceName',null,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -555,10 +564,10 @@ namespace QnutCommittees {
             }
         };
 
-        // todo: adapt code from fma version
-        // D:\dev\fma\austinquakers.net\web.root\assets\js\components\committeesPageComponent.ts
         createMembershipTerm = () => {
             // todo: implement createMembershipTerm
+            // adapt code from fma version
+            // D:\dev\fma\austinquakers.net\web.root\assets\js\components\committeesPageComponent.ts
             alert('createMembershipTerm');
         };
 
@@ -577,6 +586,19 @@ namespace QnutCommittees {
             alert('endTerm');
         };
 
+        showText = (title: string, content:string) => {
+            this.textViewTitle(this.translate(title));
+            this.textViewContent(content);
+            jQuery("#text-view-modal").modal('show');
+        };
+
+        showFullDescriptionText = () => {
+            this.showText('label-full-description',this.committeeForm.fulldescription());
+        };
+
+        showNotesText = () => {
+            this.showText('label-notes',this.committeeForm.notes());
+        };
 
     } // end CommitteesViewModel
 

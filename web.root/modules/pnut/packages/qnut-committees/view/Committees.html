@@ -31,12 +31,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row" id="full-description" data-bind="visible:committeeForm.fulldescription">
+                                <div class="row" id="full-description" data-bind="visible:committeeForm.fulldescriptionTeaser">
                                     <div class="col-md-12" >
                                         <div class="form-group">
-                                            <!-- todo: consider link to modal -->
                                             <label class="control-label"><translate params="code:'label-full-description',translator:self"></translate>:</label>
-                                            <div data-bind="html:committeeForm.fulldescription"></div>
+                                            <div data-bind="html:committeeForm.fulldescriptionTeaser"></div>
+                                            <div data-bind="visible:committeeForm.fulldescriptionTeaser() != committeeForm.fulldescription()">
+                                                <a href="#" data-bind="click:showFullDescriptionText">
+                                                    <translate params="code:'label-see-more',translator:self"></translate>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -52,10 +56,14 @@
                                 </div>
                                 <div class="row"  data-bind="visible:committeeForm.notes">
                                     <div class="col-md-12" >
-                                        <!-- todo: consider link to modal -->
                                         <div class="form-group">
                                             <label class="control-label"><translate params="code:'label-notes',translator:self"></translate>:</label>
-                                            <div data-bind="html:committeeForm.notes"></div>
+                                            <div data-bind="html:committeeForm.notesTeaser"></div>
+                                            <div data-bind="visible:committeeForm.fulldescriptionTeaser() != committeeForm.fulldescription()">
+                                                <a href="#" data-bind="click:showNotesText">
+                                                    <translate params="code:'label-see-more',translator:self"></translate>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -196,8 +204,8 @@
                                     <translate params="code:'committees-show-report',translator:self"></translate>
                                 </a>
                             </div>
-                            <div class="col-md-4" style="padding-top: 10px">
-                                    <span class="fa fa-question-circle" aria-hidden="true"></span> <a href="/help-committees" target="_blank">
+                            <div class="col-md-4" data-bind="visible:helpUrl()" style="padding-top: 10px">
+                                    <span class="fa fa-question-circle" aria-hidden="true"></span> <a data-bind="attr: {href: helpUrl()}" target="_blank">
                                     <translate params="code:'label-help',translator:self"></translate>
                                 </a>
                             </div>
@@ -380,6 +388,30 @@
             </form>
         </div>
 
+        <div id="person-selector-container">
+            <person-selector></person-selector>
+        </div>
+
+        <!-- text view modal -->
+        <div class="modal" id="text-view-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" data-bind="text:textViewTitle"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <div style="overflow: scroll; width: 100%;" data-bind="html:textViewContent"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            <translate params="code:'label-close',translator:self"></translate></button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+
         <!-- term detail model -->
         <div class="modal" id="term-detail-modal">
             <div class="modal-dialog">
@@ -439,8 +471,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <!-- todo: consider using configured directory URL -->
-                                        <a target="_blank" data-bind="attr: {href: '/directory?pid=' + termOfServiceForm.personId()}">
+                                        <a target="_blank" data-bind="attr: {href: termOfServiceForm.href()}">
                                             <translate params="code:'committee-label-show-in-directory',translator:self"></translate></a>
                                     </div>
                                 </div>

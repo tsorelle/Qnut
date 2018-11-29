@@ -5,7 +5,7 @@ namespace Peanut {
         public isAssigned = false;
         public relationId: any = null;
 
-        protected owner: any;
+        protected owner: ViewModelBase;
 
         protected translator: Peanut.ITranslator;
 
