@@ -479,4 +479,8 @@ class DirectoryManager
         $this->getOrganizationsRepository()->deleteOrganization($organizationId);
     }
 
+    public function findPersons($searchValue) {
+        return $this->getPersonsRepository()->findPerson($searchValue);
+    }
+
 }

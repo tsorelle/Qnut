@@ -8,7 +8,7 @@
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
 /// <reference path='../../../../typings/jqueryui/jqueryui.d.ts' />
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
-/// <reference path='../../qnut-directory/js/Directory.d.ts' />
+/// <reference path='../../qnut-directory/js/PersonSelector.ts' />
 
 // todo: imlement person select
 // todo: test member term update
@@ -18,6 +18,7 @@
 namespace QnutCommittees {
     import selectListObservable = Peanut.selectListObservable;
     import INameValuePair = Peanut.INameValuePair;
+
 
     interface ICommitteeListItem extends Peanut.INameValuePair {
         active: any;
@@ -62,10 +63,9 @@ namespace QnutCommittees {
 
         committeeForm: committeeObservable;
         termOfServiceForm: termOfServiceObservable;
-        personsList: Peanut.searchListObservable;
         committeeList: ICommitteeListItem[];
         committeeSelector: selectListObservable;
-        personSelector : QnutDirectory.personSelectorComponent;
+        personSelector : QnutDirectory.PersonSelector;
         memberList: ITermOfServiceListItem[];
         members: KnockoutObservableArray<ITermOfServiceListItem> = ko.observableArray([]);
         committeeMemberFilter: selectListObservable;
@@ -106,15 +106,15 @@ namespace QnutCommittees {
                 '@lib:tinymce',
                 '@pnut/ViewModelHelpers',
                 '@pnut/editPanel',
-                '@pnut/searchListObservable',
-                '@pnut/selectListObservable'
+                // '@pnut/searchListObservable',
+                '@pnut/selectListObservable',
+                '@pkg/qnut-directory/PersonSelector'
             ], () => {
                 me.application.loadResources([
                     '@pkg/qnut-committees/CommitteeEntities',
                 ], () => {
                     me.memberList = [];
                     me.members([]);
-                    me.personsList = new Peanut.searchListObservable(2, 12);
 
                     // initialize date popups
                     jQuery(function () {
@@ -123,6 +123,7 @@ namespace QnutCommittees {
                     me.termOfServiceForm = new termOfServiceObservable(me);
                     me.committeeForm = new committeeObservable(me);
                     me.committeeSelector = new Peanut.selectListObservable(me.selectCommittee, []);
+                    me.personSelector = new QnutDirectory.PersonSelector(me);
                     me.committeeMemberFilter = new Peanut.selectListObservable(me.onMemberFilterChange,[
                         {Name:'Current members', Value: 'current' },
                         {Name:'Nominations', Value: 'nominated' },
@@ -131,8 +132,8 @@ namespace QnutCommittees {
                     me.committeeForm.initialize(function () {
                         me.getInitializations(() => {
                             me.bindDefaultSection();
-                            me.attachPersonSelector(successFunction);
-                            // successFunction();
+                            // late bind personSelector due to dependencies
+                            me.personSelector.attach(successFunction);
                         });
                     });
                 });
@@ -355,33 +356,8 @@ namespace QnutCommittees {
             me.committeeForm.view();
         };
 
-        attachPersonSelector = (final: () => void) => {
-            let me = this;
-            me.application.attachComponent(
-                // component name
-                '@pkg/qnut-directory/person-selector',
-                // vm factory function
-                (returnFuncton: (vm: any) => void) => {
-                    console.log('attachComponent - returnFunction');
-                    this.application.loadComponents('@pkg/qnut-directory/person-selector', () => {
-                        console.log('loaded person-selector');
-                        // return instance via the final function.
-                        me.personSelector = new QnutDirectory.personSelectorComponent(me);
-                        returnFuncton(me.personSelector);
-                    })
-                },
-
-                final
-                // this.personSelector.show
-                // me.showPersonSearchModal
-            );
-
-        };
-
         showPersonSearch = () => {
             this.personSelector.show();
-            // let msg = this.personSelector ? 'Person Selector loaded' : 'Person Selector NOT LOADED';
-            // alert(msg);
         };
 
         updateTerm = () => {
@@ -551,8 +527,8 @@ namespace QnutCommittees {
             return result;
         }
 
+        // called from personSelector component
         handleEvent = (eventName:string, data?:any)=> {
-            // todo: implement event handling or refactor
             let me = this;
             switch (eventName) {
                 case 'person-selected' :
@@ -560,6 +536,9 @@ namespace QnutCommittees {
                     break;
                 case 'person-search-cancelled' :
                     // alert('Search cancelled.');
+                    break;
+                case 'test' :
+                    alert('event test');
                     break;
             }
         };

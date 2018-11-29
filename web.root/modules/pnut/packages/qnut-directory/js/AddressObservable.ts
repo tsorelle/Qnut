@@ -147,7 +147,7 @@ namespace QnutDirectory {
             me.addressTypeId(address.addresstypeId);
             me.directoryListingTypeId(address.listingtypeId);
             // let directoryListingItem = me.getDirectoryListingItem();
-            let directoryListingItem = me.getLookupItem( me.directoryListingTypeId(), me.owner.directoryListingTypes());
+            let directoryListingItem = me.getLookupItem( me.directoryListingTypeId(), (<any>me.owner).directoryListingTypes());
             me.selectedDirectoryListingType(directoryListingItem);
             let addressTypeItem = me.getLookupItem(address.addresstypeId, me.addressTypes());
             me.selectedAddressType(addressTypeItem);

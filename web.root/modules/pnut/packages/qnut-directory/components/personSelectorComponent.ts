@@ -5,7 +5,6 @@
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
 /// <reference path='../../../../pnut/core/peanut.d.ts' />
 /// <reference path="../../../../pnut/core/ViewModelBase.ts" />
-/// <reference path="../js/Directory.d.ts" />
 
 namespace QnutDirectory {
     import ViewModelBase = Peanut.ViewModelBase;
@@ -14,7 +13,7 @@ namespace QnutDirectory {
     import IServiceResponse = Peanut.IServiceResponse;
     import INameValuePair = Peanut.INameValuePair;
 
-    export class personSelectorComponent implements IPersonSelector {
+    export class personSelectorComponent {
         private owner:ViewModelBase;
         private selectorId : string;
         private itemName: string;
@@ -83,7 +82,7 @@ namespace QnutDirectory {
             var me = this;
             var request = me.personsList.searchValue();
             me.owner.hideServiceMessages();
-            me.owner.getServices().executeService('FindPersons', request,
+            me.owner.getServices().executeService('peanut.qnut-directory::membership.FindPersons', request,
                 function (serviceResponse: IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         var list = <INameValuePair[]>serviceResponse.Value;
@@ -94,7 +93,9 @@ namespace QnutDirectory {
                         me.hide();
                     }
                 }
-            );
+            ).fail(function () {
+                let trace = me.owner.getServices().getErrorInformation();
+            })
         };
         
         selectPerson = (personItem:INameValuePair)=> {

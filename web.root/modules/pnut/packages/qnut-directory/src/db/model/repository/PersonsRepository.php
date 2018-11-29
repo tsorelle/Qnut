@@ -11,6 +11,7 @@ use PDOStatement;
 use Peanut\QnutDirectory\db\model\entity\Person;
 use Tops\db\TDatabase;
 use \Tops\db\TEntityRepository;
+use Tops\sys\TNameValuePair;
 
 class PersonsRepository extends \Tops\db\TEntityRepository
 {
@@ -36,6 +37,7 @@ class PersonsRepository extends \Tops\db\TEntityRepository
     public function search($searchValue,$excludeAddress=0,
                            $includeInactive=false) {
 
+        // todo: check this, incompatible with current data
         $searchValue = "%$searchValue%";
         $where = "fullname LIKE :search OR email LIKE :search  OR firstname LIKE :search  OR middlename LIKE :search OR lastname LIKE :search";
         if ($excludeAddress) {
@@ -60,6 +62,39 @@ class PersonsRepository extends \Tops\db\TEntityRepository
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_OBJ);
         return $result;
+    }
+
+    public function findPerson($searchValue)
+    {
+        $sql = "SELECT fullname AS `Name`, id AS `Value` FROM " . $this->getTableName() . ' ';
+        $isActive = ' AND active=1';
+        $order = " ORDER BY fullname,lastname,firstname,middlename";
+        if (empty($searchValue)) {
+            $stmt = $this->executeStatement("$sql WHERE active=1 $order", [$searchValue]);
+            $results = $stmt->fetchAll(PDO::FETCH_OBJ);
+            return $results;
+        }
+
+        $where = "fullname = ?";
+        $stmt = $this->executeStatement("$sql WHERE $where $isActive $order", [$searchValue]);
+        $results = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $values = explode(' ', $searchValue);
+        $count = count($values);
+        $last = array_pop($values).'%';
+        $first = $count == 1 ? $last : array_shift($values).'%';
+        $where = ($count == 1) ? "firstName like ? or lastName like ? " : "firstName like ? and lastName like ? ";
+        $stmt = $this->executeStatement("$sql WHERE $where $isActive $order",
+            [$first,$last]);
+        $next = $stmt->fetchAll(PDO::FETCH_OBJ);
+        foreach ($next as $item) {
+            $duplicate = TNameValuePair::Find($results,$item->Value);
+            if ($duplicate === false) {
+                $results[] = $item;
+            }
+        }
+        // todo: encoding? $name = trim(utf8_encode($name));
+        return $results;
     }
 
     public function getAddressResidents($addressId,$includeInactive=false)
@@ -114,6 +149,10 @@ class PersonsRepository extends \Tops\db\TEntityRepository
             'WHERE p.active = 1 AND l.code = ? ORDER BY p.lastname,p.firstname,p.middlename,p.fullname';
         $stmt = $this->executeStatement($sql,[$listCode]);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function getPersonsList($searchValue)
+    {
     }
 
     protected function getDatabaseId() {

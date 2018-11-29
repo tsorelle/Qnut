@@ -338,60 +338,6 @@
             </div>
         </div>
 
-        <!-- search panel --> <!-- todo: consider personSelector component -->
-        <div id="person-search-panel"  data-bind="visible:pageView() == 'search'">
-            <form>
-                <fieldset id="person-search-fields">
-                    <legend><translate params="code:'label-find',translator:self"></translate>  <translate params="code:'dir-entity-label-person',translator:self"></translate></legend>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group">
-                                <input type="text" class="form-control" placeholder="Search" data-bind="value: personsList.searchValue">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-default btn-secondary" data-bind="click:findPersons" title="Search"><span class="fa fa-search"></span> </button>
-                            <button class="btn btn-default btn-secondary" data-bind="click:cancelPersonSearch" title="Cancel"><span class="fa fa-remove"></span></button>
-                        </div>
-                    </div>
-                    <div id="findPersonResults"  class="row found well" data-bind="visible:personsList.selectionCount">
-                        <div id="persons-found-header" class="row">
-                            <div class="col-md-12">
-                                <translate params="code:'label-found',translator:self"></translate>: <span data-bind="text: personsList.selectionCount"></span> <translate params="code:'dir-person-entity-plural',translator:self"></translate>.
-                            </div>
-
-                        </div>
-                        <div id="persons-found-nav" class="row">
-                            <div class="col-md-6" style="padding-right: 3px" data-bind="visible:personsList.hasPrevious">
-                                <a href="#"  data-bind="click:personsList.previousPage"><span class="fa fa-backward"></span> <translate params="code:'nav-previous',translator:self"></translate></a>
-                            </div>
-                            <div class="col-md-6" style="padding-right: 3px" data-bind="visible:personsList.hasMore">
-                                <a href="#" data-bind="click:personsList.nextPage"><translate params="code:'nav-more',translator:self"></translate>&nbsp;<span class="fa fa-forward"></span></a>
-                            </div>
-                        </div> <!-- end found header -->
-
-                        <div class="row" id="persons-found-list">
-                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" data-bind="foreach: personsList.selectionList[1]">
-                                <div class="link-list-item">
-                                    <a href="#" data-bind="click:$parent.createMembershipTerm"><span data-bind="text: Name"></span></a>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" data-bind="foreach: personsList.selectionList[2]">
-                                <div class="link-list-item">
-                                    <a href="#" data-bind="click:$parent.createMembershipTerm"><span data-bind="text: Name"></span></a>
-                                </div>
-                            </div>
-                        </div> <!-- end found list -->
-
-                    </div>
-                </fieldset>
-            </form>
-        </div>
-
-        <div id="person-selector-container">
-            <person-selector></person-selector>
-        </div>
-
         <!-- text view modal -->
         <div class="modal" id="text-view-modal">
             <div class="modal-dialog">
@@ -630,4 +576,7 @@
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
     </div>
+</div>
+<div id="person-selector-container">
+    <person-selector></person-selector>
 </div>
