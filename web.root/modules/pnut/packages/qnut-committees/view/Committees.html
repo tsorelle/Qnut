@@ -262,25 +262,35 @@
             <div class="col-md-12">
                 <div data-bind="text:reportDate"></div>
                 <div class="row hidden-print" style="margin: 10px; border: 1px dotted firebrick">
-                    <div class="col-md-6">
-                        <a href="#" data-bind="click:showReportOptions">Change report options</a>
+
+                    <div class="col-md-4">
+                        <a href="#" data-bind="click:showReportOptions"><translate params="code:'committee-label-report-change-options',translator:self"></translate></a>
                     </div>
-                    <div class="col-md-6">
-                        <a href="#" data-bind="click:closeReport">Close Report</a>
+                    <div class="col-md-4">
+                        <a href="#" onclick="window.print()"><i class="fa fa-print" aria-hidden="true"></i> <translate params="code:'committee-label-report-print',translator:self"></translate></a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="#" data-bind="click:closeReport"><translate params="code:'committee-label-report-close',translator:self"></translate></a>
                     </div>
                 </div>
                 <div class="row" data-bind="visible:reportOptions.currentMembers">
                     <div class="col-md-12">
-                        <h3>Committees</h3>
+                        <h3><translate params="code:'committee-entity-plural', case:'ucfirst', translator:self"></translate></h3>
                         <div class="row" data-bind="foreach:report.current">
                             <div class="col-md-12">
                                 <h4 data-bind="text:committeeName"></h4>
                                 <table class="table table-condensed">
                                     <thead>
                                     <tr>
-                                        <th class="col-md-6"><translate params="code:'label-name',translator:self"></translate></th>
-                                        <th data-bind="visible:$parent.reportOptions.phones" class="col-md-2">Phone</th>
-                                        <th data-bind="visible:$parent.reportOptions.emails" class="col-md-2">Email</th>
+                                        <th class="col-md-6">
+                                            <translate params="code:'label-name',translator:$parent.self"></translate>
+                                        </th>
+                                        <th data-bind="visible:$parent.reportOptions.phones" class="col-md-2">
+                                            <translate params="code:'label-phone',translator:$parent.self"></translate>
+                                        </th>
+                                        <th data-bind="visible:$parent.reportOptions.emails" class="col-md-2">
+                                            <translate params="code:'label-email',translator:$parent.self"></translate>
+                                        </th>
                                     </tr>
                                     </thead>
                                     <tbody data-bind="foreach:members">
@@ -308,13 +318,17 @@
                                 <table class="table table-condensed">
                                     <thead>
                                     <tr>
-                                        <th class="col-md-6"><translate params="code:'label-name',translator:self"></translate></th>
-                                        <th><translate params="code:'label-status',translator:self"></translate></th>
+                                        <th class="col-md-6">
+                                            <translate params="code:'label-name',translator:$parent.self"></translate>
+                                        </th>
+                                        <th>
+                                            <translate params="code:'label-status',translator:$parent.self"></translate>
+                                        </th>
                                         <th class="col-md-2" data-bind="visible:$parent.reportOptions.phones">
-                                            <translate params="code:'label-phone',translator:self"></translate>
+                                            <translate params="code:'label-phone',translator:$parent.self"></translate>
                                         </th>
                                         <th class="col-md-2" data-bind="visible:$parent.reportOptions.emails">
-                                            <translate params="code:'label-email',translator:self"></translate>
+                                            <translate params="code:'label-email',translator:$parent.self"></translate>
                                         </th>
                                     </tr>
                                     </thead>
@@ -335,6 +349,7 @@
                         </div>
                     </div>
                 </div>
+            <!-- end nominations -->
             </div>
         </div>
 

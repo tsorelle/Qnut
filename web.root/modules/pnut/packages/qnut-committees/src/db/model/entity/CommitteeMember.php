@@ -8,7 +8,7 @@ namespace Peanut\QnutCommittees\db\model\entity;
 
 class CommitteeMember  extends \Tops\db\TimeStampedEntity
 { 
-    public $id;
+    public $id = 0;
     public $committeeId;
     public $personId;
     public $roleId;
@@ -17,7 +17,7 @@ class CommitteeMember  extends \Tops\db\TimeStampedEntity
     public $startOfService;
     public $endOfService;
     public $dateRelieved;
-    public $active;
+    public $active = 1;
 
     public function getDtoDataTypes()
     {

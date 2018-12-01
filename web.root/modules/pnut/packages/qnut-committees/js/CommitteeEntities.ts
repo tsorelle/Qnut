@@ -21,9 +21,8 @@ namespace QnutCommittees {
 
 
     export class termOfServiceObservable extends editPanel {
-
+        id: any;
         committeeId: any;
-        committeeMemberId: any;
         personId = ko.observable(0);
         committeeName = ko.observable('');
         name = ko.observable('');
@@ -65,8 +64,8 @@ namespace QnutCommittees {
 
         public clear = () => {
             let me = this;
+            me.id = 0;
             me.personId(0);
-            me.committeeMemberId = 0;
             me.name('');
             me.email('');
             me.phone('');
@@ -87,7 +86,7 @@ namespace QnutCommittees {
             let me = this;
             me.backup = term;
             me.committeeId = term.committeeId;
-            me.committeeMemberId = term.committeeMemberId;
+            me.id = term.id;
             me.personId(term.personId);
             me.committeeName(committeeName);
             me.name(term.name);
@@ -137,8 +136,8 @@ namespace QnutCommittees {
             let statusId = me.status.getValue();
             let roleId = me.role.getValue();
             let result: ITermOfService = {
+                id: me.id,
                 committeeId: me.committeeId,
-                committeeMemberId: me.committeeMemberId,
                 personId: me.personId(),
                 statusId: statusId,
                 startOfService: me.owner.shortDateToIso(me.startOfService()),

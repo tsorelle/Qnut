@@ -19,16 +19,10 @@ class FindPersonsCommand  extends TServiceCommand
         $request = $this->GetRequest();
         $manager = new DirectoryManager();
         $results = $manager->findPersons($request);
-        // $this->SetReturnValue($results);
-
-        $list = [];
         foreach ($results as $item) {
-            if (!is_object($item)) {
-                $this->addErrorMessage('process failed');
-            }
+            // Clean respose for ajax. Name field may have non utf8 characters.
             $item->Name = trim(utf8_encode($item->Name));
-            $list[] = $item;
         }
-        $this->SetReturnValue($list);
+        $this->SetReturnValue($results);
     }
 }

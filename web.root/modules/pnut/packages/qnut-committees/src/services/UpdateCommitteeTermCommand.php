@@ -16,7 +16,7 @@ use Tops\services\TServiceCommand;
  *      	interface ITermOfService {
  *      	   	personId : any;
  *      	    committeeId: any;
- *      	    committeeMemberId: any;
+ *      	    id: any;
  *      	    statusId: any;
  *      	    startOfService: string;
  *      	    endOfService: string;

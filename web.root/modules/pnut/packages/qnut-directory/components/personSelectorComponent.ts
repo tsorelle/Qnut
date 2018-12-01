@@ -45,7 +45,7 @@ namespace QnutDirectory {
         }
         public initialize(finalFunction? : () => void) {
             var me = this;
-            me.headerText(me.owner.translate('dir-find-person')); // todo: translate 'Find and select a person');
+            me.headerText(me.owner.translate('dir-find-person'));
             me.closeLabel(me.owner.translate('label-close'));
             me.showMoreLabel(me.owner.translate('dir-show-more'));
             me.itemName = me.owner.translate('person-entity');

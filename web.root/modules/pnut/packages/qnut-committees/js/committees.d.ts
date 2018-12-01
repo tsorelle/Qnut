@@ -29,9 +29,9 @@ interface ICommitteeUpdate {
 }
 
 interface ITermOfService {
+    id: any;
     personId : any;
     committeeId: any;
-    committeeMemberId: any;
     statusId: any;
     startOfService: string;
     endOfService: string;

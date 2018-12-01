@@ -37,7 +37,6 @@ class PersonsRepository extends \Tops\db\TEntityRepository
     public function search($searchValue,$excludeAddress=0,
                            $includeInactive=false) {
 
-        // todo: check this, incompatible with current data
         $searchValue = "%$searchValue%";
         $where = "fullname LIKE :search OR email LIKE :search  OR firstname LIKE :search  OR middlename LIKE :search OR lastname LIKE :search";
         if ($excludeAddress) {
@@ -93,7 +92,6 @@ class PersonsRepository extends \Tops\db\TEntityRepository
                 $results[] = $item;
             }
         }
-        // todo: encoding? $name = trim(utf8_encode($name));
         return $results;
     }
 

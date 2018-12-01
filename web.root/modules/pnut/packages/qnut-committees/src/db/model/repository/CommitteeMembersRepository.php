@@ -30,7 +30,7 @@ class CommitteeMembersRepository extends \Tops\db\TEntityRepository
     public function getMembersList($committeeId)
     {
         $sql =
-            'SELECT  cm.id AS committeeMemberId, cm.committeeId, '.
+            'SELECT  cm.id, '. // AS committeeMemberId, cm.committeeId, '.
             "CONCAT(TRIM(firstname),IF(middlename IS NULL OR middlename = '','',CONCAT(' ',TRIM(middlename))),' ', lastname) AS 'name',  ".
             "p.id AS personId, p.email, IF (p.phone IS NULL OR p.phone = '',a.phone,p.phone) AS phone,  ".
             "cm.roleId, IF(cm.roleId = 1,'', CONCAT('(', cr.name,')')) AS role, ".

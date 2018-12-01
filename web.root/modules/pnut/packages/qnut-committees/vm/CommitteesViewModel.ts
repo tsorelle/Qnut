@@ -10,10 +10,6 @@
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 /// <reference path='../../qnut-directory/js/PersonSelector.ts' />
 
-// todo: imlement person select
-// todo: test member term update
-// todo: add and test members
-// todo: implement report
 
 namespace QnutCommittees {
     import selectListObservable = Peanut.selectListObservable;
@@ -59,8 +55,7 @@ namespace QnutCommittees {
         currentMemberFilter = 'current';
 
         userIsAuthorized = ko.observable(false);
-        committeeName = ko.observable(null); // todo: see where this is used
-
+        // committeeName = ko.observable(null); // not used?
         committeeForm: committeeObservable;
         termOfServiceForm: termOfServiceObservable;
         committeeList: ICommitteeListItem[];
@@ -370,12 +365,12 @@ namespace QnutCommittees {
             if (!me.termOfServiceForm.validate()) {
                 return;
             }
-            // me.showActionWaiter('action','endity');
+            // me.showActionWaiter('action','entity');
             jQuery("#term-detail-modal").modal('hide');
-            let isNew = request.committeeMemberId == 0;
+            let isNew = request.id == 0;
             me.application.hideServiceMessages();
             me.showLoadWaiter('committee-update-term');
-            me.services.executeService('peanut.qnut-committees::ServiceName',request,
+            me.services.executeService('peanut.qnut-committees::UpdateCommitteeTerm',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         me.memberList = <ITermOfServiceListItem[]>serviceResponse.Value;
@@ -440,7 +435,7 @@ namespace QnutCommittees {
 
             me.application.hideServiceMessages();
             me.showLoadWaiter('committee-running-report');
-            me.services.executeService('peanut.qnut-committees::ServiceName',null,
+            me.services.executeService('peanut.qnut-committees::GetCommitteeReport',null,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         me.reportResponse = <ICommitteeReportItem[]>serviceResponse.Value;
@@ -541,28 +536,6 @@ namespace QnutCommittees {
                     alert('event test');
                     break;
             }
-        };
-
-        createMembershipTerm = () => {
-            // todo: implement createMembershipTerm
-            // adapt code from fma version
-            // D:\dev\fma\austinquakers.net\web.root\assets\js\components\committeesPageComponent.ts
-            alert('createMembershipTerm');
-        };
-
-        findPersons  = () => {
-            // todo: implementfindPersons 
-            alert('findPersons');
-        };
-
-        cancelPersonSearch  = () => {
-            // todo: implement cancelPersonSearch
-            alert('cancelPersonSearch');
-        };
-
-        endTerm = () => {
-            // todo: implement endTerm 
-            alert('endTerm');
         };
 
         showText = (title: string, content:string) => {
