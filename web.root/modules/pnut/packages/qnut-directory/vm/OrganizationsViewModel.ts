@@ -212,27 +212,26 @@ namespace QnutDirectory {
         init(successFunction?: () => void) {
             let me = this;
             console.log('Directory Init');
-
             me.application.loadResources([
-                // '@lib:jqueryui-css',
-                // '@lib:jqueryui-js',
+                // Load libraries and core components
                 '@lib:lodash',
                 '@pnut/ViewModelHelpers',
-                // '@pnut/searchListObservable',
-                '@pkg/qnut-directory/DirectoryEntities'], () => {
-                me.application.loadResources([
-                    '@pkg/qnut-directory/AddressObservable'], () => {
-                    me.addressForm = new addressObservable(me);
-                    me.application.registerComponents([
-                        '@pnut/modal-confirm',
-                        '@pnut/pager'], () => {
-                        // initialize date popups
-                        // jQuery(function () {
-                        //     jQuery(".datepicker").datepicker();
-                        // });
-                        me.getInitializations(() => {
-                            me.bindDefaultSection();
-                            successFunction();
+                '@pnut/editPanel'
+                //, '@pnut/searchListObservable',
+            ], () => {
+                // load classes that depend on Peanut core components. I.e. editPanel
+                me.application.loadResources(['@pkg/qnut-directory/DirectoryEntities'], () => {
+                    // load classes thatdepend on DirectoryEntities
+                    me.application.loadResources(['@pkg/qnut-directory/AddressObservable'], () => {
+                        // load remaining dependent classes/components and start initializations
+                        me.addressForm = new addressObservable(me);
+                        me.application.registerComponents([
+                            '@pnut/modal-confirm',
+                            '@pnut/pager'], () => {
+                            me.getInitializations(() => {
+                                me.bindDefaultSection();
+                                successFunction();
+                            });
                         });
                     });
                 });

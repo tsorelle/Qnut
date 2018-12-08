@@ -303,19 +303,19 @@ var QnutDirectory;
             me.application.loadResources([
                 '@lib:lodash',
                 '@pnut/ViewModelHelpers',
-                '@pkg/qnut-directory/DirectoryEntities'
+                '@pnut/editPanel'
             ], function () {
-                me.application.loadResources([
-                    '@pkg/qnut-directory/AddressObservable'
-                ], function () {
-                    me.addressForm = new QnutDirectory.addressObservable(me);
-                    me.application.registerComponents([
-                        '@pnut/modal-confirm',
-                        '@pnut/pager'
-                    ], function () {
-                        me.getInitializations(function () {
-                            me.bindDefaultSection();
-                            successFunction();
+                me.application.loadResources(['@pkg/qnut-directory/DirectoryEntities'], function () {
+                    me.application.loadResources(['@pkg/qnut-directory/AddressObservable'], function () {
+                        me.addressForm = new QnutDirectory.addressObservable(me);
+                        me.application.registerComponents([
+                            '@pnut/modal-confirm',
+                            '@pnut/pager'
+                        ], function () {
+                            me.getInitializations(function () {
+                                me.bindDefaultSection();
+                                successFunction();
+                            });
                         });
                     });
                 });
