@@ -13,7 +13,9 @@ use Peanut\QnutCommittees\db\model\entity\Committee;
 use Peanut\QnutCommittees\db\model\entity\CommitteeMember;
 use Peanut\QnutCommittees\db\model\repository\CommitteeMembersRepository;
 use Peanut\QnutCommittees\db\model\repository\CommitteesRepository;
+use Peanut\QnutDirectory\db\model\repository\OrganizationsRepository;
 use Peanut\sys\ViewModelManager;
+use Tops\sys\TConfiguration;
 use Tops\sys\TL;
 use Tops\sys\TLanguage;
 use Tops\sys\TStrings;
@@ -41,6 +43,14 @@ class CommitteeManager
             self::$committeeMembersRepository = new CommitteeMembersRepository();
         }
         return self::$committeeMembersRepository;
+    }
+
+    private static $organizationsRepository;
+    private static function getOrganizationsRepository() {
+        if (!isset(self::$organizationsRepository)) {
+            self::$organizationsRepository = new OrganizationsRepository();
+        }
+        return self::$organizationsRepository;
     }
 
     public function getCommitteeList()
@@ -109,13 +119,34 @@ class CommitteeManager
         return self::getCommitteesRepository()->getReport();
     }
 
+    private $organizationId;
+    private function getOrganizationId() {
+        if (!isset($this->organizationId)) {
+            $organizationCode = TConfiguration::getValue('organization', 'site');
+            if (empty($organizationCode)) {
+                $this->organizationId = null;
+            }
+            else {
+                $id = self::getOrganizationsRepository()->getIdForCode($organizationCode);
+                $this->organizationId = empty($id) ? null : $id;
+            }
+        }
+        return $this->organizationId;
+    }
+
     public function addCommittee($committeeDTO,$userName)
     {
+        if (empty($committeeDTO->organizationId)) {
+            $committeeDTO->organizationId = $this->getOrganizationId();
+        }
         self::getCommitteesRepository()->insert($committeeDTO,$userName);
     }
 
     public function updateCommittee($committeeDTO,$userName)
     {
+        if (empty($committeeDTO->organizationId)) {
+            $committeeDTO->organizationId = $this->getOrganizationId();
+        }
         return self::getCommitteesRepository()->update($committeeDTO,$userName);
     }
 

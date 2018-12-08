@@ -130,7 +130,6 @@ namespace QnutDirectory {
             me.createdon(organization.createdon);
             me.changedby(organization.changedby);
             me.changedon(organization.changedon);
-            // todo: retest this
             this.selectedOrganizationType(_.find(
                 this.organizationTypes(),
                     function (i: ILookupItem) {

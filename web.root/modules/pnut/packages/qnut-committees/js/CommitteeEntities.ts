@@ -174,6 +174,8 @@ namespace QnutCommittees {
         descriptionEditor: any; // tinymce
         notesEditor: any; // tinymce
 
+        organizationId: any;
+
         private backup: ICommitteeView = null;
 
         public initialize(finalFunction: () => void) {
@@ -219,6 +221,7 @@ namespace QnutCommittees {
             me.notesTeaser('');
             me.fulldescription('');
             me.notes('');
+            me.organizationId = null;
         }
 
         public assign(committee: ICommitteeView) {
@@ -243,6 +246,7 @@ namespace QnutCommittees {
             me.descriptionError(false);
             me.fulldescriptionTeaser(committee.fulldescriptionTeaser);
             me.notesTeaser(committee.notesTeaser);
+            me.organizationId = committee.organizationId;
         }
 
         public rollback() {
@@ -271,8 +275,8 @@ namespace QnutCommittees {
                 notes: me.notes(),
                 description: me.description(),
                 fulldescription: me.fulldescription(),
-                code : null, // todo: add code observable
-                organizationId: null // todo: support organizaiton id field.
+                organizationId: me.organizationId,
+                code : null, // not supported in this version.
             };
 
             return result;

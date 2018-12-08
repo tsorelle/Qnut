@@ -4,7 +4,7 @@ namespace Peanut\QnutCommittees\services;
 use Peanut\QnutCommittees\CommitteeManager;
 use Peanut\QnutCommittees\db\model\entity\Committee;
 use Tops\services\TServiceCommand;
-
+use Tops\sys\TConfiguration;
 
 
 /**
@@ -34,6 +34,7 @@ class UpdateCommitteeCommand extends TServiceCommand
     protected function run()
     {
         $committeeUpdate = $this->GetRequest();
+
         if ($committeeUpdate == null) {
             $this->AddErrorMessage('service-no-request');
             return;
