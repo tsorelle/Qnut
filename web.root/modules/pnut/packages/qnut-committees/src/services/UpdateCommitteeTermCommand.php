@@ -42,7 +42,6 @@ class UpdateCommitteeTermCommand extends TServiceCommand
 
     protected function run()
     {
-        // todo: remember to change request.committeeId to .id in calling code
         $manager = new CommitteeManager();
         $request = $this->GetRequest();
         if ($request == null) {

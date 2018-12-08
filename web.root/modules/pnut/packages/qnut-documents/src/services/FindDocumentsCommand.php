@@ -47,6 +47,12 @@ class FindDocumentsCommand extends TServiceCommand
     protected function run()
     {
         $request = $this->getRequest();
+        $fullText = isset($request->searchType) && $request->searchType == 'text';
+        $text = isset($request->searchText) ? trim($request->searchText) : '';
+        if ($fullText && empty($text)) {
+            $this->addErrorMessage('document-error-no-text');
+            return;
+        }
         $response = DocumentManager::getInstance()->searchDocuments($request);
         $this->setReturnValue($response);
     }

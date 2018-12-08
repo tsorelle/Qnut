@@ -6,8 +6,9 @@
  * Time: 5:14 PM
  */
 namespace Peanut\QnutDocuments\services;
-
 use Peanut\QnutDocuments\DocumentManager;
+use Peanut\QnutDocuments\PdfTextParser;
+use Smalot\PdfParser\Parser;
 use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
 
@@ -51,8 +52,11 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
             'document-search-return',
             'document-search-terms',
             'document-search-text',
+            'document-search-full-text',
             'document-search-keyword-option',
             'document-search-literal-option',
+            'document-search-type-full-text',
+            'document-search-type-info',
             'document-status-type',
             'document-icon-label-view',
             'document-icon-label-download',
@@ -65,7 +69,8 @@ class InitDocumentSearchCommand extends \Tops\services\TServiceCommand
             'label-fulltext',
             'label-title'
         ]);
-        $response->fullTextSupported = TConfiguration::getBoolean('fulltext','documents',true);
+        $response->fullTextSupported = TConfiguration::getValue('indexing','documents','none') !== false;
+        // $response->fullTextSupported = false;
         $this->setReturnValue($response);
     }
 }

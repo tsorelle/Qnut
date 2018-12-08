@@ -30,21 +30,25 @@ namespace QnutDocuments {
         searchResults: any;
         recordCount: any;
     }
+
     interface IDocumentSearchRequest {
-        title: string,
-        fileType: string,
-        keywords: string,
-        fulltext: boolean,
-        literal: boolean,
-        dateSearchMode: any,
-        firstDate: any,
-        secondDate: any,
-        properties: string[],
+        searchType: string,
+        searchText: string
         sortOrder: any,
         sortDescending: boolean,
         pageNumber: any,
         itemsPerPage: any,
         recordCount: any
+    }
+
+    interface IDocumentInfoSearchRequest extends IDocumentSearchRequest{
+        title: string,
+        fileType: string,
+        literal: boolean,
+        dateSearchMode: any,
+        firstDate: any,
+        secondDate: any,
+        properties: string[],
     }
 
     export class DocumentSearchViewModel extends Peanut.ViewModelBase {
@@ -67,7 +71,7 @@ namespace QnutDocuments {
         sortDescending = ko.observable(true);
         titleSearch = ko.observable('');
         textSearch = ko.observable('');
-        fullTextSearch = ko.observable(true);
+        fullTextSearch = ko.observable(false);
         fullTextSupported = ko.observable(false);
         publicationDate = ko.observable('');
         searchResultMessage = ko.observable('');
@@ -156,7 +160,7 @@ namespace QnutDocuments {
         }
 
         clearForm = () => {
-            this.fullTextSearch(true);
+            this.fullTextSearch(false);
             this.selectedFileType(null);
             this.titleSearch('');
             this.textSearch('');
@@ -180,21 +184,23 @@ namespace QnutDocuments {
                 me.currentPage(1);
             }
 
-            let request = <IDocumentSearchRequest>{
-                title: me.titleSearch(),
-                fileType: me.selectedFileType() ? me.selectedFileType().code : null,
-                keywords: me.textSearch(),
-                literal: (me.textOption() == 'literal'),
-                fulltext: me.fullTextSearch(),
-                dateSearchMode: me.selectedDateSearchMode() ? me.selectedDateSearchMode().Value : null,
-                firstDate: me.startDate(),
-                secondDate: me.endDate(),
-                properties: this.propertiesController.getValues(),
+            let request : any = {
+                searchType : me.fullTextSearch() ? 'text' : 'info',
+                searchText : me.textSearch(),
                 sortOrder: me.sortOrder(),
                 sortDescending: me.sortDescending(),
                 pageNumber: me.currentPage(),
                 itemsPerPage: 4,
                 recordCount: me.recordCount()
+            };
+            if (!me.fullTextSearch()) {
+                request.title = me.titleSearch();
+                request.fileType = me.selectedFileType() ? me.selectedFileType().code : null;
+                request.literal = (me.textOption() == 'literal');
+                request.dateSearchMode = me.selectedDateSearchMode() ? me.selectedDateSearchMode().Value : null;
+                request.firstDate = me.startDate();
+                request.secondDate = me.endDate();
+                request.properties = this.propertiesController.getValues();
             };
 
             me.application.hideServiceMessages();
@@ -240,5 +246,10 @@ namespace QnutDocuments {
             this.currentPage(current);
             this.executeSearch(false);
         };
+
+        toggleSearchType = () => {
+            let current = this.fullTextSearch();
+            this.fullTextSearch(!current);
+        }
     }
 }

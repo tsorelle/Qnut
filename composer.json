@@ -25,7 +25,8 @@
     "php-http/guzzle6-adapter": "v1.1.1",
     "ext-pdo": "*",
     "smalot/pdfparser": "v0.13.2",
-    "ext-dom": "*"
+    "ext-dom": "*",
+    "ext-mbstring": "*"
   }
 
 }

@@ -1,4 +1,3 @@
-// todo: move to peanut core project
 namespace Peanut {
     export class selectListObservable {
         private selectHandler: (selected: INameValuePair) => void;

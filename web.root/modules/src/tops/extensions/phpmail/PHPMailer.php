@@ -17,7 +17,7 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.
  */
-
+// todo: consider using original vendor code
 namespace Tops\extensions\phpmail;
 
 /**

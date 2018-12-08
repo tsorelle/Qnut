@@ -13,6 +13,7 @@ use Tops\services\TServiceCommand;
 use Peanut\QnutDocuments\db\model\entity\Document;
 use Peanut\QnutDocuments\DocumentManager;
 use Tops\services\TUploadHelper;
+use Tops\sys\TConfiguration;
 use Tops\sys\TKeyValuePair;
 use Tops\sys\TLanguage;
 use Tops\sys\TPath;
@@ -132,6 +133,7 @@ class UpdateDocumentCommand extends TServiceCommand
         // check for moving target
         $fileMoved = (!empty($currentFileLocation)) && ($currentFileLocation != $newFileLocation) ;
 
+        $newFileAssigned = true;
         // place file in expected location
         switch($request->fileDisposition) {
             case 'replace' :
@@ -162,6 +164,9 @@ class UpdateDocumentCommand extends TServiceCommand
                 if ($fileMoved && file_exists($currentFileLocation)) {
                     rename($currentFileLocation, $newFileLocation);
                 }
+                else {
+                    $newFileAssigned = false;
+                }
                 break;
         }
 
@@ -174,12 +179,21 @@ class UpdateDocumentCommand extends TServiceCommand
         // update and refresh document data
         $document->assignFromObject($request->document);
         $response = $documentManager->updateDocument($document,$propertyValues,$this->getUser()->getUserName());
+        if ($response === false ) {
+            $this->addErrorMessage('error-update-failed');
+            return;
+        }
+
         $properties = $documentManager->getDocumentPropertyValues($documentId);
         $response->properties = TKeyValuePair::ExpandArray($properties);
 
         // clean up, delete unused file
         if ($fileMoved) {
             @unlink($currentFileLocation);
+        }
+
+        if ($newFileAssigned && TConfiguration::getValue('indexing','documents','batch') === 'immediate') {
+            $documentManager->indexDocument($response,$this->getMessages());
         }
 
         $this->setReturnValue($response);

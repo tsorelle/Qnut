@@ -1,88 +1,83 @@
 <div id="documentsearch-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
-<div id="documentsearch-view-container" class="row" style="display: none;margin-bottom: 10rem">
+<div id="documentsearch-view-container" style="display: none;margin-bottom: 10rem">
     <form>
-        <div class="col-md-9">
-            <fieldset style="margin-bottom: 15px" data-bind="visible:!searched()">
-                <label><translate params="code:'document-search-terms',translator:self"></translate></label>
-                <div class="row">
-                    <div class="col-md-9">
-                        <!-- Title -->
-                        <div class="form-group">
-                            <label class="control-label form-control-label" for="titleSearch" >
-                                <translate params="code:'label-title',translator:self"></translate> </label>
-                            <input type="text" class="form-control" id="titleSearch" data-bind="textInput: titleSearch, attr: { placeholder:defaultLookupCaption }">
-                        </div>
-
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label> <translate params="code:'document-file-type',translator:self"></translate> </label>
-                            <select class="form-control"
-                                    data-bind="options: fileTypes,optionsText:'name',value:selectedFileType,optionsCaption:defaultLookupCaption"></select>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="control-label form-control-label" for="textSearch">
-                                <translate params="code:'document-search-text',translator:self"></translate> </label>
-                            <input type="text" class="form-control" id="textSearch" data-bind="textInput: textSearch, attr: { placeholder:defaultLookupCaption }" />
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <div class="radio">
-                                <label><input type="radio" name="textoption" value="keywords" data-bind="checked: textOption">
-                                    <translate params="code:'document-search-keyword-option',translator:self"></translate> </label>
-                            </div>
-                            <div class="radio">
-                                <label><input type="radio" name="textoption" value="literal" data-bind="checked: textOption"><translate params="code:'document-search-literal-option',translator:self"></translate> </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="row">
+            <div class="col-md-12" data-bind="visible:!searched()">
                 <div class="row" data-bind="visible:fullTextSupported">
-                    <div class="col-md-12" >
-                        <div class="form-group">
-                            <input id="fulltext-check" type="checkbox" data-bind="checked:fullTextSearch"/>
-                            <label for="fulltext-check"  class="control-label" style="font-weight: normal">
-                                <translate params="code:'label-fulltext',translator:self"></translate> </label>
-                        </div>
+                    <div class="col-md-9">
+                        <ul class="nav nav-tabs">
+                            <li data-bind="css: { active: !fullTextSearch() }">
+                                <a href="#" data-bind="click:toggleSearchType">
+                                    <!-- info -->
+                                    <translate params="code:'document-search-type-info',translator:self"></translate>
+                                </a> </li>
+                            <li data-bind="css: { active: fullTextSearch }">
+                                <a href="#"  data-bind="click:toggleSearchType">
+                                    <!-- Full Text Search -->
+                                    <translate params="code:'document-search-type-full-text',translator:self"></translate>
+                                </a> </li>
+                        </ul>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <!-- date search mode -->
-                        <div class="form-group">
-                            <label for="datemode"><translate params="code:'document-search-publication-date',translator:self"></translate></label>
-                            <select id="datemode" class="form-control"
-                                data-bind="options: dateSearchModes,optionsText:'Name',value:selectedDateSearchMode,optionsCaption:defaultLookupCaption">
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <!-- date1 -->
-                        <div class="form-group"  data-bind="visible:selectedDateSearchMode">
-                            <label for="startdate"><translate params="code:'label-date',translator:self"></translate></label>
-                                <input class="form-control datepicker" type="text" id="startdate"
-                                       data-bind="value:startDate"/>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group" data-bind="visible:showSecondDate">
-                            <label for="startdate"><translate params="code:'label-end-date',translator:self"></translate></label>
-                                <input class="form-control datepicker" type="text" id="enddate"
-                                       data-bind="value:endDate"/>
-                        </div>
+                <div class="row" data-bind="visible:fullTextSearch" style="margin-bottom: 15px">
+                    <div class="col-md-12">
+                        <fieldset>
+                            <!-- label><translate params="code:'document-search-full-text',translator:self"></translate></label -->
+                            <div class="row" style="margin-top: 2ex">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label form-control-label" for="textSearch">
+                                            <translate params="code:'document-search-full-text',translator:self"></translate> </label>
+                                        <input type="text" class="form-control" id="fullTextSearch" data-bind="textInput: textSearch, attr: { placeholder:defaultLookupCaption }" />
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
                     </div>
                 </div>
 
-                <entity-properties params="controller:propertiesController,columns:3, colwidth:'sm'" ></entity-properties>
+                <div class="row" data-bind="visible:!fullTextSearch()" style="margin-bottom: 15px">
+                    <div class="col-md-12">
+                        <fieldset  >
+                            <div class="row"  style="margin-top: 2ex">
+                                <div class="col-md-9">
+                                    <!-- Title -->
+                                    <div class="form-group">
+                                        <label class="control-label form-control-label" for="titleSearch" >
+                                            <translate params="code:'label-title',translator:self"></translate> </label>
+                                        <input type="text" class="form-control" id="titleSearch" data-bind="textInput: titleSearch, attr: { placeholder:defaultLookupCaption }">
+                                    </div>
+
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label> <translate params="code:'document-file-type',translator:self"></translate> </label>
+                                        <select class="form-control"
+                                                data-bind="options: fileTypes,optionsText:'name',value:selectedFileType,optionsCaption:defaultLookupCaption"></select>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label form-control-label" for="textSearch">
+                                            <translate params="code:'document-search-text',translator:self"></translate> </label>
+                                        <input type="text" class="form-control" id="textSearch" data-bind="textInput: textSearch, attr: { placeholder:defaultLookupCaption }" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <entity-properties params="controller:propertiesController,columns:3, colwidth:'sm'" ></entity-properties>
+
+                        </fieldset>
+
+                    </div>
+                </div>
+
+
 
                 <div class="row">
                     <div class="col-md-12">
@@ -99,15 +94,17 @@
                         <a href="document">&nbsp;<span class="fa fa-upload" aria-hidden="true"></span> <translate params="code:'document-new-button',translator:self"></translate></a>
                     </div>
                 </div>
-            </fieldset>
-            <fieldset data-bind="visible:searched">
+
+            </div>
+            <div class="col-md-12" data-bind="visible:searched">
+            <fieldset >
                 <label data-bind="text:searchResultMessage"></label>
                 <div class="row">
                     <div class="col-md-9">
-                    <button type="button" class="btn btn-default" data-bind="click:returnToSearchForm">
-                        <span class="fa fa-arrow-left"></span>&nbsp;
-                        <translate params="code:'document-search-return',translator:self"></translate>
-                    </button>
+                        <button type="button" class="btn btn-default" data-bind="click:returnToSearchForm">
+                            <span class="fa fa-arrow-left"></span>&nbsp;
+                            <translate params="code:'document-search-return',translator:self"></translate>
+                        </button>
                     </div>
                     <div class="col-md-3">
                         <a href="document">&nbsp;<span class="fa fa-upload" aria-hidden="true"></span> <translate params="code:'document-new-button',translator:self"></translate></a>
@@ -147,5 +144,7 @@
                 </div>
             </fieldset>
         </div>
+        </div>
+
     </form>
 </div>

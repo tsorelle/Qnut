@@ -64,6 +64,8 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/theseer/tokenizer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/webmozart/assert" />
       <excludeFolder url="file://$MODULE_DIR$/web.root/application/documents" />
+      <excludeFolder url="file://$MODULE_DIR$/web.root/modules/src/vendor/smalot" />
+      <excludeFolder url="file://$MODULE_DIR$/web.root/modules/src/vendor/tecnickcom" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

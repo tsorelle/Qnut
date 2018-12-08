@@ -33,6 +33,7 @@ class Person  extends TEntity
     public $deceased;
     public $listingtypeId;
     public $notes;
+    public $uid;
 
     /**
      * @var $address Address

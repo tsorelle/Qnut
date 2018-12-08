@@ -10,6 +10,7 @@ namespace Peanut\PeanutTasks;
 
 
 use Tops\sys\TDataTransfer;
+use Tops\sys\TInterval;
 use Tops\sys\TLanguage;
 
 class TaskQueueEntry
@@ -27,7 +28,7 @@ class TaskQueueEntry
     public function assignFromObject($dto) {
         $frequencyError = false;
         if (!empty($dto->frequency)) {
-            $interval = self::stringToInterval($dto->frequency);
+            $interval = TInterval::stringToInterval($dto->frequency);
             if (empty($interval)) {
                 $frequencyError = TLanguage::formatText('validation-invalid-interval',[$dto->frequency]);
                 unset($dto->frequency);
@@ -56,7 +57,7 @@ class TaskQueueEntry
         if ($value === false) {
             $value = $this->frequency;
         }
-        $spec = self::stringToIntervalSpec($value);
+        $spec = TInterval::stringToIntervalSpec($value);
         if (empty($spec)) {
             return false;
         }
@@ -70,7 +71,7 @@ class TaskQueueEntry
 
     public function setFrequency($value)
     {
-        $interval = self::stringToInterval($value);
+        $interval = TInterval::stringToInterval($value);
         if ($interval === false) {
             /** @noinspection PhpUnhandledExceptionInspection */
             throw new \Exception("Invalid frequency value '$value");
@@ -83,7 +84,7 @@ class TaskQueueEntry
         }
     }
 
-
+/*
     public static function stringToInterval($frequency) {
         $spec = self::stringToIntervalSpec($frequency);
         if (empty($spec)) {
@@ -172,5 +173,5 @@ class TaskQueueEntry
             $unit = $unit . 's';
         }
         return "$count $unit";
-    }
+    }*/
 }

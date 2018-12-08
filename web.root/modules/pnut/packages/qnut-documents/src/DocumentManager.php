@@ -10,9 +10,12 @@ namespace Peanut\QnutDocuments;
 
 
 use Peanut\QnutDocuments\db\model\entity\Document;
+use Peanut\QnutDocuments\db\model\entity\DocumentIndexEntry;
 use Peanut\QnutDocuments\db\model\repository\DocumentsRepository;
+use Peanut\QnutDocuments\db\model\repository\DocumentTextIndexRepository;
 use Peanut\sys\ViewModelManager;
 use Tops\db\model\repository\LookupTableRepository;
+use Tops\services\IMessageContainer;
 use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
 use Tops\sys\TNameValuePair;
@@ -53,6 +56,11 @@ class DocumentManager
      * @var DocumentsRepository
      */
     private $documentsRepository;
+
+    /**
+     * @var DocumentTextIndexRepository
+     */
+    private $documentIndexRepository;
 
     /**
      * @var \Tops\db\EntityProperties EntityProperties
@@ -209,6 +217,13 @@ class DocumentManager
         return $this->documentsRepository;
     }
 
+    public function getDocumentIndexRepository() {
+        if (!isset($this->documentIndexRepository)) {
+            $this->documentIndexRepository = new DocumentTextIndexRepository();
+        }
+        return $this->documentIndexRepository;
+    }
+
     public function getProperties() {
         return $this->properties;
     }
@@ -277,5 +292,74 @@ class DocumentManager
     {
         $this->properties->dropValues($id);
         $this->documentsRepository->delete($id);
+    }
+
+
+    public function indexDocuments(IMessageContainer $client) {
+        $count = 0;
+        $docs = $this->documentsRepository->getUnindexedDocuments();
+        foreach ($docs as $document) {
+            $processed = $this->indexDocument($document,$client);
+            if ($processed) {
+                $count++;
+            }
+        }
+        $client->AddInfoMessage("Indexed ",$count." documents");
+    }
+
+    public function indexDocumentById($id, IMessageContainer $client)
+    {
+        /**
+         * @var Document
+         */
+        $document = $this->documentsRepository->get($id);
+        if (empty($document)) {
+            return false;
+        }
+        return $this->indexDocument($document, $client);
+    }
+
+    public function indexDocument(Document $document, IMessageContainer $client) {
+        /**
+         * @var $document Document
+         */
+        if (empty($document->filename)) {
+            return false;
+        }
+        $ext = strtolower(pathinfo($document->filename, PATHINFO_EXTENSION));
+        if ($ext !== 'pdf') {
+            return false;
+        }
+        $indexRepository = $this->getDocumentIndexRepository();
+        $existing = $indexRepository->getByDocumentId($document->id);
+        if ($existing) {
+            $indexRepository->delete($existing->id);
+        }
+        $filePath = $this->getDocumentPath($document);
+        $pdfResponse = PdfTextParser::ParseFile($filePath);
+        if (!empty($pdfResponse->errors)) {
+            foreach ($pdfResponse->errors as $error) {
+                $client->AddErrorMessage($error);
+            }
+            return false;
+        }
+        if (empty($pdfResponse->document)) {
+            return false;
+        }
+        $text = $pdfResponse->getKeyText();
+        if (empty($text)) {
+            return false;
+        }
+        $properties = $pdfResponse->document->getDetails();
+
+        $entry = new DocumentIndexEntry();
+        $entry->documentId = $document->id;
+        $entry->text = $text;
+        $entry->author = array_key_exists('Author',$properties) ? $properties['Author'] : '';
+        $entry->creationDate = array_key_exists('CreationDate',$properties) ? $properties['CreationDate'] : '';
+        $entry->modificationDate = array_key_exists('ModDate',$properties) ? $properties['ModDate'] : '';
+        $entry->pageCount = array_key_exists('Pages',$properties) ? $properties['Pages'] : '';
+        $indexRepository->insert($entry);
+        return true;
     }
 }
