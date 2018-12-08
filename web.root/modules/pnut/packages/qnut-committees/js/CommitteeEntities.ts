@@ -222,6 +222,9 @@ namespace QnutCommittees {
             me.fulldescription('');
             me.notes('');
             me.organizationId = null;
+            me.descriptionEditor.setContent('');
+            me.notesEditor.setContent('');
+
         }
 
         public assign(committee: ICommitteeView) {

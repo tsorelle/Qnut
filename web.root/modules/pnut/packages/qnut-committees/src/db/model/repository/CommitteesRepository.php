@@ -73,4 +73,8 @@ class CommitteesRepository extends \Tops\db\TNamedEntitiesRepository
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
+    public function getByCommitteeName($name) {
+        return $this->getSingleEntity('name = ?',[$name],true);
+    }
+
 }

@@ -73,6 +73,15 @@ class CommitteeManager
         return $committee;
     }
 
+    public function checkDuplicateName($committee) {
+        $existing =self::getCommitteesRepository()->getByCommitteeName($committee->name);
+        if ($existing) {
+            $id = isset($committee->id) ? $committee->id : 0;
+            return $existing->name === $committee->name && $existing->id !== $id;
+        }
+        return false;
+    }
+
     public function getMembersList($committeeId)
     {
         $items = self::getCommitteeMembersRepository()->getMembersList($committeeId);
@@ -139,7 +148,7 @@ class CommitteeManager
         if (empty($committeeDTO->organizationId)) {
             $committeeDTO->organizationId = $this->getOrganizationId();
         }
-        self::getCommitteesRepository()->insert($committeeDTO,$userName);
+        return self::getCommitteesRepository()->insert($committeeDTO,$userName);
     }
 
     public function updateCommittee($committeeDTO,$userName)

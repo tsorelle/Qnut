@@ -98,9 +98,9 @@
                                 </div>
                             </div>
 
-                            <!-- Name : new only --> <!-- todo: consider allowing name changes -->
                             <div class="row">
-                                <div class="form-group col-md-9" data-bind="visible:committeeForm.committeeId()==0, css:{'has-error': committeeForm.nameError}">
+                                <!-- div class="form-group col-md-9" data-bind="visible:committeeForm.committeeId()==0, css:{'has-error': committeeForm.nameError}" -->
+                                <div class="form-group col-md-9" data-bind="css:{'has-error': committeeForm.nameError}">
                                     <label for name-input class="control-label">
                                         <translate params="code:'label-name',translator:self"></translate>
                                         <span data-bind="visible:committeeForm.nameError">

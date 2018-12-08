@@ -142,6 +142,7 @@ namespace QnutCommittees {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <IGetCommitteeListResponse>serviceResponse.Value;
                         me.addTranslations(response.translations);
+                        me.setPageHeading('committee-entity-plural','ucfirst');
                         me.committeeList = response.list;
                         me.helpUrl(response.helpUrl);
                         me.canEdit(response.canEdit);
@@ -312,25 +313,23 @@ namespace QnutCommittees {
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let response = <any>serviceResponse.Value;
+                        let committee = response.committee;
                         if (isNew) {
                             let lookupItem: ICommitteeListItem = {
-                                Name: request.name,
-                                Value: response.id,
-                                active: request.active
+                                Name: committee.name,
+                                Value: committee.id,
+                                active: committee.active
                             };
 
                             me.committeeList.push(lookupItem);
-                            me.committeeList = _.sortBy(me.committeeList, "Name");
-                            me.committeeSelector.unsubscribe();
-                            if ((!request.active) && me.activeFilter == true) {
-                                me.activeFilter = false;
-                                jQuery("filter-committees-checkbox").attr("checked", <any>false);
-                            }
-                            me.committeeSelector.setOptions(me.filterCommitteeList(me.activeFilter));
-                            me.committeeSelector.setValue(response.id);
-                            me.committeeSelector.subscribe();
+                            me.refreshCommitteeList(committee);
                         }
-                        me.committeeForm.assign(response);
+                        else if (response.list) {
+                            me.committeeList = response.list;
+                            me.refreshCommitteeList(committee);
+                        }
+
+                        me.committeeForm.assign(committee);
                         me.committeeForm.view();
                     }
                     else {
@@ -344,6 +343,19 @@ namespace QnutCommittees {
                     me.application.hideWaiter();
                 });
 
+        };
+
+        private refreshCommitteeList = (committee) => {
+            let me = this;
+            me.committeeList = _.sortBy(me.committeeList, "Name");
+            me.committeeSelector.unsubscribe();
+            if ((!committee.active) && me.activeFilter == true) {
+                me.activeFilter = false;
+                jQuery("filter-committees-checkbox").attr("checked", <any>false);
+            }
+            me.committeeSelector.setOptions(me.filterCommitteeList(me.activeFilter));
+            me.committeeSelector.setValue(committee.id);
+            me.committeeSelector.subscribe();
         };
 
         cancelCommitteeChanges = () => {
@@ -420,7 +432,7 @@ namespace QnutCommittees {
             let me = this;
             me.pageView(view);
             if (view == 'forms') {
-                me.setPageHeading('committee-entity-plural')
+                me.setPageHeading('committee-entity-plural','ucfirst')
             }
             else {
                 me.setPageHeading('committee-members-page-heading');

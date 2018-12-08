@@ -42,7 +42,14 @@ class UpdateCommitteeCommand extends TServiceCommand
 
         $committeeId = $committeeUpdate->id;
         $manager = new CommitteeManager();
+
+        if ($manager->checkDuplicateName($committeeUpdate)) {
+            $this->addErrorMessage('error-committee-name-exists');
+            return;
+        }
+
         if ($committeeId == 0) {
+            $prevName  = $committeeUpdate->name;
             $committee = new Committee();
         }
         else {
@@ -51,17 +58,19 @@ class UpdateCommitteeCommand extends TServiceCommand
                 $this->addErrorMessage('committee-error-not-found');
                 return;
             }
+            $prevName = $committee->name;
         }
 
         $committee->assignFromObject($committeeUpdate);
         if($committeeId == 0) {
-            $manager->addCommittee($committee,$this->getUser()->getUserName());
+            $committeeId = $manager->addCommittee($committee,$this->getUser()->getUserName());
         }
         else {
             $manager->updateCommittee($committee, $this->getUser()->getUserName());
         };
-
-        $committee = $manager->getCommitteeView($committeeId);
-        $this->setReturnValue($committee);
+        $result = new \stdClass();
+        $result->committee = $manager->getCommitteeView($committeeId);
+        $result->list =  $prevName === $result->committee->name ? null : $manager->getCommitteeList();
+        $this->setReturnValue($result);
     }
 }
