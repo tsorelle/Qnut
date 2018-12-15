@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-calendar/src" isTestSource="false" packagePrefix="Peanut\QnutCalendar" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-documents/src" isTestSource="false" packagePrefix="Peanut\QnutDocuments" />
       <sourceFolder url="file://$MODULE_DIR$/web.root/modules/pnut/packages/qnut-committees/src" isTestSource="false" packagePrefix="Peanut\QnutCommittees" />
+      <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/backup/tops-changed-2017-11-09" />
       <excludeFolder url="file://$MODULE_DIR$/doc/examples" />
       <excludeFolder url="file://$MODULE_DIR$/doc/examples/config" />

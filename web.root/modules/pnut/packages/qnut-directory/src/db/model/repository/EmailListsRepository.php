@@ -28,10 +28,12 @@ class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
     public function getLookupList($cansubscribeOnly = true) {
         $sql =
             'SELECT e.id,e.`code`,e.`name`,e.description,e.mailBox,m.displaytext AS mailboxName,e.active '.
-            'FROM qnut_email_lists e JOIN tops_mailboxes m ON e.mailBox = m.mailboxcode ORDER BY e.`name`';
+            'FROM qnut_email_lists e JOIN tops_mailboxes m ON e.mailBox = m.mailboxcode ';
         if ($cansubscribeOnly) {
             $sql .= ' WHERE cansubscribe <> 0';
         }
+        $sql .= ' ORDER BY e.`name`';
+
         $stmt = $this->executeStatement($sql);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }

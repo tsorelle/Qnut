@@ -7,7 +7,7 @@
 /// <reference path='../../../../typings/lodash/filter/index.d.ts' />
 
 namespace QnutDirectory {
-
+// todo: retest for service error
     import ILookupItem = Peanut.ILookupItem;
     import INameValuePair = Peanut.INameValuePair;
     import IMailboxFormOwner = Mailboxes.IMailboxFormOwner;

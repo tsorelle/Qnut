@@ -16,6 +16,13 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="local.dhfarms">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="production.2quakers.net">
         <serverdata>
           <mappings>
@@ -45,6 +52,13 @@
         </serverdata>
       </paths>
       <paths name="production.quakers4re.org">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="staging.austinquakers.org">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
