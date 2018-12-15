@@ -18,6 +18,7 @@ use Tops\db\model\repository\LookupTableRepository;
 use Tops\db\TVariables;
 use Tops\services\IMessageContainer;
 use Tops\services\NullMessageContainer;
+use Tops\sys\TConfiguration;
 use Tops\sys\TL;
 use Tops\sys\TLanguage;
 
@@ -264,8 +265,8 @@ class DirectoryManager
     {
         // clear cache for testing only. Comment out for production.
         // TVariables::Clear();
-
-        $siteOrg = $defaultFirst ? TVariables::Get('site-org') : null;
+        // $siteOrg = $defaultFirst ? TVariables::Get('site-org') : null;
+        $siteOrg = $defaultFirst ? TConfiguration::getValue('organizatoin','site') : null;
         $repository = new LookupTableRepository('qnut_organizations');
         $result = $repository->getLookupList(
             LookupTableRepository::noTranslation,
