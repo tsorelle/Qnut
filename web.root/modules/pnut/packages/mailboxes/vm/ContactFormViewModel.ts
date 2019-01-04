@@ -16,6 +16,7 @@ namespace Mailboxes {
         messageBody = ko.observable('');
         formVisible = ko.observable(false);
         mailboxList = ko.observableArray<IMailBox>([]);
+        mailboxSelectSubscription = null;
         selectedMailbox = ko.observable<IMailBox>(null);
         subjectError = ko.observable('');
         bodyError = ko.observable('');
@@ -53,7 +54,11 @@ namespace Mailboxes {
 
             me.application.hideServiceMessages();
 
-            me.services.executeService('peanut.Mailboxes::GetContactForm', me.mailboxCode,
+            let request = {
+                mailbox: me.mailboxCode,
+                context: me.getVmContext()
+            };
+            me.services.executeService('peanut.Mailboxes::GetContactForm', request,
                 function (serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -63,15 +68,25 @@ namespace Mailboxes {
                             me.fromAddress(response.fromAddress);
                             me.fromName(response.fromName);
                             me.userIsAnonymous(response.fromAddress.trim() == '');
-                            if (me.mailboxCode == 'all') {
+                            if (me.mailboxSelectSubscription !== null) {
+                                me.mailboxSelectSubscription.dispose();
+                                me.mailboxSelectSubscription = null;
+                            }
+
+                            if (response.mailboxList.length > 1) {
+                                me.mailboxCode = 'all';
                                 me.selectedMailbox(null);
-                                me.selectedMailbox.subscribe(me.onMailBoxSelected);
-                                me.mailboxList(response.mailboxList);
+                                me.mailboxSelectSubscription = me.selectedMailbox.subscribe(me.onMailBoxSelected);
                                 me.headerMessage(response.translations['mail-header-select']);
                             }
                             else {
-                                me.headerMessage(response.translations['mail-header-send'] + ': ' + response.mailboxName);
+                                let mailbox = response.mailboxList.pop();
+                                me.mailboxCode = mailbox.mailboxcode;
+                                me.selectedMailbox(mailbox);
+                                let test = me.selectedMailbox();
+                                me.headerMessage(response.translations['mail-header-send'] + ': ' + mailbox.displaytext);
                             }
+                            me.mailboxList(response.mailboxList);
                             me.formVisible(true);
                         }
                         else {
@@ -97,19 +112,18 @@ namespace Mailboxes {
             me.fromAddressError('');
             me.fromNameError('');
 
-            let code = me.mailboxCode;
-            if (code == 'all') {
-                let box = me.selectedMailbox();
+            if (me.mailboxCode === 'all') {
+                let box = this.selectedMailbox();
                 if (!box) {
                     me.mailboxSelectError(': ' + me.translate('mail-error-recipient'));
                     return false;
                 }
-                code = box.mailboxcode;
+                me.mailboxCode = box.mailboxcode;
             }
 
             let message = <IMailMessage> {
                 toName: '',
-                mailboxCode: code,
+                mailboxCode: me.mailboxCode,
                 fromName: me.fromName(),
                 fromAddress: me.fromAddress(),
                 subject: me.messageSubject(),

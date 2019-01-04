@@ -37,6 +37,7 @@ class SendContactMessageCommand extends TServiceCommand
         $sender = TPostOffice::GetMailboxAddress('contact-form');
         if ($sender === false ) {
             $this->addErrorMessage('Contact form address not found.');
+            return;
         }
 
         $fromAddress = "$message->fromName <$message->fromAddress>";
@@ -45,6 +46,6 @@ class SendContactMessageCommand extends TServiceCommand
             "$fromAddress\n\n"."---------------"."\n$message->body";
 
         TPostOffice::SendMessageToUs($fromAddress,$message->subject,$body,'contact-form',$message->mailboxCode);
-        $this->addInfoMessage("mailbox--message-sent");
+        // $this->addInfoMessage("mailbox-message-sent");
     }
 }

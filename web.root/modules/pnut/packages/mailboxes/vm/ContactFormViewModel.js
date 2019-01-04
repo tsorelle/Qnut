@@ -24,6 +24,7 @@ var Mailboxes;
             _this.messageBody = ko.observable('');
             _this.formVisible = ko.observable(false);
             _this.mailboxList = ko.observableArray([]);
+            _this.mailboxSelectSubscription = null;
             _this.selectedMailbox = ko.observable(null);
             _this.subjectError = ko.observable('');
             _this.bodyError = ko.observable('');
@@ -35,7 +36,11 @@ var Mailboxes;
             _this.getMailbox = function (doneFunction) {
                 var me = _this;
                 me.application.hideServiceMessages();
-                me.services.executeService('peanut.Mailboxes::GetContactForm', me.mailboxCode, function (serviceResponse) {
+                var request = {
+                    mailbox: me.mailboxCode,
+                    context: me.getVmContext()
+                };
+                me.services.executeService('peanut.Mailboxes::GetContactForm', request, function (serviceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             var response = serviceResponse.Value;
@@ -44,15 +49,24 @@ var Mailboxes;
                             me.fromAddress(response.fromAddress);
                             me.fromName(response.fromName);
                             me.userIsAnonymous(response.fromAddress.trim() == '');
-                            if (me.mailboxCode == 'all') {
+                            if (me.mailboxSelectSubscription !== null) {
+                                me.mailboxSelectSubscription.dispose();
+                                me.mailboxSelectSubscription = null;
+                            }
+                            if (response.mailboxList.length > 1) {
+                                me.mailboxCode = 'all';
                                 me.selectedMailbox(null);
-                                me.selectedMailbox.subscribe(me.onMailBoxSelected);
-                                me.mailboxList(response.mailboxList);
+                                me.mailboxSelectSubscription = me.selectedMailbox.subscribe(me.onMailBoxSelected);
                                 me.headerMessage(response.translations['mail-header-select']);
                             }
                             else {
-                                me.headerMessage(response.translations['mail-header-send'] + ': ' + response.mailboxName);
+                                var mailbox = response.mailboxList.pop();
+                                me.mailboxCode = mailbox.mailboxcode;
+                                me.selectedMailbox(mailbox);
+                                var test = me.selectedMailbox();
+                                me.headerMessage(response.translations['mail-header-send'] + ': ' + mailbox.displaytext);
                             }
+                            me.mailboxList(response.mailboxList);
                             me.formVisible(true);
                         }
                         else {
@@ -74,18 +88,17 @@ var Mailboxes;
                 me.bodyError('');
                 me.fromAddressError('');
                 me.fromNameError('');
-                var code = me.mailboxCode;
-                if (code == 'all') {
-                    var box = me.selectedMailbox();
+                if (me.mailboxCode === 'all') {
+                    var box = _this.selectedMailbox();
                     if (!box) {
                         me.mailboxSelectError(': ' + me.translate('mail-error-recipient'));
                         return false;
                     }
-                    code = box.mailboxcode;
+                    me.mailboxCode = box.mailboxcode;
                 }
                 var message = {
                     toName: '',
-                    mailboxCode: code,
+                    mailboxCode: me.mailboxCode,
                     fromName: me.fromName(),
                     fromAddress: me.fromAddress(),
                     subject: me.messageSubject(),

@@ -9,6 +9,7 @@
 namespace Peanut\Mailboxes\services;
 
 
+use Peanut\sys\TVmContext;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
@@ -31,27 +32,46 @@ use Tops\sys\TLanguage;
 class GetContactFormCommand extends TServiceCommand
 {
 
+    private function getMailbox() {
+        $request = $this->getRequest();
+        if (isset($request->context)) {
+            $context = TVmContext::GetContext($request->context);
+            if (!empty($context->value)) {
+                return $context->value;
+            }
+        }
+        return  isset($request->mailbox) ? $request->mailbox : false;
+    }
+
+    private function filterMailboxList($mailboxes,$code) {
+        foreach ($mailboxes as $mailbox) {
+            if ($mailbox->mailboxcode == $code) {
+                return [$mailbox];
+            }
+        }
+        return false;
+    }
+
     protected function run()
     {
         $response = new \stdClass();
-        $mailboxCode = $this->getRequest();
+        $mailboxCode =  $this->getMailbox();
         if (empty($mailboxCode)) {
             $this->addErrorMessage('No mailbox code received.');
             return;
         }
+        $manager = TPostOffice::GetMailboxManager();
+        $mailboxes = $manager->getMailboxes();
         if ($mailboxCode == 'all') {
             $response->mailboxName = '';
-            $manager = TPostOffice::GetMailboxManager();
-            $response->mailboxList = $manager->getMailboxes();
+            $response->mailboxList = $mailboxes;
         }
         else {
-            $response->mailboxList = array();
-            $mailbox = TPostOffice::GetMailbox($mailboxCode);
-            if (empty($mailbox)) {
+            $response->mailboxList = $this->filterMailboxList($mailboxes,$mailboxCode);
+            if ($response->mailboxList === false) {
                 $this->addErrorMessage("Mailbox code '$mailboxCode' not found.");
                 return;
             }
-            $response->mailboxName = $mailbox->getName();
         }
 
         $user = $this->getUser();

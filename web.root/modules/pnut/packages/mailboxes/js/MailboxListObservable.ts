@@ -46,7 +46,8 @@ namespace Mailboxes {
             let me = this;
             let request = {
                 filter: all ? 'all' : false,
-                translations: translations
+                translations: translations,
+                context : me.owner.getVmContext()
             };
             me.application.hideServiceMessages();
             let translated = (me.owner.translate('mailbox-entity-plural') !== 'mailbox-entity-plural');
