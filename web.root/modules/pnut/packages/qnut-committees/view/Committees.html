@@ -1,3 +1,4 @@
+<div id="committees-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="committees-view-container" class="row" style="display: none">
     <div class="col-md-12">
         <div class="row" data-bind="visible:pageView()=='forms'">
@@ -190,7 +191,7 @@
                             <div class="checkbox col-md-12">
                                 <label>
                                     <input type="checkbox" id='filter-committees-checkbox' data-bind="click:resetCommitteeList"
-                                        > <translate params="code:'committees-show-inactive',translator:self"></translate>
+                                    > <translate params="code:'committees-show-inactive',translator:self"></translate>
                                 </label>
                             </div>
                         </div>
@@ -205,9 +206,9 @@
                                 </a>
                             </div>
                             <div class="col-md-4" data-bind="visible:helpUrl()" style="padding-top: 10px">
-                                    <span class="fa fa-question-circle" aria-hidden="true"></span> <a data-bind="attr: {href: helpUrl()}" target="_blank">
-                                    <translate params="code:'label-help',translator:self"></translate>
-                                </a>
+                                <span class="fa fa-question-circle" aria-hidden="true"></span> <a data-bind="attr: {href: helpUrl()}" target="_blank">
+                                <translate params="code:'label-help',translator:self"></translate>
+                            </a>
                             </div>
 
                         </div>
@@ -349,7 +350,7 @@
                         </div>
                     </div>
                 </div>
-            <!-- end nominations -->
+                <!-- end nominations -->
             </div>
         </div>
 
@@ -482,7 +483,7 @@
                                 <div class="col-md-4 form-group" data-bind="css:{'has-error': termOfServiceForm.dateError}">
                                     <label for="service-start" class="control-label">
                                         <translate params="code:'committee-label-start-service',translator:self"></translate>:
-                                            <span data-bind="visible:termOfServiceForm.dateError">
+                                        <span data-bind="visible:termOfServiceForm.dateError">
                                                 <translate params="code:'committee-start-date-error',translator:self"></translate>
                                             </span>
                                     </label>
